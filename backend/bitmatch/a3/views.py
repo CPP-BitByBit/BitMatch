@@ -15,3 +15,8 @@ def simple_api_larry(request):
 # TODO: LUIS API
 
 # TODO: WILLIAM API
+
+def simple_api_johndoe(request):
+    # return a simple json response
+    data = {"person": "John Doe"}
+    return JsonResponse(data)
