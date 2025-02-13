@@ -6,7 +6,7 @@ def base_api(request):
     return HttpResponse("Welcome to the home page for assignment A3!")
 
 def simple_api_larry(request):
-    # return a simple http response
+    # return a simple json response
     data = {"person": "Larry La"}
     return JsonResponse(data)
 
