@@ -3,10 +3,15 @@ from django.http import JsonResponse, HttpResponse
 
 # Create your views here.
 def base_api(request):
-    return HttpResponse("Hello World!")
+    return HttpResponse("Welcome to the home page for assignment A3!")
 
 def simple_api_larry(request):
     # return a simple http response
     data = {"person": "Larry La"}
     return JsonResponse(data)
 
+# TODO: REBECCA API
+
+# TODO: LUIS API
+
+# TODO: WILLIAM API
