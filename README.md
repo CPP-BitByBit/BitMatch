@@ -23,10 +23,8 @@ BitMatch provides a streamlined platform where:
 
 ## 🛠 Tech Stack
 ### Frontend
-- React
-- TailwindCSS
-- ShadCN
-- V0
+- React w/ Tailwind CSS
+- ShadCN + V0
 
 ### Backend
 - Django with SQLite Database
