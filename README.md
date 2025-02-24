@@ -41,12 +41,14 @@ BitMatch provides a streamlined platform where:
 
 ### Deployment
 
-- Docker container on AWS EC2 instance t2.micro (within free tier)
+- Frontend on Static Web Apps
+- Backend on Azure VM
 - Terraform for infrastructure as code (IaC)
 
 ## 🏗 Architecture Diagram
 
-WIP
+![image](https://github.com/user-attachments/assets/ab2ffb5f-9fe8-437f-8f8e-40358a914c7e)
+
 
 ## 🛠 Running Locally
 
