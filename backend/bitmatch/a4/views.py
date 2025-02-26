@@ -8,7 +8,7 @@ from google import genai
 
 # Create your views here.
 
-# Larry La - A5
+# Larry La - A4
 def gemini_test_GET(request):
     if request.method == "GET":
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
