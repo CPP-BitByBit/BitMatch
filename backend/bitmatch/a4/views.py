@@ -5,6 +5,7 @@ from django.http import JsonResponse
 import os
 load_dotenv()
 from google import genai
+import numpy as np
 
 # Create your views here.
 
@@ -20,6 +21,16 @@ def gemini_test_GET(request):
             )
             return JsonResponse({"response": response.text}, status=200)
 
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
+    
+def numpy_test_GET(request):
+    if request.method == "GET":
+        try:
+            random_matrix = np.random.rand(3, 3).tolist()
+            return JsonResponse({"matrix": random_matrix}, status=200)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
     else:
