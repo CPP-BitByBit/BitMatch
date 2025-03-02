@@ -5,6 +5,8 @@ from django.http import JsonResponse
 import os
 load_dotenv()
 from google import genai
+from django.views.decorators.csrf import csrf_exempt
+from .models import UserProfile
 
 # Create your views here.
 
@@ -25,4 +27,14 @@ def gemini_test_GET(request):
     else:
         return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
 
+# Rebecca Smith - django-imagekit - A4
+# ImageKit is a Django app for processing images.
+@csrf_exempt
+def upload_image(request):
+    if request.method == "POST" and request.FILES.get("image"):
+        image = request.FILES["image"]
+        user_profile = UserProfile(image=image)
+        user_profile.save()
+        return JsonResponse({"message": "Image uploaded successfully!"}, status=201)
 
+    return JsonResponse({"error": "Invalid request"}, status=400)
