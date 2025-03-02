@@ -7,7 +7,7 @@ load_dotenv()
 from google import genai
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
-
+import matplotlib.pyplot as plt
 # Create your views here.
 
 # Larry La - A4
@@ -38,3 +38,16 @@ def upload_image(request):
         return JsonResponse({"message": "Image uploaded successfully!"}, status=201)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+# William Garica - A4 
+def matplotlib_test_GET(request):
+    if request.method == "GET":
+        try:
+           x = [1,2,3,4]
+           e = (0.1, 0, 0.1, 0)
+           plt.pie(x, explode = e)
+           plt.title("Example")
+           plt.show()
+        except Exception as e:
+            return JsonResponse({"error":str(e)},status = 500)
+    else:
+        return JsonResponse({"error":"Only GET requests are allowed"},status = 405)
