@@ -36,6 +36,6 @@ def matplotlib_test_GET(request):
            plt.title("Example")
            plt.show()
         except Exception as e:
-            return JsonResponse({"error":str(e)} status = 500)
+            return JsonResponse({"error":str(e)},status = 500)
     else:
         return JsonResponse({"error":"Only GET requests are allowed"},status = 405)
