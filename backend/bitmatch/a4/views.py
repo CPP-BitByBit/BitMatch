@@ -8,6 +8,8 @@ from google import genai
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
 import matplotlib.pyplot as plt
+import numpy as np
+
 # Create your views here.
 
 # Larry La - A4
@@ -26,7 +28,18 @@ def gemini_test_GET(request):
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
-
+    
+# Luis Dominguez - A4
+def numpy_test_GET(request):
+    if request.method == "GET":
+        try:
+            random_matrix = np.random.rand(3, 3).tolist()
+            return JsonResponse({"matrix": random_matrix}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
+    
 # Rebecca Smith - django-imagekit - A4
 # ImageKit is a Django app for processing images.
 @csrf_exempt
@@ -38,6 +51,7 @@ def upload_image(request):
         return JsonResponse({"message": "Image uploaded successfully!"}, status=201)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
 # William Garica - A4 
 def matplotlib_test_GET(request):
     if request.method == "GET":
