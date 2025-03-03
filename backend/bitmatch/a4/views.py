@@ -7,8 +7,11 @@ load_dotenv()
 from google import genai
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
+<<<<<<< HEAD
+=======
 import matplotlib.pyplot as plt
 import numpy as np
+>>>>>>> 44f648c3d9573bb7b43c0dcfc3e02050b7d65cf8
 
 # Create your views here.
 
@@ -50,6 +53,19 @@ def upload_image(request):
         user_profile.save()
         return JsonResponse({"message": "Image uploaded successfully!"}, status=201)
 
+<<<<<<< HEAD
+# Rebecca Smith - django-imagekit - A4
+# ImageKit is a Django app for processing images.
+@csrf_exempt
+def upload_image(request):
+    if request.method == "POST" and request.FILES.get("image"):
+        image = request.FILES["image"]
+        user_profile = UserProfile(image=image)
+        user_profile.save()
+        return JsonResponse({"message": "Image uploaded successfully!"}, status=201)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+=======
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 # William Garica - A4 
@@ -65,3 +81,4 @@ def matplotlib_test_GET(request):
             return JsonResponse({"error":str(e)},status = 500)
     else:
         return JsonResponse({"error":"Only GET requests are allowed"},status = 405)
+>>>>>>> 44f648c3d9573bb7b43c0dcfc3e02050b7d65cf8

@@ -4,6 +4,18 @@ export default {
   content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        display: ['DM Display', 'sans-display'],
+      },
+      fontSize: {
+        h1: '3rem',  
+        h2: '2.25rem',  
+        h3: '1.875rem', 
+        h4: '1.5rem',  
+        h5: '1.25rem', 
+        h6: '1rem',  
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
