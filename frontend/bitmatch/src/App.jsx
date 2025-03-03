@@ -46,7 +46,7 @@ export default function App() {
             <Route path="/project-list" element={<ProjectListPage />} />
 
             {/* Individual List Page */}
-            <Route path="projects/:id" element={<ProjectDetailPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
           </Routes>
         </SignedIn>
       </div>
