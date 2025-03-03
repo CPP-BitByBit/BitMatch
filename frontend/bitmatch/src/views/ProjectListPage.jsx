@@ -1,6 +1,6 @@
-import ProjectCardLarge from "@/component/project/ProjectCardLarge";
+import ProjectCardLarge from "@/components/project/ProjectCardLarge";
 
-export const ProjectListPage = () => {
+const ProjectListPage = () => {
   // Example array of project objects
   const projects = [
     {
@@ -34,3 +34,6 @@ export const ProjectListPage = () => {
     </div>
   );
 };
+
+// Export ProjectListPage as the default export
+export default ProjectListPage;

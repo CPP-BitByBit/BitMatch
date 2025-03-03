@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import PropTypes from "prop-types"; // Import PropTypes for validation
 
 // ProjectCardLarge component
@@ -10,15 +8,17 @@ export default function ProjectCardLarge({ project }) {
   return (
     <div className="border rounded-md overflow-hidden bg-white">
       <div className="relative">
-        <Badge className="absolute left-0 top-0 rounded-none rounded-br-md bg-gray-100 text-gray-800 font-normal">
-          {project.badgeText || "Default Badge"} {/* Dynamically set badge text */}
-        </Badge>
+        <span className="absolute left-0 top-0 rounded-none rounded-br-md bg-gray-100 text-gray-800 font-normal px-2 py-1 text-xs">
+          {project.badgeText || "Default Badge"}
+        </span>
 
         <div className="flex items-center justify-between p-1 bg-white">
-          <Button variant="default" size="sm" className="bg-black text-white hover:bg-gray-800 text-xs rounded-sm h-7">
+          <button className="bg-black text-white hover:bg-gray-800 text-xs rounded-sm h-7 px-3">
             Assign a Group
-          </Button>
-          <span className="text-sm truncate max-w-[150px]">{project.group}</span>
+          </button>
+          <span className="text-sm truncate max-w-[150px]">
+            {project.group}
+          </span>
         </div>
 
         <div className="bg-gray-200 h-44 flex items-center justify-center">
@@ -33,10 +33,12 @@ export default function ProjectCardLarge({ project }) {
 
         <div className="flex justify-between text-sm text-gray-500 mb-4">
           <div>
-            <span className="text-gray-400">◉</span> {formatNumber(project.followers)} Followers
+            <span className="text-gray-400">◉</span>{" "}
+            {formatNumber(project.followers)} Followers
           </div>
           <div>
-            <span className="text-gray-400">◉</span> {formatNumber(project.likes)} Likes
+            <span className="text-gray-400">◉</span>{" "}
+            {formatNumber(project.likes)} Likes
           </div>
         </div>
 
@@ -53,15 +55,15 @@ export default function ProjectCardLarge({ project }) {
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <Button variant="destructive" size="sm" className="text-xs h-8 bg-red-400 hover:bg-red-500">
+          <button className="text-xs h-8 bg-red-400 hover:bg-red-500 text-white rounded px-3">
             Delete
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs h-8 bg-gray-200 hover:bg-gray-300">
+          </button>
+          <button className="text-xs h-8 bg-gray-200 hover:bg-gray-300 rounded px-3">
             Edit Listing
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs h-8 bg-gray-200 hover:bg-gray-300">
+          </button>
+          <button className="text-xs h-8 bg-gray-200 hover:bg-gray-300 rounded px-3">
             Go to Profile
-          </Button>
+          </button>
         </div>
       </div>
     </div>
