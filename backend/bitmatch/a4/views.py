@@ -7,11 +7,8 @@ load_dotenv()
 from google import genai
 from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile
-<<<<<<< HEAD
-=======
 import matplotlib.pyplot as plt
 import numpy as np
->>>>>>> 44f648c3d9573bb7b43c0dcfc3e02050b7d65cf8
 
 # Create your views here.
 
