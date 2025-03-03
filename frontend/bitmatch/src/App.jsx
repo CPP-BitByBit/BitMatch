@@ -8,11 +8,12 @@ import {
 import { Button } from "./components/ui/button";
 import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
+import './styles/global.css';
 
 export default function App() {
   return (
     <Router>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex flex-col items-center justify-center min-h-screen">
         <SignedOut>
           <div className="bg-white p-8 rounded-xl shadow-md text-center">
             <h1 className="text-3xl font-semibold text-gray-800 mb-4">
@@ -28,7 +29,7 @@ export default function App() {
 
         <SignedIn>
           <header className="w-full bg-white shadow-md p-4 fixed top-0 left-0 flex justify-between items-center z-10">
-            <h2 className="text-xl font-semibold text-gray-800">BitMatch</h2>
+            <a href="/"><h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2></a>
             <UserButton />
           </header>
 

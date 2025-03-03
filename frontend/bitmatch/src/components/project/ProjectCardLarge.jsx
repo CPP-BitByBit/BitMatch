@@ -1,85 +1,82 @@
-import PropTypes from "prop-types"; // Import PropTypes for validation
+import { Button } from "@/components/ui/button"
 
-// ProjectCardLarge component
-export default function ProjectCardLarge({ project }) {
-  // Ensure the function handles cases where project.followers or project.likes may be undefined
-  const formatNumber = (num) => (num ? num.toLocaleString() : "0");
+export default function ProjectCardLarge({ project, highlighted = false }) {
+  // Helper function to format large numbers
+  const formatNumber = (num) => {
+    return num >= 1000000
+      ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
+      : num >= 1000
+      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+      : num.toString()
+  }
+
+  // Highlighted border class logic (does not affect hover state, only initial state)
+  const borderClass = highlighted ? "border-2 border-gray-200" : "border border-gray-200"
 
   return (
-    <div className="border rounded-md overflow-hidden bg-white">
+    <div
+      className={`flex flex-col ${borderClass} rounded-lg overflow-hidden transition-all duration-300 hover:border-blue-500 hover:shadow-lg`}
+    >
+      {/* Header */}
+      <div className="bg-gray-800 text-white p-2 flex justify-between">
+        <Button variant="ghost" size="sm" className="text-white hover:text-white p-0 h-auto">
+          Assign a Group
+        </Button>
+        <span>{project.group}</span>
+      </div>
+
+      {/* Image Placeholder with Match Percentage */}
       <div className="relative">
-        <span className="absolute left-0 top-0 rounded-none rounded-br-md bg-gray-100 text-gray-800 font-normal px-2 py-1 text-xs">
-          {project.badgeText || "Default Badge"}
-        </span>
-
-        <div className="flex items-center justify-between p-1 bg-white">
-          <button className="bg-black text-white hover:bg-gray-800 text-xs rounded-sm h-7 px-3">
-            Assign a Group
-          </button>
-          <span className="text-sm truncate max-w-[150px]">
-            {project.group}
-          </span>
+        <div className="absolute top-2 left-2 bg-white text-xs px-2 py-1 rounded">
+          {project.matchPercentage}% Match
         </div>
-
-        <div className="bg-gray-200 h-44 flex items-center justify-center">
-          <p className="text-gray-500 text-sm">Cover Image goes here</p>
+        <div className="bg-gray-200 h-48 flex items-center justify-center text-gray-500 text-sm">
+          Cover Image goes here
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-bold text-lg mb-1">{project.title}</h3>
-        <p className="text-sm text-gray-600 mb-2">{project.institution}</p>
-        <p className="text-sm mb-4">{project.description}</p>
+      {/* Content Section */}
+      <div className="p-4 flex flex-col gap-2">
+        <h3 className="font-bold text-lg">{project.title}</h3>
+        <p className="text-sm text-gray-500">{project.institution}</p>
+        <p className="text-sm">{project.description}</p>
 
-        <div className="flex justify-between text-sm text-gray-500 mb-4">
-          <div>
-            <span className="text-gray-400">◉</span>{" "}
-            {formatNumber(project.followers)} Followers
+        {/* Followers & Likes */}
+        <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400">~</span>
+            <span>{formatNumber(project.followers)} Followers</span>
           </div>
-          <div>
-            <span className="text-gray-400">◉</span>{" "}
-            {formatNumber(project.likes)} Likes
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <h4 className="font-bold text-sm mb-2">TOP POSITIONS NEEDED</h4>
-          <div className="grid grid-cols-2 gap-x-2 gap-y-0">
-            {project.positions?.map((position, index) => (
-              <div key={index} className="flex items-center">
-                <span className="text-xs mr-1">•</span>
-                <span className="text-sm">{position}</span>
-              </div>
-            ))}
+          <div className="flex items-center gap-1">
+            <span className="text-gray-400">~</span>
+            <span>{formatNumber(project.likes)} Likes</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <button className="text-xs h-8 bg-red-400 hover:bg-red-500 text-white rounded px-3">
-            Delete
-          </button>
-          <button className="text-xs h-8 bg-gray-200 hover:bg-gray-300 rounded px-3">
-            Edit Listing
-          </button>
-          <button className="text-xs h-8 bg-gray-200 hover:bg-gray-300 rounded px-3">
-            Go to Profile
-          </button>
+        {/* Top Positions Needed */}
+        <div className="mt-2">
+          <h4 className="font-bold text-sm uppercase">Top Positions Needed</h4>
+          <div className="flex mt-1">
+            {/* Split positions into two columns */}
+            <ul className="w-1/2">
+              {project.positions.slice(0, Math.ceil(project.positions.length / 2)).map((position, index) => (
+                <li key={index} className="text-sm flex items-center gap-1">
+                  <span className="text-gray-400">•</span>
+                  {position.title}
+                </li>
+              ))}
+            </ul>
+            <ul className="w-1/2">
+              {project.positions.slice(Math.ceil(project.positions.length / 2)).map((position, index) => (
+                <li key={index} className="text-sm flex items-center gap-1">
+                  <span className="text-gray-400">•</span>
+                  {position.title}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
-
-// Prop types validation
-ProjectCardLarge.propTypes = {
-  project: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    group: PropTypes.string,
-    institution: PropTypes.string,
-    description: PropTypes.string,
-    followers: PropTypes.number,
-    likes: PropTypes.number,
-    positions: PropTypes.arrayOf(PropTypes.string),
-    badgeText: PropTypes.string, // Added for badge text
-  }).isRequired,
-};

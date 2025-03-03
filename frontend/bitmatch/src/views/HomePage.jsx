@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 
 const HomePage = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 text-center">
-      <div className="bg-white p-8 rounded-xl shadow-md">
+    <div className="flex items-center justify-center min-h-screen text-center">
+      <div className="border border-gray-200 bg-white p-8 rounded-xl shadow-md">
         <h1 className="text-4xl font-semibold text-gray-800 mb-4">
           Placeholder Home Page
         </h1>
