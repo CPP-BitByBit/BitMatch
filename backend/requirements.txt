@@ -9,4 +9,6 @@ sqlparse
 psycopg2-binary
 python-dotenv
 google-genai
+matplotlib
 django-imagekit
+numpy
