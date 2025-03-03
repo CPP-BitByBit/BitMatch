@@ -2,22 +2,23 @@ import { ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 
 const formatNumber = (num) => {
-    return num >= 1000000
-      ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
-      : num >= 1000
-      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-      : num.toString();
-  };
+  return num >= 1000000
+    ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
+    : num >= 1000
+    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+    : num.toString();
+};
 
 // Mock function to simulate fetching project data from an API
 const fetchProjectInfo = async (id) => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const projects = {
-    1: {
+  const projects = [
+    {
+      id: 1,
       group: "Software Engineering Association",
       matchPercentage: 95, // High match since it's directly related to web dev
       title: "Icebreak",
@@ -35,7 +36,8 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://raw.githubusercontent.com/cppsea/icebreak/main/assets/banner.png",
     },
-    2: {
+    {
+      id: 2,
       group: "PolySolve Collaborative",
       matchPercentage: 65,
       title: "Augmented Reality in Art",
@@ -52,7 +54,8 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://cdn2.hubspot.net/hubfs/242200/1MARCOMM/Blog/2018/April/Manufacturing%20AR.jpg",
     },
-    3: {
+    {
+      id: 3,
       group: "Tech Symposium Team",
       matchPercentage: 50,
       title: "Tech Symposium 2024 Setup Volunteer",
@@ -71,7 +74,8 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://techsymposium.calpolyswift.org/assets/slides/2024-2.jpg",
     },
-    4: {
+    {
+      id: 4,
       group: "College Of Civil Engineering",
       matchPercentage: 40, // Engineering-related but not directly related to web dev
       title: "Engineering Transfer Pathway Improvement",
@@ -90,7 +94,8 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://www.cpp.edu/engineering/ce/img/seismic-structure-martinez.jpg",
     },
-    5: {
+    {
+      id: 5,
       group: "EcoSaviors Volunteers",
       matchPercentage: 25, // Environmental work is far removed from web dev
       title: "Urban Garden Beautification",
@@ -107,7 +112,8 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://www.cpp.edu/news/img/news/2025/01/23japanese-garden-view2.jpg",
     },
-    6: {
+    {
+      id: 6,
       group: "Animal Science Club",
       matchPercentage: 10, // Animal-related work is also far from web dev
       title: "Animal Vaccination Volunteer",
@@ -124,7 +130,7 @@ const fetchProjectInfo = async (id) => {
       imageUrl:
         "https://www.cpp.edu/agri/animal-science/img/programs/goat-vaccination.jpg",
     },
-};
+  ];
 
   return projects[id] || null;
 };
@@ -170,137 +176,153 @@ const ProjectDetailPage = () => {
 
   return (
     <div className="p-8">
-      
+      <br></br>
+      <br></br>
       {/* Project Details Card */}
-        <div className="flex flex-col min-h-screen">
-          {/* Navbar placeholder */}
-          <header className="border-b p-4">
-            <div className="flex justify-between items-center">
-            <Button variant="ghost" size="lg" onClick={() => window.history.back()}>
-                <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
-                    Back
+      <div className="flex flex-col min-h-screen">
+        {/* Navbar placeholder */}
+        <header className="border-b p-4">
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={() => window.history.back()}
+            >
+              <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
+              Back
             </Button>
-            </div>
-          </header>
-    
-          {/* Main content */}
-          <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-            <h1 className="text-4xl font-bold mb-8">{project.title}</h1>
-    
-            {/* Project showcase */}
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
+          </div>
+        </header>
 
-    
-              {/* Project info */}
-              <div className="bg-muted/30 rounded-lg p-6">
-                <div className="flex items-center gap-4 mb-4">
+        {/* Main content */}
+        <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+          <h1 className="text-4xl font-bold mb-8">{project.title}</h1>
+
+          {/* Project showcase */}
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {/* Project info */}
+            <div className="bg-muted/30 rounded-lg p-6">
+              <div className="flex items-center gap-4 mb-4">
                 {project.imageUrl ? (
-                <img
-                src={project.imageUrl}
-                alt={`${project.title} Cover`}
-                className="w-full h-full object-cover"
-                />
+                  <img
+                    src={project.imageUrl}
+                    alt={`${project.title} Cover`}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                <span>Cover Image goes here</span>
+                  <span>Cover Image goes here</span>
                 )}
-                  <div>
-                    <h2 className="text-xl font-bold">{project.group}</h2>
-                  </div>
+                <div>
+                  <h2 className="text-xl font-bold">{project.group}</h2>
                 </div>
-    
-                <div className="mb-6">
-                  <p className="text-sm">{project.description}</p>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm">{project.description}</p>
+              </div>
+
+              <div className="flex gap-4 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>{project.likes} Likes</span>
                 </div>
-    
-                <div className="flex gap-4 mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                    <span>{project.likes} Likes</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                    <span>{project.followers} Followers</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <span>{project.followers} Followers</span>
                 </div>
               </div>
             </div>
-    
-            {/* Tabs */}
-            <Tabs>
-              <TabList className="grid grid-cols-6 w-full">
-                <Tab value="overview" className="font-medium">
-                  Overview
-                </Tab>
-                <Tab value="updates" className="font-medium">
-                  Updates
-                </Tab>
-                <Tab value="members" className="font-medium">
-                  Members
-                </Tab>
-                <Tab value="wanted" className="font-medium">
-                  Wanted
-                </Tab>
-                <Tab value="discussions" className="font-medium">
-                  Discussions
-                </Tab>
-                <Tab value="contact" className="font-medium">
-                  Contact
-                </Tab>
-              </TabList>
-    
-              <TabPanel value="overview" className="mt-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold">Overview</h3>
-                </div>
-                <h4 className="text-xl font-semibold mb-4">Background & More Details About the Project</h4>
-                <div className="mb-6">
-                  <h5 className="font-semibold mb-2">This space will be filled in by the owner</h5>
-                  <p className="text-sm">{project.description}</p>
-                </div>
-              </TabPanel>
-    
-              <TabPanel value="updates">
-                <div className="p-4 text-center">
-                  <p className="text-muted-foreground">Updates content will go here</p>
-                </div>
-              </TabPanel>
-    
-              <TabPanel value="members">
-                <div className="p-4 text-center">
-                  <p className="text-muted-foreground">Members content will go here</p>
-                </div>
-              </TabPanel>
-    
-              <TabPanel value="wanted">
-                <div className="p-4 text-center">
-                  <p className="text-muted-foreground">Wanted content will go here</p>
-                </div>
-              </TabPanel>
-    
-              <TabPanel value="discussions">
-                <div className="p-4 text-center">
-                  <p className="text-muted-foreground">Discussions content will go here</p>
-                </div>
-              </TabPanel>
-    
-              <TabPanel value="contact">
-                <div className="p-4 text-center">
-                  <p className="text-muted-foreground">Contact content will go here</p>
-                </div>
-              </TabPanel>
-            </Tabs>
-          </main>
-    
-          {/* Footer */}
-          <footer className="border-t p-4 text-center">
-            <p className="text-muted-foreground">Footer</p>
-          </footer>
-        </div>
+          </div>
+
+          {/* Tabs */}
+          <Tabs>
+            <TabList className="grid grid-cols-6 w-full">
+              <Tab value="overview" className="font-medium">
+                Overview
+              </Tab>
+              <Tab value="updates" className="font-medium">
+                Updates
+              </Tab>
+              <Tab value="members" className="font-medium">
+                Members
+              </Tab>
+              <Tab value="wanted" className="font-medium">
+                Wanted
+              </Tab>
+              <Tab value="discussions" className="font-medium">
+                Discussions
+              </Tab>
+              <Tab value="contact" className="font-medium">
+                Contact
+              </Tab>
+            </TabList>
+
+            <TabPanel value="overview" className="mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold">Overview</h3>
+              </div>
+              <h4 className="text-xl font-semibold mb-4">
+                Background & More Details About the Project
+              </h4>
+              <div className="mb-6">
+                <h5 className="font-semibold mb-2">
+                  This space will be filled in by the owner
+                </h5>
+                <p className="text-sm">{project.description}</p>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="updates">
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  Updates content will go here
+                </p>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="members">
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  Members content will go here
+                </p>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="wanted">
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  Wanted content will go here
+                </p>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="discussions">
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  Discussions content will go here
+                </p>
+              </div>
+            </TabPanel>
+
+            <TabPanel value="contact">
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">
+                  Contact content will go here
+                </p>
+              </div>
+            </TabPanel>
+          </Tabs>
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t p-4 text-center">
+          <p className="text-muted-foreground">Footer</p>
+        </footer>
+      </div>
 
       {/* Action Buttons */}
     </div>
   );
 };
-
 
 export default ProjectDetailPage;

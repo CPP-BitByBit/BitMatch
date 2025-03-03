@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
   SignedIn,
   SignedOut,
@@ -8,8 +8,8 @@ import {
 import { Button } from "./components/ui/button";
 import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
-import ProjectDetailPage from "./views/IndividualProjectPage"
-import './styles/global.css';
+import ProjectDetailPage from "./views/IndividualProjectPage";
+import "./styles/global.css";
 
 export default function App() {
   return (
@@ -30,7 +30,11 @@ export default function App() {
 
         <SignedIn>
           <header className="w-full bg-white shadow-md p-4 fixed top-0 left-0 flex justify-between items-center z-10">
-            <a href="/"><h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2></a>
+            <a href="/">
+              <h2 className="font-sans text-xl font-black text-gray-800">
+                BITMATCH
+              </h2>
+            </a>
             <UserButton />
           </header>
 
@@ -42,10 +46,7 @@ export default function App() {
             <Route path="/project-list" element={<ProjectListPage />} />
 
             {/* Individual List Page */}
-            <Route path="project-list/project/:id" element={<ProjectDetailPage />} />
-
-            
-            
+            <Route path="projects/:id" element={<ProjectDetailPage />} />
           </Routes>
         </SignedIn>
       </div>
