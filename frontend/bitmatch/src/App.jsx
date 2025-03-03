@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import {
   SignedIn,
   SignedOut,
@@ -8,6 +8,7 @@ import {
 import { Button } from "./components/ui/button";
 import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
+import ProjectDetailPage from "./views/IndividualProjectPage"
 import './styles/global.css';
 
 export default function App() {
@@ -39,6 +40,12 @@ export default function App() {
 
             {/* Project List Page */}
             <Route path="/project-list" element={<ProjectListPage />} />
+
+            {/* Individual List Page */}
+            <Route path="project-list/project/:id" element={<ProjectDetailPage />} />
+
+            
+            
           </Routes>
         </SignedIn>
       </div>
