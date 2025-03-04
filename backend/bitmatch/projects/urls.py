@@ -1,8 +1,7 @@
-# TODO: DRF CRUD 
 from django.urls import path
-from . import views
+from .views import ProjectCRUDView
 
 urlpatterns = [
-    path('', views.base_api, name='base_api'),
+    path('create/', ProjectCRUDView.as_view(), name='project-create'),  # Create project
+    path('<int:pk>/', ProjectCRUDView.as_view(), name='project-detail'),  # Read, Update, Delete project by ID
 ]
-
