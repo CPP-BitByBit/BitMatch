@@ -1,4 +1,4 @@
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -26,6 +26,14 @@ const fetchProjectInfo = async (id) => {
         "A platform for organizations to interact with their members. A central hub for members to be always updated on the latest events while providing features to incentivize member growth.",
       followers: 50,
       likes: 20,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "Frontend Dev" },
         { title: "Backend Dev" },
@@ -44,6 +52,14 @@ const fetchProjectInfo = async (id) => {
         "A project aimed at creating immersive art experiences using augmented reality.",
       followers: 1500,
       likes: 400,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "AR Developer" },
         { title: "Digital Artist" },
@@ -61,6 +77,14 @@ const fetchProjectInfo = async (id) => {
         "Volunteer to assist with setting up the Tech Symposium 2024! Help with event logistics, setting up booths, arranging tech equipment, and ensuring the venue is ready for attendees. This is an exciting opportunity to contribute to a student-led conference focused on cybersecurity, system administration, and networking. Get hands-on experience and meet professionals in the field while making a difference in your community.",
       followers: 500,
       likes: 150,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "Setup Coordinator" },
         { title: "Tech Equipment Manager" },
@@ -80,6 +104,14 @@ const fetchProjectInfo = async (id) => {
         "Assist in a research project aimed at creating a standardized Associate Degree for Transfer (ADT) pathway in Engineering to increase success for transfer students in California.",
       followers: 1500,
       likes: 300,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "Research Assistant" },
         { title: "Survey Analyst" },
@@ -99,6 +131,14 @@ const fetchProjectInfo = async (id) => {
         "EcoSaviors Volunteers is inviting passionate individuals to help revitalize neglected urban spaces by creating beautiful community gardens. Volunteers will assist in planting, designing garden layouts, and maintaining the plants. This project aims to beautify public spaces while promoting sustainability and community engagement. No gardening experience is required, just a love for nature and a willingness to get hands dirty! Join us in creating a greener, cleaner environment for our community.",
       followers: 120,
       likes: 45,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "Garden Planner" },
         { title: "Plant Caretaker" },
@@ -116,6 +156,14 @@ const fetchProjectInfo = async (id) => {
         "The Animal Science Club is seeking dedicated volunteers to assist in the vaccination of animals at upcoming clinics. Volunteers will be working under the supervision of licensed veterinarians to help with the administration of vaccines, prepare supplies, and ensure the animals are safely handled during the process. This is a unique opportunity to gain hands-on experience in animal health and vaccination procedures, while supporting the community's animal welfare initiatives. Previous experience with animals is preferred, but not required.",
       followers: 450,
       likes: 120,
+      images: [
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+        "/placeholder.svg?height=400&width=600",
+      ],
       positions: [
         { title: "Vaccination Assistant" },
         { title: "Supply Coordinator" },
@@ -129,11 +177,15 @@ const fetchProjectInfo = async (id) => {
   return projects[id] || null;
 };
 
+
+
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [project, setProject] = useState(null); // State to store project details
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [activeTab, setActiveTab] = useState("overview")
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -156,6 +208,22 @@ const ProjectDetailPage = () => {
     loadProjectInfo();
   }, [id]);
 
+  const nextImage = () => {
+    if (project.images) {
+      setCurrentImageIndex((prev) => (prev === project.images.length - 1 ? 0 : prev + 1))
+    }
+}
+
+const prevImage = () => {
+    if (project.images) {
+      setCurrentImageIndex((prev) => (prev === 0 ? project.images.length - 1 : prev - 1))
+    }
+}
+
+const selectImage = (index) => {
+    setCurrentImageIndex(index)
+}
+
   if (loading) {
     return <div className="p-8 text-center">Loading project details...</div>;
   }
@@ -169,9 +237,7 @@ const ProjectDetailPage = () => {
   }
 
   return (
-    <div className="p-8">
-      <br></br>
-      <br></br>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Project Details Card */}
       <div className="flex flex-col min-h-screen">
         {/* Navbar placeholder */}
@@ -194,6 +260,47 @@ const ProjectDetailPage = () => {
 
           {/* Project showcase */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
+            {/* Image Slider */}
+        <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center">
+          {project.images && project.images.length > 0 ? (
+            <>
+              <div className="relative w-full h-full">
+                <img
+                  src={project.images[currentImageIndex] || "/placeholder.svg"}
+                  alt="Project image"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-between px-4">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={prevImage}
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={nextImage}
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </div>
+              </div>
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                <p className="text-center text-sm text-gray-600 bg-white/80 px-2 py-1 rounded">
+                  Slider
+                  <br />
+                  Image snapshots are below
+                </p>
+              </div>
+            </>
+          ) : (
+            <span>No images available</span>
+          )}
+        </div>
             {/* Project info */}
             <div className="bg-muted/30 rounded-lg p-6">
               <div className="flex items-center gap-4 mb-4">
@@ -206,12 +313,10 @@ const ProjectDetailPage = () => {
                 ) : (
                   <span>Cover Image goes here</span>
                 )}
-                <div>
-                  <h2 className="text-xl font-bold">{project.group}</h2>
-                </div>
               </div>
 
               <div className="mb-6">
+                <h2 className="text-xl font-bold">{project.group}</h2>
                 <p className="text-sm">{project.description}</p>
               </div>
 
@@ -228,25 +333,61 @@ const ProjectDetailPage = () => {
             </div>
           </div>
 
+            {/* Thumbnails */}
+      <div className="relative mb-8">
+        <div className="flex overflow-x-auto space-x-2 py-2">
+          {project.images &&
+            project.images.map((image, index) => (
+              <div
+                key={index}
+                className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
+                  currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                }`}
+                onClick={() => selectImage(index)}
+              >
+                <img
+                  src={image || "/placeholder.svg"}
+                  alt={`Pic ${index + 1}`}
+                  width={64}
+                  height={64}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ))}
+        </div>
+        <button
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full"
+          onClick={prevImage}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <button
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full"
+          onClick={nextImage}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
           {/* Tabs */}
           <Tabs>
             <TabList className="grid grid-cols-6 w-full">
-              <Tab value="overview" className="font-medium">
+              <Tab value="overview" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Overview
               </Tab>
-              <Tab value="updates" className="font-medium">
+              <Tab value="updates" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Updates
               </Tab>
-              <Tab value="members" className="font-medium">
+              <Tab value="members" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Members
               </Tab>
-              <Tab value="wanted" className="font-medium">
+              <Tab value="wanted" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Wanted
               </Tab>
-              <Tab value="discussions" className="font-medium">
+              <Tab value="discussions" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Discussions
               </Tab>
-              <Tab value="contact" className="font-medium">
+              <Tab value="contact" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
                 Contact
               </Tab>
             </TabList>
