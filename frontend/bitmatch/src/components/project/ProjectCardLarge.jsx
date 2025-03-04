@@ -20,7 +20,7 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
     <div
       className={`flex flex-col ${borderClass} rounded-lg overflow-hidden transition-all duration-300 hover:border-blue-500 hover:shadow-lg`}
     >
-      <Link to={`/projects/${project.id - 1}`}>
+      <Link to={`/projects/${project.id}`}>
         {/* Header */}
         <div className="bg-gray-800 text-white p-2 flex justify-between">
           <span>{project.group}</span>
