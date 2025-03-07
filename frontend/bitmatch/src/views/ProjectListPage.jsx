@@ -115,7 +115,7 @@ export default function ProjectListPage() {
   ];
 
   return (
-    <main className="container mx-auto px-4 py-8 pt-40 pb-40">
+    <main className="pt-20 pb-20">
       {/* Page Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-bold sans-display">Public Projects List</h1>
