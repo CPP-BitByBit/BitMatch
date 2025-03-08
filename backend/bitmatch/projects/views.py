@@ -5,12 +5,14 @@ from django.shortcuts import get_object_or_404
 from .models import Project
 from .serializers import ProjectSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 
-# Create your views here.
-# TODO: FOR WILLIAM, FETCH ALL PROJECTS ROUTE
+# Fetch all projects
+@api_view(['GET'])  
+@permission_classes([AllowAny]) 
 def get_projects(request):
-    projects = projects.objects.all()
-    serializer = ProjectSerializer(projects, many =True)
+    projects = Project.objects.all()
+    serializer = ProjectSerializer(projects, many=True)
     return Response(serializer.data)
 
 # DRF CRUD views for Project model
