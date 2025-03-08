@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny
 # Create your views here.
 # TODO: FOR WILLIAM, FETCH ALL PROJECTS ROUTE
 def get_projects(request):
-    projects = projects.objects.all()
+    projects = Project.objects.all()
     serializer = ProjectSerializer(projects, many =True)
     return Response(serializer.data)
 
