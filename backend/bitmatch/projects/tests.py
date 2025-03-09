@@ -20,7 +20,20 @@ class ProjectModelTest(TestCase):
             positions=[{"role": "Backend Developer", "available": 2}],
             image_url="https://example.com/image.jpg"
         )
-
+        # TODO: create mock data for tests other case 2 (rebecca), 3 (luis), 4, (william)
+        # below is an example, delete once you start
+        # ,self.project2 = Project.objects.create(
+        #     group="",
+        #     match_percentage=0,
+        #     title="",
+        #     institution="",
+        #     description="",
+        #     followers=0,
+        #     likes=0,
+        #     positions=[{"": "", "": }],
+        #     image_url=""
+        # ),
+    
     def test_project_creation_1(self):
         # Check if the record populated correctly
         self.assertEqual(self.project.group, "CPP SEA")
@@ -32,6 +45,21 @@ class ProjectModelTest(TestCase):
         self.assertEqual(self.project.likes, 5)
         self.assertEqual(self.project.positions, [{"role": "Backend Developer", "available": 2}])
         self.assertEqual(self.project.image_url, "https://example.com/image.jpg")
+
+    # TODO: assert against the new project you made (rebecca) --> test with python manage.py test after --> delete this comment after commiting
+    def test_project_creation_2(self):
+        # self.project2
+        ...
+    
+    # TODO: assert against the new project you made (luis) --> test with python manage.py test after --> delete this comment after commiting
+    def test_project_creation_3(self):
+        #self.project3
+        ...
+
+    # TODO: assert against the new project you made (william) --> test with python manage.py test after --> delete this comment after commiting
+    def test_project_creation_4(self): 
+        #self.project4
+        ...
 
 class GetProjectsAPITest(APITestCase):
     def setUp(self):
