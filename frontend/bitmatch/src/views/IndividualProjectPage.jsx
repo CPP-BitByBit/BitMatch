@@ -1,15 +1,18 @@
-import { ChevronRight, ChevronLeft, Plus } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, Edit, Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import Modal from "@/components/project/Modal";
+
 
 const formatNumber = (num) => {
   return num >= 1000000
     ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
     : num >= 1000
-    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-    : num.toString();
+      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+      : num.toString();
 };
 
 // Mock function to simulate fetching project data from an API
@@ -27,12 +30,12 @@ const fetchProjectInfo = async (id) => {
       followers: 50,
       likes: 20,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://images.unsplash.com/photo-1741276236509-c6f10f4f4c6c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1700346373090-151ac589b07d?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1738996674608-3d2d9d8450a0?q=80&w=2831&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://plus.unsplash.com/premium_photo-1732736768092-43a010784507?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1738081359154-44d50176b2d0?q=80&w=2938&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "https://images.unsplash.com/photo-1739045193736-8d0f198e292a?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       ],
       positions: [
         { title: "Frontend Dev" },
@@ -53,12 +56,12 @@ const fetchProjectInfo = async (id) => {
       followers: 1500,
       likes: 400,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
       ],
       positions: [
         { title: "AR Developer" },
@@ -78,12 +81,12 @@ const fetchProjectInfo = async (id) => {
       followers: 500,
       likes: 150,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
       ],
       positions: [
         { title: "Setup Coordinator" },
@@ -105,12 +108,12 @@ const fetchProjectInfo = async (id) => {
       followers: 1500,
       likes: 300,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
       ],
       positions: [
         { title: "Research Assistant" },
@@ -132,12 +135,12 @@ const fetchProjectInfo = async (id) => {
       followers: 120,
       likes: 45,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
       ],
       positions: [
         { title: "Garden Planner" },
@@ -157,12 +160,12 @@ const fetchProjectInfo = async (id) => {
       followers: 450,
       likes: 120,
       images: [
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
-        "/placeholder.svg?height=400&width=600",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
+        "https://picsum.photos/seed/picsum/200/300",
       ],
       positions: [
         { title: "Vaccination Assistant" },
@@ -185,6 +188,7 @@ const ProjectDetailPage = () => {
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview")
 
   useEffect(() => {
@@ -212,17 +216,17 @@ const ProjectDetailPage = () => {
     if (project.images) {
       setCurrentImageIndex((prev) => (prev === project.images.length - 1 ? 0 : prev + 1))
     }
-}
+  }
 
-const prevImage = () => {
+  const prevImage = () => {
     if (project.images) {
       setCurrentImageIndex((prev) => (prev === 0 ? project.images.length - 1 : prev - 1))
     }
-}
+  }
 
-const selectImage = (index) => {
+  const selectImage = (index) => {
     setCurrentImageIndex(index)
-}
+  }
 
   if (loading) {
     return <div className="p-8 text-center">Loading project details...</div>;
@@ -261,46 +265,46 @@ const selectImage = (index) => {
           {/* Project showcase */}
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             {/* Image Slider */}
-        <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center">
-          {project.images && project.images.length > 0 ? (
-            <>
-              <div className="relative w-full h-full">
-                <img
-                  src={project.images[currentImageIndex] || "/placeholder.svg"}
-                  alt="Project image"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-between px-4">
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="rounded-full bg-white/80 hover:bg-white"
-                    onClick={prevImage}
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="rounded-full bg-white/80 hover:bg-white"
-                    onClick={nextImage}
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                </div>
-              </div>
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                <p className="text-center text-sm text-gray-600 bg-white/80 px-2 py-1 rounded">
-                  Slider
-                  <br />
-                  Image snapshots are below
-                </p>
-              </div>
-            </>
-          ) : (
-            <span>No images available</span>
-          )}
-        </div>
+            <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center">
+              {project.images && project.images.length > 0 ? (
+                <>
+                  <div className="relative w-full h-full">
+                    <img
+                      src={project.images[currentImageIndex] || "/placeholder.svg"}
+                      alt="Project image"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-between px-4">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="rounded-full bg-white/80 hover:bg-white"
+                        onClick={prevImage}
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="rounded-full bg-white/80 hover:bg-white"
+                        onClick={nextImage}
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                    <p className="text-center text-sm text-gray-600 bg-white/80 px-2 py-1 rounded">
+                      Slider
+                      <br />
+                      Image snapshots are below
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <span>No images available</span>
+              )}
+            </div>
             {/* Project info */}
             <div className="bg-muted/30 rounded-lg p-6">
               <div className="flex items-center gap-4 mb-4">
@@ -333,61 +337,55 @@ const selectImage = (index) => {
             </div>
           </div>
 
-            {/* Thumbnails */}
-      <div className="relative mb-8">
-        <div className="flex overflow-x-auto space-x-2 py-2">
-          {project.images &&
-            project.images.map((image, index) => (
-              <div
-                key={index}
-                className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
-                  currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                }`}
-                onClick={() => selectImage(index)}
-              >
-                <img
-                  src={image || "/placeholder.svg"}
-                  alt={`Pic ${index + 1}`}
-                  width={64}
-                  height={64}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            ))}
-        </div>
-        <button
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full"
-          onClick={prevImage}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <button
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/80 p-1 rounded-full"
-          onClick={nextImage}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
+          {/* Thumbnails */}
+          <div className="relative mb-8">
+
+            <div className="flex overflow-x-auto space-x-2 py-2">
+              {project.images &&
+                project.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                      }`}
+                    onClick={() => selectImage(index)}
+                  >
+                    <img
+                      src={image || "/placeholder.svg"}
+                      alt={`Pic ${index + 1}`}
+                      width={64}
+                      height={64}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ))}
+            </div>
+          </div>
 
           {/* Tabs */}
-          <Tabs>
-            <TabList className="grid grid-cols-6 w-full">
-              <Tab value="overview" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+          <Tabs defaultValue="overview" className="mb-8" onValueChange={setActiveTab}>
+            <TabList className="grid grid-cols-6 w-full bg-gray-100 mb-8">
+              <Tab value="overview" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                selectedClassName="bg-blue-200 text-black">
                 Overview
               </Tab>
-              <Tab value="updates" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+              <Tab value="updates" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+              selectedClassName="bg-blue-200 text-black">
                 Updates
               </Tab>
-              <Tab value="members" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+              <Tab value="members" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+              selectedClassName="bg-blue-200 text-black">
                 Members
               </Tab>
-              <Tab value="wanted" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+              <Tab value="wanted" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+              selectedClassName="bg-blue-200 text-black">
                 Wanted
               </Tab>
-              <Tab value="discussions" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+              <Tab value="discussions" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+              selectedClassName="bg-blue-200 text-black">
                 Discussions
               </Tab>
-              <Tab value="contact" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md">
+              <Tab value="contact" className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+              selectedClassName="bg-blue-200 text-black">
                 Contact
               </Tab>
             </TabList>
@@ -404,6 +402,37 @@ const selectImage = (index) => {
                   This space will be filled in by the owner
                 </h5>
                 <p className="text-sm">{project.description}</p>
+                <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit Project
+                </Button>
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                  <h2 className="text-xl font-bold">Edit Project</h2>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <p hclassName="text-right">
+                      Title
+                    </p>
+                    <Input
+                      id="title"
+                      defaultValue={project.title}
+                      className="col-span-3"
+                    />
+                    <p hclassName="text-right">
+                      Description
+                    </p>
+                    <Input
+                      id="description"
+                      defaultValue={project.description}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    Close
+                  </button>
+                </Modal>
               </div>
             </TabPanel>
 
