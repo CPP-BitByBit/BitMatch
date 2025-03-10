@@ -13,7 +13,7 @@ import './styles/global.css';
 export default function App() {
   return (
     <Router>
-      <div className="flex flex-col items-center justify-center min-h-screen">
+      <div className="container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen">
         <SignedOut>
           <div className="bg-white p-8 rounded-xl shadow-md text-center">
             <h1 className="text-3xl font-semibold text-gray-800 mb-4">
@@ -28,9 +28,13 @@ export default function App() {
         </SignedOut>
 
         <SignedIn>
-          <header className="w-full bg-white shadow-md p-4 fixed top-0 left-0 flex justify-between items-center z-10">
-            <a href="/"><h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2></a>
-            <UserButton />
+          <header className="w-full bg-white shadow-md p-4 fixed top-0 left-0 z-50">
+            <div className="max-w-[1485px] mx-auto flex justify-between items-center">
+              <a href="/">
+                <h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2>
+              </a>
+              <UserButton />
+            </div>
           </header>
 
           <Routes>
