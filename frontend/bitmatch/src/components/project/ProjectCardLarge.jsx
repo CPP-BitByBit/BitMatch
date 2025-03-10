@@ -18,7 +18,7 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
 
   return (
     <div
-      className={`flex flex-col ${borderClass} rounded-lg overflow-hidden transition-all duration-300 hover:border-blue-500 hover:shadow-lg`}
+      className={`flex flex-col h-full ${borderClass} rounded-lg overflow-hidden transition-all duration-300 hover:border-blue-500 hover:shadow-lg`}
     >
       <Link to={`/projects/${project.id}`}>
         {/* Header */}
@@ -26,9 +26,9 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
           <span>{project.group}</span>
         </div>
 
-        {/* Image Placeholder with Match Percentage */}
+        {/* Image Placeholder */}
         <div className="relative">
-          {/* Conditional background color based on match percentage */}
+          {/* Match Percentage */}
           <div
             className={`absolute top-2 left-2 text-xs px-2 py-1 rounded font-bold ${
               project.matchPercentage >= 90
@@ -53,7 +53,7 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
             {project.matchPercentage}% Match
           </div>
 
-          {/* Use project.imageUrl to display the actual image */}
+          {/* Image */}
           <div className="bg-gray-200 h-48 flex items-center justify-center text-gray-500 text-sm">
             {project.imageUrl ? (
               <img
@@ -67,8 +67,8 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="p-4 flex flex-col gap-2">
+        {/* Content Wrapper */}
+        <div className="p-4 flex flex-col flex-grow">
           <h3 className="font-bold text-lg">{project.title}</h3>
           <p className="text-sm text-gray-500">{project.institution}</p>
           <p className="text-sm">{project.description}</p>
@@ -91,7 +91,6 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
               Top Positions Needed
             </h4>
             <div className="flex mt-1">
-              {/* Split positions into two columns */}
               <ul className="w-1/2">
                 {project.positions
                   .slice(0, Math.ceil(project.positions.length / 2))

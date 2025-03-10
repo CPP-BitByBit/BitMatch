@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "userauth",
+    "projects",
     "a3",
     "a4",
 ]
