@@ -9,34 +9,39 @@ export default function Home() {
       title: "Featured New Project Title One",
       description:
         "Description of the project can go here. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-      image: "https://www.cpp.edu/news/img/news/2025/01/23japanese-garden-view2.jpg?height=400&width=800",
+      image:
+        "https://www.cpp.edu/news/img/news/2025/01/23japanese-garden-view2.jpg?height=400&width=800",
     },
     {
       id: 2,
       title: "Featured New Project Title Two",
       description:
         "Another project description goes here. This is a sample text to demonstrate the slideshow functionality with multiple slides.",
-      image: "https://cdn2.hubspot.net/hubfs/242200/1MARCOMM/Blog/2018/April/Manufacturing%20AR.jpg?height=400&width=800",
+      image:
+        "https://cdn2.hubspot.net/hubfs/242200/1MARCOMM/Blog/2018/April/Manufacturing%20AR.jpg?height=400&width=800",
     },
     {
       id: 3,
       title: "Featured New Project Title Three",
       description:
         "Third project description. Each slide can contain different content while maintaining the same layout and design.",
-      image: "https://www.cpp.edu/engineering/ce/img/seismic-structure-martinez.jpg?height=400&width=800",
+      image:
+        "https://www.cpp.edu/engineering/ce/img/seismic-structure-martinez.jpg?height=400&width=800",
     },
     {
       id: 4,
       title: "Featured New Project Title Four",
       description:
         "Fourth project description. The slideshow allows users to navigate through different projects or content items.",
-      image: "https://raw.githubusercontent.com/cppsea/icebreak/main/assets/banner.png?height=400&width=800",
+      image:
+        "https://raw.githubusercontent.com/cppsea/icebreak/main/assets/banner.png?height=400&width=800",
     },
   ];
 
   // Sample project data - in a real app this would come from a database
   const projects = [
     {
+      id: 1,
       group: "Software Engineering Association",
       matchPercentage: 95, // High match since it's directly related to web dev
       title: "Icebreak",
@@ -55,6 +60,7 @@ export default function Home() {
         "https://raw.githubusercontent.com/cppsea/icebreak/main/assets/banner.png",
     },
     {
+      id: 2,
       group: "PolySolve Collaborative",
       matchPercentage: 65,
       title: "Augmented Reality in Art",
@@ -72,6 +78,7 @@ export default function Home() {
         "https://cdn2.hubspot.net/hubfs/242200/1MARCOMM/Blog/2018/April/Manufacturing%20AR.jpg",
     },
     {
+      id: 3,
       group: "Tech Symposium Team",
       matchPercentage: 50,
       title: "Tech Symposium 2024 Setup Volunteer",
@@ -91,6 +98,7 @@ export default function Home() {
         "https://techsymposium.calpolyswift.org/assets/slides/2024-2.jpg",
     },
     {
+      id: 4,
       group: "College Of Civil Engineering",
       matchPercentage: 40, // Engineering-related but not directly related to web dev
       title: "Engineering Transfer Pathway Improvement",
@@ -110,6 +118,7 @@ export default function Home() {
         "https://www.cpp.edu/engineering/ce/img/seismic-structure-martinez.jpg",
     },
     {
+      id: 5,
       group: "EcoSaviors Volunteers",
       matchPercentage: 25, // Environmental work is far removed from web dev
       title: "Urban Garden Beautification",
@@ -127,6 +136,7 @@ export default function Home() {
         "https://www.cpp.edu/news/img/news/2025/01/23japanese-garden-view2.jpg",
     },
     {
+      id: 6,
       group: "Animal Science Club",
       matchPercentage: 10, // Animal-related work is also far from web dev
       title: "Animal Vaccination Volunteer",
@@ -147,19 +157,19 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-        <ImageSlideshow items={slideshowItems} />
+      <ImageSlideshow items={slideshowItems} />
 
-        <div className="mt-12 mb-8">
-          <h2 className="text-3xl font-bold mb-6">Popular Student Projects</h2>
-          <hr className="border-t-2 border-gray-200 my-2 mb-8" />
-          <ProjectCarousel projects={projects} />
-        </div>
+      <div className="mt-12 mb-8">
+        <h2 className="text-3xl font-bold mb-6">Popular Student Projects</h2>
+        <hr className="border-t-2 border-gray-200 my-2 mb-8" />
+        <ProjectCarousel projects={projects} />
+      </div>
 
-        <div className="flex justify-center mt-8 mb-12">
-          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-8 rounded">
-            <a href="/project-list/">Explore More</a>
-          </button>
-        </div>
+      <div className="flex justify-center mt-8 mb-12">
+        <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-8 rounded">
+          <a href="/project-list/">Explore More</a>
+        </button>
+      </div>
     </main>
   );
 }

@@ -6,6 +6,7 @@ export default function ProjectListPage() {
   // Sample project data - in a real app this would come from a database
   const projects = [
     {
+      id: 1,
       group: "Software Engineering Association",
       matchPercentage: 95, // High match since it's directly related to web dev
       title: "Icebreak",
@@ -24,6 +25,7 @@ export default function ProjectListPage() {
         "https://raw.githubusercontent.com/cppsea/icebreak/main/assets/banner.png",
     },
     {
+      id: 2,
       group: "PolySolve Collaborative",
       matchPercentage: 65,
       title: "Augmented Reality in Art",
@@ -41,6 +43,7 @@ export default function ProjectListPage() {
         "https://cdn2.hubspot.net/hubfs/242200/1MARCOMM/Blog/2018/April/Manufacturing%20AR.jpg",
     },
     {
+      id: 3,
       group: "Tech Symposium Team",
       matchPercentage: 50,
       title: "Tech Symposium 2024 Setup Volunteer",
@@ -60,6 +63,7 @@ export default function ProjectListPage() {
         "https://techsymposium.calpolyswift.org/assets/slides/2024-2.jpg",
     },
     {
+      id: 4,
       group: "College Of Civil Engineering",
       matchPercentage: 40, // Engineering-related but not directly related to web dev
       title: "Engineering Transfer Pathway Improvement",
@@ -79,6 +83,7 @@ export default function ProjectListPage() {
         "https://www.cpp.edu/engineering/ce/img/seismic-structure-martinez.jpg",
     },
     {
+      id: 5,
       group: "EcoSaviors Volunteers",
       matchPercentage: 25, // Environmental work is far removed from web dev
       title: "Urban Garden Beautification",
@@ -96,6 +101,7 @@ export default function ProjectListPage() {
         "https://www.cpp.edu/news/img/news/2025/01/23japanese-garden-view2.jpg",
     },
     {
+      id: 6,
       group: "Animal Science Club",
       matchPercentage: 10, // Animal-related work is also far from web dev
       title: "Animal Vaccination Volunteer",

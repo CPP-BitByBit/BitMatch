@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProjectCardLarge from "@/components/project/ProjectCardLarge";
+import PropTypes from "prop-types";
 
 export default function ProjectCarousel({ projects }) {
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -62,7 +63,10 @@ export default function ProjectCarousel({ projects }) {
         className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white rounded-full p-1 shadow-md"
         disabled={scrollPosition <= 0}
       >
-        <ChevronLeft size={24} className={scrollPosition <= 0 ? "text-gray-300" : "text-black"} />
+        <ChevronLeft
+          size={24}
+          className={scrollPosition <= 0 ? "text-gray-300" : "text-black"}
+        />
       </button>
 
       <div
@@ -70,16 +74,20 @@ export default function ProjectCarousel({ projects }) {
         className="flex overflow-x-hidden scroll-smooth"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-      {projects.map((project, index) => (
-        <div
-          key={project.id || `project-${index}`} // Ensures a unique key, even if `id` is missing
-          className={`flex-shrink-0 px-1 ${
-            visibleCards === 1 ? "w-full" : visibleCards === 2 ? "w-1/2" : "w-1/3"
-          }`}
-        >
-          <ProjectCardLarge project={project} />
-        </div>
-      ))}
+        {projects.map((project, index) => (
+          <div
+            key={project.id || `project-${index}`} // Ensures a unique key, even if `id` is missing
+            className={`flex-shrink-0 px-1 ${
+              visibleCards === 1
+                ? "w-full"
+                : visibleCards === 2
+                ? "w-1/2"
+                : "w-1/3"
+            }`}
+          >
+            <ProjectCardLarge project={project} />
+          </div>
+        ))}
       </div>
 
       <button
@@ -87,8 +95,21 @@ export default function ProjectCarousel({ projects }) {
         className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white rounded-full p-1 shadow-md"
         disabled={scrollPosition >= maxScroll}
       >
-        <ChevronRight size={24} className={scrollPosition >= maxScroll ? "text-gray-300" : "text-black"} />
+        <ChevronRight
+          size={24}
+          className={
+            scrollPosition >= maxScroll ? "text-gray-300" : "text-black"
+          }
+        />
       </button>
     </div>
   );
 }
+
+ProjectCarousel.propTypes = {
+  projects: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    })
+  ).isRequired,
+};
