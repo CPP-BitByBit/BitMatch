@@ -22,12 +22,17 @@ export default function Home() {
     axios
       .get(`${SERVER_HOST}/projects/`)
       .then((response) => {
-        setProjects(response.data);
-        setLoading(false); // Stop loading when data is fetched
+        const sortedProjects = response.data.sort(
+          (a, b) => b.match_percentage - a.match_percentage
+        );
+        setProjects(sortedProjects);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching projects:", error);
-        setError("Failed to load projects."); // Set error if fetch fails
+        setError(
+          "Couldn't load projects. (DEV MESSAGE: Ensure the backend server is running)"
+        );
         setLoading(false);
       });
   }, []);

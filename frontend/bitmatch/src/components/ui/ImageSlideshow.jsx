@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 
 export default function ImageSlideshow({ items }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -87,7 +88,7 @@ export default function ImageSlideshow({ items }) {
                     variant="outline"
                     className="bg-white hover:bg-gray-100"
                   >
-                    View Project
+                    <Link to={`/projects/${slide.id}`}>View Project</Link>
                   </Button>
                 </div>
               </div>
@@ -138,11 +139,10 @@ export default function ImageSlideshow({ items }) {
     </a>
   );
 }
-
 ImageSlideshow.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       image: PropTypes.string.isRequired,
       title: PropTypes.string.isRequired,
       description: PropTypes.string.isRequired,
