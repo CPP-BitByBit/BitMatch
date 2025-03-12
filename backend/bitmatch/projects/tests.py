@@ -32,6 +32,18 @@ class ProjectModelTest(TestCase):
             positions=[{"role": "Cyber Hacker", "available": 1}],
             image_url="https://www.101computing.net/wp/wp-content/uploads/enigma.png"
         )
+        # Luis' test project
+        self.project3 = Project.objects.create(
+            group="CodeWarriors",
+            match_percentage=60,
+            title="PersonalityPlaylist",
+            institution="University of California, Riverside",
+            description="An app to create custom Spotify playlists based on a personality profile and classifying songs based on mood, tempo, etc",
+            followers=120,
+            likes=80,
+            positions=[{"role": "Backend Developer", "available": 2}],
+            image_url="https://media.wired.com/photos/633b6824f9c0de49c193489f/master/w_2240,c_limit/streamers-playlist-music-industry.jpg"
+        )
     
     def test_project_creation_1(self):
         # Check if the record populated correctly
@@ -59,8 +71,16 @@ class ProjectModelTest(TestCase):
     
     # TODO: assert against the new project you made (luis) --> test with python manage.py test after --> delete this comment after commiting
     def test_project_creation_3(self):
-        #self.project3
-        ...
+        # Check if the record populated correctly
+        self.assertEqual(self.project3.group, "CodeWarriors")
+        self.assertEqual(self.project3.match_percentage, 60)
+        self.assertEqual(self.project3.title, "PersonalityPlaylist")
+        self.assertEqual(self.project3.institution, "University of California, Riverside")
+        self.assertEqual(self.project3.description, "An app to create custom Spotify playlists based on a personality profile and classifying songs based on mood, tempo, etc")
+        self.assertEqual(self.project3.followers, 120)
+        self.assertEqual(self.project3.likes, 80)
+        self.assertEqual(self.project3.positions, [{"role": "Backend Developer", "available": 2}])
+        self.assertEqual(self.project3.image_url, "https://media.wired.com/photos/633b6824f9c0de49c193489f/master/w_2240,c_limit/streamers-playlist-music-industry.jpg")
 
     # TODO: assert against the new project you made (william) --> test with python manage.py test after --> delete this comment after commiting
     def test_project_creation_4(self): 
