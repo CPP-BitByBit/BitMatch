@@ -20,19 +20,18 @@ class ProjectModelTest(TestCase):
             positions=[{"role": "Backend Developer", "available": 2}],
             image_url="https://example.com/image.jpg"
         )
-        # TODO: create mock data for tests other case 2 (rebecca), 3 (luis), 4, (william)
-        # below is an example, delete once you start
-        # ,self.project2 = Project.objects.create(
-        #     group="",
-        #     match_percentage=0,
-        #     title="",
-        #     institution="",
-        #     description="",
-        #     followers=0,
-        #     likes=0,
-        #     positions=[{"": "", "": }],
-        #     image_url=""
-        # ),
+        # Rebecca's test project
+        self.project2 = Project.objects.create(
+            group="Codebreaker's Club",
+            match_percentage=20,
+            title="Enigma Machine Emulator",
+            institution="University of California, Irvine",
+            description="An Enigma machine emulator that replicates the encryption process of the Enigma M3 series used by the Germans.",
+            followers=320,
+            likes=100,
+            positions=[{"role": "Cyber Hacker", "available": 1}],
+            image_url="https://www.101computing.net/wp/wp-content/uploads/enigma.png"
+        )
     
     def test_project_creation_1(self):
         # Check if the record populated correctly
@@ -46,10 +45,17 @@ class ProjectModelTest(TestCase):
         self.assertEqual(self.project.positions, [{"role": "Backend Developer", "available": 2}])
         self.assertEqual(self.project.image_url, "https://example.com/image.jpg")
 
-    # TODO: assert against the new project you made (rebecca) --> test with python manage.py test after --> delete this comment after commiting
+    # Rebecca's test project
     def test_project_creation_2(self):
-        # self.project2
-        ...
+        self.assertEqual(self.project2.group, "Codebreaker's Club")
+        self.assertEqual(self.project2.match_percentage, 20)
+        self.assertEqual(self.project2.title, "Enigma Machine Emulator")
+        self.assertEqual(self.project2.institution, "University of California, Irvine")
+        self.assertEqual(self.project2.description, "An Enigma machine emulator that replicates the encryption process of the Enigma M3 series used by the Germans.")
+        self.assertEqual(self.project2.followers, 320)
+        self.assertEqual(self.project2.likes, 100)
+        self.assertEqual(self.project2.positions, [{"role": "Cyber Hacker", "available": 1}])
+        self.assertEqual(self.project2.image_url, "https://www.101computing.net/wp/wp-content/uploads/enigma.png")
     
     # TODO: assert against the new project you made (luis) --> test with python manage.py test after --> delete this comment after commiting
     def test_project_creation_3(self):
