@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PropTypes from "prop-types";
 
 export default function ImageSlideshow({ items }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,11 +44,18 @@ export default function ImageSlideshow({ items }) {
 
   if (!items || items.length === 0) return null;
 
-  const slideContentClasses = "absolute bottom-10 left-10 pl-20 pb-20 mr-40 z-10 text-left transition-transform duration-500 ease-in-out";
-  const navButtonClasses = "absolute top-1/2 -translate-y-1/2 cursor-pointer z-20 hover:scale-110 transition-transform";
+  const slideContentClasses =
+    "absolute bottom-10 left-10 pl-20 pb-20 mr-40 z-10 text-left transition-transform duration-500 ease-in-out";
+  const navButtonClasses =
+    "absolute top-1/2 -translate-y-1/2 cursor-pointer z-20 hover:scale-110 transition-transform";
 
   return (
-    <a href={items[currentIndex]?.link} target="_blank" rel="noopener noreferrer" className="block">
+    <a
+      href={items[currentIndex]?.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block"
+    >
       <div className="relative w-full h-[600px] bg-gray-200 overflow-hidden">
         <div className="h-full relative cursor-pointer">
           {items.map((slide, index) => (
@@ -64,10 +72,21 @@ export default function ImageSlideshow({ items }) {
             >
               {/* Darker Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-50">
-                <div className={`${slideContentClasses} ${index === currentIndex ? "translate-y-0 opacity-100 max-w-xl" : "translate-y-8 opacity-0"}`} >
-                  <h2 className="text-3xl font-bold text-white mb-3">{slide.title}</h2>
+                <div
+                  className={`${slideContentClasses} ${
+                    index === currentIndex
+                      ? "translate-y-0 opacity-100 max-w-xl"
+                      : "translate-y-8 opacity-0"
+                  }`}
+                >
+                  <h2 className="text-3xl font-bold text-white mb-3">
+                    {slide.title}
+                  </h2>
                   <p className="mb-4 text-white">{slide.description}</p>
-                  <Button variant="outline" className="bg-white hover:bg-gray-100">
+                  <Button
+                    variant="outline"
+                    className="bg-white hover:bg-gray-100"
+                  >
                     View Project
                   </Button>
                 </div>
@@ -77,12 +96,24 @@ export default function ImageSlideshow({ items }) {
         </div>
 
         {/* Left Arrow */}
-        <div className={`${navButtonClasses} bg-white rounded-full p-1 shadow-md left-4`} onClick={(e) => { e.stopPropagation(); goToPrevious(); }}>
+        <div
+          className={`${navButtonClasses} bg-white rounded-full p-1 shadow-md left-4`}
+          onClick={(e) => {
+            e.stopPropagation();
+            goToPrevious();
+          }}
+        >
           <ChevronLeft size={36} className="text-black" />
         </div>
 
         {/* Right Arrow */}
-        <div className={`${navButtonClasses} bg-white rounded-full p-1 shadow-md right-4`} onClick={(e) => { e.stopPropagation(); goToNext(); }}>
+        <div
+          className={`${navButtonClasses} bg-white rounded-full p-1 shadow-md right-4`}
+          onClick={(e) => {
+            e.stopPropagation();
+            goToNext();
+          }}
+        >
           <ChevronRight size={36} className="text-black" />
         </div>
 
@@ -91,9 +122,14 @@ export default function ImageSlideshow({ items }) {
           {items.map((_, slideIndex) => (
             <div
               key={slideIndex}
-              onClick={(e) => { e.stopPropagation(); goToSlide(slideIndex); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                goToSlide(slideIndex);
+              }}
               className={`mx-1 w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${
-                slideIndex === currentIndex ? "bg-white scale-110" : "border-2 border-white bg-gray-600 hover:bg-white"
+                slideIndex === currentIndex
+                  ? "bg-white scale-110"
+                  : "border-2 border-white bg-gray-600 hover:bg-white"
               }`}
             ></div>
           ))}
@@ -102,3 +138,15 @@ export default function ImageSlideshow({ items }) {
     </a>
   );
 }
+
+ImageSlideshow.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
+      description: PropTypes.string.isRequired,
+      link: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+};
