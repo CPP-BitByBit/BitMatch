@@ -69,7 +69,7 @@ class ProjectModelTest(TestCase):
         self.assertEqual(self.project2.positions, [{"role": "Cyber Hacker", "available": 1}])
         self.assertEqual(self.project2.image_url, "https://www.101computing.net/wp/wp-content/uploads/enigma.png")
     
-    # TODO: assert against the new project you made (luis) --> test with python manage.py test after --> delete this comment after commiting
+    # luis's test project
     def test_project_creation_3(self):
         # Check if the record populated correctly
         self.assertEqual(self.project3.group, "CodeWarriors")
