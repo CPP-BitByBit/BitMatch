@@ -12,6 +12,7 @@ class Project(models.Model):
     likes = models.IntegerField(default=0)
     positions = models.JSONField(default=list)  
     image_url = models.URLField(blank=True, null=True)
+    images = models.JSONField(default=list)
 
     def __str__(self):
         return self.title

@@ -8,7 +8,8 @@ import {
 import { Button } from "./components/ui/button";
 import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
-import './styles/global.css';
+import ProjectDetailPage from "./views/IndividualProjectPage";
+import "./styles/global.css";
 
 export default function App() {
   return (
@@ -31,7 +32,9 @@ export default function App() {
           <header className="w-full bg-white shadow-md p-4 fixed top-0 left-0 z-50">
             <div className="max-w-[1485px] mx-auto flex justify-between items-center">
               <a href="/">
-                <h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2>
+                <h2 className="font-sans text-xl font-black text-gray-800">
+                  BITMATCH
+                </h2>
               </a>
               <UserButton />
             </div>
@@ -43,6 +46,9 @@ export default function App() {
 
             {/* Project List Page */}
             <Route path="/project-list" element={<ProjectListPage />} />
+
+            {/* Individual List Page */}
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
           </Routes>
         </SignedIn>
       </div>
