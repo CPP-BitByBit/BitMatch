@@ -8,14 +8,19 @@ import axios from "axios";
 export default function ProjectListPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
     axios
       .get(`${SERVER_HOST}/projects/`)
       .then((response) => {
-        setProjects(response.data);
+        const sortedProjects = response.data.sort(
+          (a, b) => b.match_percentage - a.match_percentage
+        );
+        setProjects(sortedProjects);
         setLoading(false);
       })
       .catch((error) => {
+        setError("Couldn't load projects.");
         console.error("Error fetching projects:", error);
         setLoading(false);
       });
@@ -26,6 +31,15 @@ export default function ProjectListPage() {
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>{" "}
         {/* Simple loading spinner */}
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }
