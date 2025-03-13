@@ -96,15 +96,15 @@ class ProjectModelTest(TestCase):
     # William's test project
     def test_project_creation_4(self): 
         # Check if the record populated correctly
-        self.assertEqual(self.project3.group, "Byte Me")
-        self.assertEqual(self.project3.match_percentage, 10)
-        self.assertEqual(self.project3.title, "F1 Race Machine Learning Model")
-        self.assertEqual(self.project3.institution, "University of California, Berkley")
-        self.assertEqual(self.project3.description, "A machine learning model that takes data from F1 races and predicts winners based on previous results.")
-        self.assertEqual(self.project3.followers, 20)
-        self.assertEqual(self.project3.likes, 10)
-        self.assertEqual(self.project3.positions, [{"role": "Data Analyst", "available": 1}])
-        self.assertEqual(self.project3.image_url, "https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg")
+        self.assertEqual(self.project4.group, "Byte Me")
+        self.assertEqual(self.project4.match_percentage, 10)
+        self.assertEqual(self.project4.title, "F1 Race Machine Learning Model")
+        self.assertEqual(self.project4.institution, "University of California, Berkley")
+        self.assertEqual(self.project4.description, "A machine learning model that takes data from F1 races and predicts winners based on previous results.")
+        self.assertEqual(self.project4.followers, 20)
+        self.assertEqual(self.project4.likes, 10)
+        self.assertEqual(self.project4.positions, [{"role": "Data Analyst", "available": 1}])
+        self.assertEqual(self.project4.image_url, "https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg")
 
 class GetProjectsAPITest(APITestCase):
     def setUp(self):
