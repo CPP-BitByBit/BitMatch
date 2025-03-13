@@ -44,7 +44,18 @@ class ProjectModelTest(TestCase):
             positions=[{"role": "Backend Developer", "available": 2}],
             image_url="https://media.wired.com/photos/633b6824f9c0de49c193489f/master/w_2240,c_limit/streamers-playlist-music-industry.jpg"
         )
-    
+        #William's test project 
+        self.project4 = Project.objects.create(
+            group="Byte Me",
+            match_percentage=10,
+            title="F1 Race Machine Learning Model",
+            institution="University of California, Berkley",
+            description="A machine learning model that takes data from F1 races and predicts winners based on previous results.",
+            followers=20,
+            likes=10,
+            positions=[{"role": "Data Analyst", "available": 1}],
+            image_url="https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg"
+        )
     def test_project_creation_1(self):
         # Check if the record populated correctly
         self.assertEqual(self.project.group, "CPP SEA")
@@ -82,10 +93,18 @@ class ProjectModelTest(TestCase):
         self.assertEqual(self.project3.positions, [{"role": "Backend Developer", "available": 2}])
         self.assertEqual(self.project3.image_url, "https://media.wired.com/photos/633b6824f9c0de49c193489f/master/w_2240,c_limit/streamers-playlist-music-industry.jpg")
 
-    # TODO: assert against the new project you made (william) --> test with python manage.py test after --> delete this comment after commiting
+    # William's test project
     def test_project_creation_4(self): 
-        #self.project4
-        ...
+        # Check if the record populated correctly
+        self.assertEqual(self.project4.group, "Byte Me")
+        self.assertEqual(self.project4.match_percentage, 10)
+        self.assertEqual(self.project4.title, "F1 Race Machine Learning Model")
+        self.assertEqual(self.project4.institution, "University of California, Berkley")
+        self.assertEqual(self.project4.description, "A machine learning model that takes data from F1 races and predicts winners based on previous results.")
+        self.assertEqual(self.project4.followers, 20)
+        self.assertEqual(self.project4.likes, 10)
+        self.assertEqual(self.project4.positions, [{"role": "Data Analyst", "available": 1}])
+        self.assertEqual(self.project4.image_url, "https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg")
 
 class GetProjectsAPITest(APITestCase):
     def setUp(self):
