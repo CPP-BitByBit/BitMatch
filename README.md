@@ -46,9 +46,7 @@ BitMatch provides a streamlined platform where:
 - Terraform for infrastructure as code (IaC)
 
 ## 🏗 Architecture Diagram
-
-![image](https://github.com/user-attachments/assets/ab2ffb5f-9fe8-437f-8f8e-40358a914c7e)
-
+![BitMatchArchAWS](https://github.com/user-attachments/assets/68d1f250-b9d7-4c26-ba60-664380282d6e)
 
 ## 🛠 Running Locally
 
