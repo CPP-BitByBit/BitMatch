@@ -36,13 +36,13 @@ BitMatch provides a streamlined platform where:
 ### Backend
 
 - Django
-- Azure Postgres Instance
-- Azure Blob Store (For Images)
+- AWS RDS Postgres Instance
+- AWS S3 (For Images)
 
 ### Deployment
 
-- Frontend on Static Web Apps
-- Backend on Azure VM
+- Frontend on S3 Static Website Hosting
+- Backend on AWS EC2
 - Terraform for infrastructure as code (IaC)
 
 ## 🏗 Architecture Diagram
