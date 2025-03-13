@@ -48,12 +48,12 @@ class ProjectModelTest(TestCase):
         self.project4 = Project.objects.create(
             group="Byte Me",
             match_percentage=10,
-            title="Race Learning Model",
+            title="F1 Race Machine Learning Model",
             institution="University of California, Berkley",
             description="A machine learning model that takes data from F1 races and predicts winners based on previous results.",
             followers=20,
             likes=10,
-            positions=[{"role": "Data Analysist", "available": 1}],
+            positions=[{"role": "Data Analyst", "available": 1}],
             image_url="https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg"
         )
     def test_project_creation_1(self):
@@ -98,12 +98,12 @@ class ProjectModelTest(TestCase):
         # Check if the record populated correctly
         self.assertEqual(self.project3.group, "Byte Me")
         self.assertEqual(self.project3.match_percentage, 10)
-        self.assertEqual(self.project3.title, "Race Learning Model")
+        self.assertEqual(self.project3.title, "F1 Race Machine Learning Model")
         self.assertEqual(self.project3.institution, "University of California, Berkley")
         self.assertEqual(self.project3.description, "A machine learning model that takes data from F1 races and predicts winners based on previous results.")
         self.assertEqual(self.project3.followers, 20)
         self.assertEqual(self.project3.likes, 10)
-        self.assertEqual(self.project3.positions, [{"role": "Data Analysist", "available": 1}])
+        self.assertEqual(self.project3.positions, [{"role": "Data Analyst", "available": 1}])
         self.assertEqual(self.project3.image_url, "https://robbreport.com/wp-content/uploads/2024/02/RR_2024_F1_Car_Roundup_Red_Bull_RB20.jpg")
 
 class GetProjectsAPITest(APITestCase):
