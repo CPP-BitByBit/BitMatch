@@ -1,6 +1,7 @@
-import { ChevronRight, ChevronLeft, Plus, Edit, Icon } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, Edit, Icon, ThumbsUp, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogContent, DialogHeader } from "@/components/ui/Dialog";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -8,12 +9,13 @@ import Modal from "@/components/project/Modal";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
 
+
 const formatNumber = (num) => {
   return num >= 1000000
     ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
     : num >= 1000
-    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-    : num.toString();
+      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+      : num.toString();
 };
 
 const fetchProjectInfo = async (id) => {
@@ -40,7 +42,7 @@ const ProjectDetailPage = () => {
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
@@ -119,19 +121,20 @@ const ProjectDetailPage = () => {
               onClick={() => window.history.back()}
             >
               <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
-              Back
+              Back to Projects
             </Button>
           </div>
         </header>
 
         {/* Main content */}
         <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-          <h1 className="text-4xl font-bold mb-8">{project.title}</h1>
+          <h1 className="text-5xl font-bold mb-6">{project.title}</h1>
 
           {/* Project showcase */}
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 gap-6 mb-9">
+
             {/* Image Slider */}
-            <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center">
+            <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center mt-1">
               {project.images && project.images.length > 0 ? (
                 <>
                   <div className="relative w-full h-full">
@@ -142,7 +145,7 @@ const ProjectDetailPage = () => {
                       alt="Project image"
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-between px-4">
+                    <div className="relative inset-0 flex items-center justify-between px-4">
                       <Button
                         variant="secondary"
                         size="icon"
@@ -162,11 +165,6 @@ const ProjectDetailPage = () => {
                     </div>
                   </div>
                   <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                    <p className="text-center text-sm text-gray-600 bg-white/80 px-2 py-1 rounded">
-                      Slider
-                      <br />
-                      Image snapshots are below
-                    </p>
                   </div>
                 </>
               ) : (
@@ -175,7 +173,7 @@ const ProjectDetailPage = () => {
             </div>
             {/* Project info */}
             <div className="bg-muted/30 rounded-lg p-6">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-2">
                 {project.image_url ? (
                   <img
                     src={project.image_url}
@@ -186,42 +184,47 @@ const ProjectDetailPage = () => {
                   <span>Cover Image goes here</span>
                 )}
               </div>
-
               <div className="mb-6">
+                <h5 className="text-sm">From</h5>
                 <h2 className="text-xl font-bold">{project.group}</h2>
                 <p className="text-sm">{project.description}</p>
               </div>
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <ThumbsUp className="h-6 w-6"></ThumbsUp>
                   <span>{project.likes} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <UserRound className="h-6 w-6"></UserRound>
                   <span>{project.followers} Followers</span>
                 </div>
               </div>
+              <Button variant="outline" className="mt-3 mr-10">
+                Like
+              </Button>
+              <Button variant="outline" className="mt-3 mr-10">
+                Follow
+              </Button>
             </div>
           </div>
 
           {/* Thumbnails */}
-          <div className="relative mb-8">
+          <div className="relative mt-1 mb-6">
             <div className="flex overflow-x-auto space-x-2 py-2">
               {project.images &&
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
-                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                    }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                      }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
                       src={image || "/placeholder.svg"}
                       alt={`Pic ${index + 1}`}
-                      width={64}
-                      height={64}
+                      width={60}
+                      height={60}
                       className="object-cover w-full h-full"
                     />
                   </div>
@@ -232,48 +235,48 @@ const ProjectDetailPage = () => {
           {/* Tabs */}
           <Tabs
             defaultValue="overview"
-            className="mb-8"
+            className="mb-2"
             onValueChange={setActiveTab}
           >
             <TabList className="grid grid-cols-6 w-full bg-gray-100 mb-8">
               <Tab
                 value="overview"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Overview
               </Tab>
               <Tab
                 value="updates"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Updates
               </Tab>
               <Tab
                 value="members"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Members
               </Tab>
               <Tab
                 value="wanted"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Wanted
               </Tab>
               <Tab
                 value="discussions"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Discussions
               </Tab>
               <Tab
                 value="contact"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Contact
@@ -288,44 +291,7 @@ const ProjectDetailPage = () => {
                 Background & More Details About the Project
               </h4>
               <div className="mb-6">
-                <h5 className="font-semibold mb-2">
-                  This space will be filled in by the owner
-                </h5>
-                <p className="text-sm">{project.description}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit Project
-                </Button>
-                <Modal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
-                >
-                  <h2 className="text-xl font-bold">Edit Project</h2>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p hclassName="text-right">Title</p>
-                    <Input
-                      id="title"
-                      defaultValue={project.title}
-                      className="col-span-3"
-                    />
-                    <p hclassName="text-right">Description</p>
-                    <Input
-                      id="description"
-                      defaultValue={project.description}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
-                  >
-                    Close
-                  </button>
-                </Modal>
+                <p className="text-sm mb-8">{project.description}</p>
               </div>
             </TabPanel>
 
@@ -369,11 +335,53 @@ const ProjectDetailPage = () => {
               </div>
             </TabPanel>
           </Tabs>
+
+          <Dialog
+            open={isOpen}
+            onOpenChange={setIsOpen}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline" className="text-xl font-bold mb-3">Edit Project
+                <Edit></Edit>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Project</DialogTitle>
+                <DialogDescription>
+                  Make changes to your Project here.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <p hclassName="text-right">Title</p>
+                <Input
+                  id="title"
+                  defaultValue={project.title}
+                  className="col-span-3"
+                />
+                <p hclassName="text-right">Group</p>
+                <Input
+                  id="group"
+                  defaultValue={project.group}
+                  className="col-span-3"
+                />
+                <p hclassName="text-right">Description</p>
+                <Input
+                  id="description"
+                  defaultValue={project.description}
+                  className="col-span-3"
+                />
+              </div>
+              <DialogFooter>
+                <Button>Save Changes</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
 
         {/* Footer */}
         <footer className="border-t p-4 text-center">
-          <p className="text-muted-foreground">Footer</p>
+          <p className="text-muted-foreground"></p>
         </footer>
       </div>
 
