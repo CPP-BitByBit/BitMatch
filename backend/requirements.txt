@@ -12,3 +12,5 @@ google-genai
 matplotlib
 django-imagekit
 numpy
+django-storages
+boto3
