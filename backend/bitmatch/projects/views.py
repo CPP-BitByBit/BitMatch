@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from .models import Project
 from .serializers import ProjectSerializer
@@ -8,8 +9,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 
 # Fetch all projects
-@api_view(['GET'])  
-@permission_classes([AllowAny]) 
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def get_projects(request):
     projects = Project.objects.all()
     serializer = ProjectSerializer(projects, many=True)
@@ -18,6 +19,8 @@ def get_projects(request):
 # DRF CRUD views for Project model
 class ProjectCRUDView(APIView):
     permission_classes = [AllowAny]
+    parser_classes = (MultiPartParser, FormParser)  # Allow file uploads
+
     # Create a new project (POST)
     def post(self, request):
         serializer = ProjectSerializer(data=request.data)
@@ -35,7 +38,7 @@ class ProjectCRUDView(APIView):
     # Update an existing project by ID (PUT)
     def put(self, request, pk):
         project = get_object_or_404(Project, pk=pk)
-        serializer = ProjectSerializer(project, data=request.data)
+        serializer = ProjectSerializer(project, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
