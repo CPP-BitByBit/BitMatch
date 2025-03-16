@@ -46,7 +46,7 @@ resource "aws_db_instance" "default" {
   password             = var.db_password   
   parameter_group_name = "default.postgres17"
   skip_final_snapshot  = true            
-  publicly_accessible  = true             
+  publicly_accessible  = false             
   storage_type         = "gp2"             
   multi_az             = false             
   backup_retention_period = 1           
