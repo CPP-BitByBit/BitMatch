@@ -4,6 +4,14 @@ provider "aws" {
   region = "us-west-1"
 }
 
+####### FRONTEND RESOURCES
+# TODO: PROVISION S3 WITH DEPLOY, CLOUDFRONT, ROUTE 53
+
+
+####### BACKEND RESOURCES
+# TODO: PROVISION EC2 FOR DEPLOYMENT + IMAGING
+
+
 # Security Group for RDS (allows inbound PostgreSQL connection from anywhere)
 resource "aws_security_group" "rds_sg" {
   name        = "rds-security-group"
