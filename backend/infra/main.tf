@@ -133,7 +133,6 @@ resource "aws_iam_access_key" "django_s3_user_key" {
 }
 
 # Output the IAM access key and secret 
-# TODO: SECURELY STORE THIS
 output "aws_access_key_id" {
   value     = aws_iam_access_key.django_s3_user_key.id
   sensitive = true
