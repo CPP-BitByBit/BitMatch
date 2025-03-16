@@ -66,9 +66,11 @@ export default function Home() {
       </div>
 
       <div className="flex justify-center mt-8 mb-12">
-        <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-8 rounded">
-          <a href="/project-list/">Explore More</a>
-        </button>
+        <a href="/project-list/">
+          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-8 rounded">
+            Explore More
+          </button>
+        </a>
       </div>
     </main>
   );
