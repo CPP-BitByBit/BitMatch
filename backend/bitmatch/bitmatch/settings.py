@@ -68,16 +68,23 @@ AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = "us-west-1"  
+
+AWS_S3_FILE_OVERWRITE = False
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-# Static and Media Files Settings
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = 'media/'
+STATIC_URL = 'staticfiles/'
 
-# Static files (CSS, JavaScript, images)
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-
-# Media files (uploads like images)
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+STORAGES={
+    # Media Files
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    # CSS and JS file management
+    'staticfiles': {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage"
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

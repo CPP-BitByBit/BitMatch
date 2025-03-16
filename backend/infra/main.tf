@@ -56,7 +56,7 @@ resource "aws_s3_bucket" "django_media" {
   }
 }
 
-# Enable public read access 
+# Enable public read access
 resource "aws_s3_bucket_policy" "public_access" {
   bucket = aws_s3_bucket.django_media.id
   policy = <<POLICY
@@ -67,12 +67,25 @@ resource "aws_s3_bucket_policy" "public_access" {
       "Sid": "PublicReadGetObject",
       "Effect": "Allow",
       "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::bitmatch-django-media-bucket/*"
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::bitmatch-django-media-bucket",
+        "arn:aws:s3:::bitmatch-django-media-bucket/*"
+      ]
     }
   ]
 }
 POLICY
+}
+
+# Remove any public access blocks that could interfere
+resource "aws_s3_bucket_public_access_block" "django_media_access" {
+  bucket = aws_s3_bucket.django_media.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 # Create an IAM user for Django to interact with S3
@@ -94,23 +107,18 @@ resource "aws_iam_policy" "s3_access_policy" {
       "Action": [
         "s3:PutObject",
         "s3:GetObject",
-        "s3:DeleteObject"
+        "s3:DeleteObject",
+        "s3:ListBucket",
+        "s3:HeadObject"
       ],
-      "Resource": "arn:aws:s3:::bitmatch-django-media-bucket/*"
+      "Resource": [
+        "arn:aws:s3:::bitmatch-django-media-bucket",
+        "arn:aws:s3:::bitmatch-django-media-bucket/*"
+      ]
     }
   ]
 }
 POLICY
-}
-
-# Policy to allow public access
-resource "aws_s3_bucket_public_access_block" "django_media_access" {
-  bucket = aws_s3_bucket.django_media.id
-
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
 }
 
 # Attach the IAM policy to the IAM user
