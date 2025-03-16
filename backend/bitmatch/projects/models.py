@@ -11,8 +11,8 @@ class Project(models.Model):
     followers = models.IntegerField(default=0)
     likes = models.IntegerField(default=0)
     positions = models.JSONField(default=list)  
-    image = models.ImageField(upload_to="projects/", blank=True, null=True)
-    slider_images = models.JSONField(default=list)
+    image_url = models.ImageField(upload_to="projects/", blank=True, null=True)
+    images = models.JSONField(default=list)
 
     def __str__(self):
         return self.title
