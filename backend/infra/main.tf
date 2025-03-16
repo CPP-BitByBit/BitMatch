@@ -131,14 +131,3 @@ resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
 resource "aws_iam_access_key" "django_s3_user_key" {
   user = aws_iam_user.django_s3_user.name
 }
-
-# Output the IAM access key and secret 
-output "aws_access_key_id" {
-  value     = aws_iam_access_key.django_s3_user_key.id
-  sensitive = true
-}
-
-output "aws_secret_access_key" {
-  value     = aws_iam_access_key.django_s3_user_key.secret
-  sensitive = true
-}
