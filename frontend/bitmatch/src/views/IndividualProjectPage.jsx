@@ -1,6 +1,8 @@
 import { ChevronRight, ChevronLeft, Plus, Edit, Icon, ThumbsUp, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MemberCard } from "@/components/project/MemberCard";
+import { PositionCard } from "@/components/project/PositionCard";
 import { Dialog, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogContent, DialogHeader } from "@/components/ui/Dialog";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -44,6 +46,7 @@ const ProjectDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -134,7 +137,7 @@ const ProjectDetailPage = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-9">
 
             {/* Image Slider */}
-            <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center mt-1">
+            <div className="relslative bg-gray-200 aspect-[4/3] flex items-center justify-center mt-1">
               {project.images && project.images.length > 0 ? (
                 <>
                   <div className="relative w-full h-full">
@@ -192,20 +195,18 @@ const ProjectDetailPage = () => {
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <ThumbsUp className="h-6 w-6"></ThumbsUp>
+                  <Button variant="ghost" size="icon">
+                    <ThumbsUp className="h-6 w-6"></ThumbsUp>
+                  </Button>
                   <span>{project.likes} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UserRound className="h-6 w-6"></UserRound>
+                  <Button variant="ghost" size="icon">
+                    <UserRound className="h-6 w-6"></UserRound>
+                  </Button>
                   <span>{project.followers} Followers</span>
                 </div>
               </div>
-              <Button variant="outline" className="mt-3 mr-10">
-                Like
-              </Button>
-              <Button variant="outline" className="mt-3 mr-10">
-                Follow
-              </Button>
             </div>
           </div>
 
@@ -234,93 +235,255 @@ const ProjectDetailPage = () => {
 
           {/* Tabs */}
           <Tabs
-            defaultValue="overview"
             className="mb-2"
-            onValueChange={setActiveTab}
+            selectedIndex={["overview", "updates", "members", "wanted", "discussions", "contact", "edit"].indexOf(activeTab)}
+            onSelect={(index) => {
+              const tabNames = ["overview", "updates", "members", "wanted", "discussions", "contact", "edit"];
+              const selectedTab = tabNames[index];
+
+              if (selectedTab === "edit") {
+                setIsOpen(true); // Open the dialog
+                setActiveTab("overview"); // Stay on the default tab (e.g., Overview)
+              } else {
+                setActiveTab(selectedTab); // Change tab normally
+              }
+            }}
           >
-            <TabList className="grid grid-cols-6 w-full bg-gray-100 mb-8">
+            <TabList className="grid grid-cols-7 w-full bg-gray-100 mb-8">
               <Tab
                 value="overview"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Overview
               </Tab>
               <Tab
                 value="updates"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Updates
               </Tab>
               <Tab
                 value="members"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Members
               </Tab>
               <Tab
                 value="wanted"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Wanted
               </Tab>
               <Tab
                 value="discussions"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Discussions
               </Tab>
               <Tab
                 value="contact"
-                className="font-medium px-4 py-2 transition-all text-center hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Contact
+              </Tab>
+              <Tab
+                value="edit"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                selectedClassName="bg-blue-200 text-black"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent tab selection
+                  if (!isOpen) setIsOpen(true); // Open the dialog
+                }}
+              >
+                Edit Project
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Project</DialogTitle>
+                      <DialogDescription>
+                        Make changes to your Project here.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <p className="text-right">Title</p>
+                      <Input
+                        id="title"
+                        defaultValue={project.title}
+                        className="col-span-3"
+                      />
+                      <p className="text-right">Group</p>
+                      <Input
+                        id="group"
+                        defaultValue={project.group}
+                        className="col-span-3"
+                      />
+                      <p className="text-right">Description</p>
+                      <Input
+                        id="description"
+                        defaultValue={project.description}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </Tab>
             </TabList>
 
             <TabPanel value="overview" className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold">Overview</h3>
+                <h2 className="text-3xl font-bold">Overview</h2>
               </div>
-              <h4 className="text-xl font-semibold mb-4">
+              <h2 className="text-xl font-semibold mb-4">
                 Background & More Details About the Project
-              </h4>
+              </h2>
               <div className="mb-6">
                 <p className="text-sm mb-8">{project.description}</p>
               </div>
             </TabPanel>
 
             <TabPanel value="updates">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Updates content will go here
-                </p>
+              <div className="border rounded-lg p-4 overflow-hidden">
+                <div className="p-5 border-solid">
+                  <h2 className="text-2xl font-bold text-left mb-5">
+                    Updates
+                  </h2>
+                  <div className="gap-4">
+                    <h3 className="text-sm mb-3">Title</h3>
+                    <Input
+                      type="text"
+                      className="flex-1 border rounded px-4 py-2 mb-6 h-10"
+                    />
+                    <h3 className="text-sm mb-3">Add your comments here</h3>
+                    <Input
+                      type="text"
+                      className="flex-1 border rounded px-4 py-2 mb-6 h-40"
+                    />
+                    <Button variant="secondary" size="lg" className="bg-gray-100 hover:bg-gray-400 text-black">
+                      Submit
+                    </Button>
+                  </div>
+                </div>
               </div>
+
             </TabPanel>
 
             <TabPanel value="members">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Members content will go here
-                </p>
+              <div className="border rounded-lg overflow-hidden">
+                {/* Search and Add Member Section */}
+                <div className="p-5 border-b">
+                  <div className="flex gap-4">
+                    <Input
+                      type="text"
+                      placeholder="Search for students to add"
+                      className="flex-1 border rounded px-4 py-2"
+                    />
+                    <Button variant="secondary" className="bg-gray-300 hover:bg-gray-400 text-black">
+                      Add Member
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Members List Section */}
+                <div className="p-5">
+                  <h2 className="text-2xl font-bold mb-6">Students Working on This Project</h2>
+
+                  <div className="space-y-4">
+                    {/* Member 1 */}
+                    <MemberCard
+                      name="John Doe"
+                      position="Backend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                    {/* Member 2 */}
+                    <MemberCard
+                      name="Jane Done"
+                      position="Frontend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                    {/* Member 3 */}
+                    <MemberCard
+                      name="Jim Dope"
+                      position="Backend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
             <TabPanel value="wanted">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Wanted content will go here
-                </p>
+              <div className="rounded-lg overflow-hidden">
+                {/* Wanted Header */}
+                <h2 className="text-4xl font-bold mb-6">Wanted</h2>
+                {/* Positions Section */}
+                <div>
+                  <div className="p-6 flex justify-between items-center border-b">
+                    <h2 className="text-2xl font-bold">Positions Needed for This Project</h2>
+                    <Button
+                      variant="secondary"
+                      className="hover:bg-gray-400 text-black"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Position
+                    </Button>
+                  </div>
+
+                  <div>
+                    <PositionCard
+                      id="1"
+                      title="Backend Developer"
+                      datePosted="02-02-2024"
+                      description="Work with Java Spring to implement the backend for a web app"
+                      responsibilities={[
+                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
+                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                      ]}
+                      skillSets={{
+                        technical: ["Python", "SQL", "C++", "Java"],
+                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
+                        soft: ["Communication", "Analytical", "Problem Solver", "Detail Oriented"],
+                      }}
+                      qualification="Pursuing a BA in Computer Science"
+                      skillMatch="35"
+                    />
+                    <PositionCard
+                      id="2"
+                      title="Backend Developer"
+                      datePosted="02-02-2024"
+                      description="Work with Java Spring to implement the backend for a web app"
+                      responsibilities={[
+                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
+                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                      ]}
+                      skillSets={{
+                        technical: ["Python", "SQL", "C++", "Java"],
+                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
+                        soft: ["Communication", "Analytical", "Problem Solver", "Detail Oriented"],
+                      }}
+                      qualification="Pursuing a BA in Computer Science"
+                      skillMatch="35"
+                    />
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
             <TabPanel value="discussions">
-              <div className="p-4 text-center">
+              <div className="p-5 text-center">
                 <p className="text-muted-foreground">
                   Discussions content will go here
                 </p>
@@ -328,55 +491,38 @@ const ProjectDetailPage = () => {
             </TabPanel>
 
             <TabPanel value="contact">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Contact content will go here
-                </p>
+              <div className="border rounded-lg overflow-hidden">
+                <div className="p-5 border-b">
+                  <h1 className="text-2xl font-bold mb-10">Contact The Owner of This Project</h1>
+                  <h3 className="text-sm mb-3">Full Name</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Email Address</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Subject</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Description</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6 h-60"
+                  />
+                  <Button variant="secondary" size="lg" className="bg-gray-100 hover:bg-gray-400 text-black">
+                    Submit
+                  </Button>
+                </div>
               </div>
             </TabPanel>
+            <TabPanel value="edit"></TabPanel>
           </Tabs>
 
-          <Dialog
-            open={isOpen}
-            onOpenChange={setIsOpen}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline" className="text-xl font-bold mb-3">Edit Project
-                <Edit></Edit>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Project</DialogTitle>
-                <DialogDescription>
-                  Make changes to your Project here.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <p hclassName="text-right">Title</p>
-                <Input
-                  id="title"
-                  defaultValue={project.title}
-                  className="col-span-3"
-                />
-                <p hclassName="text-right">Group</p>
-                <Input
-                  id="group"
-                  defaultValue={project.group}
-                  className="col-span-3"
-                />
-                <p hclassName="text-right">Description</p>
-                <Input
-                  id="description"
-                  defaultValue={project.description}
-                  className="col-span-3"
-                />
-              </div>
-              <DialogFooter>
-                <Button>Save Changes</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </main>
 
         {/* Footer */}
@@ -386,7 +532,7 @@ const ProjectDetailPage = () => {
       </div>
 
       {/* Action Buttons */}
-    </div>
+    </div >
   );
 };
 
