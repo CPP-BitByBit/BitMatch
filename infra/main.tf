@@ -18,20 +18,18 @@ resource "aws_security_group" "rds_sg" {
   description = "Security group for RDS PostgreSQL access"
   vpc_id      = "vpc-0d1c3a28194976c4c"  
 
-  # Allow inbound connections on port 5432 from anywhere (0.0.0.0/0)
   ingress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow all IP addresses (for testing purposes)
+    cidr_blocks = ["10.0.0.0/16"]  
   }
 
-  # Allow all outbound traffic (default setting)
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]  
   }
 }
 
@@ -50,9 +48,6 @@ resource "aws_db_instance" "default" {
   storage_type         = "gp2"             
   multi_az             = false             
   backup_retention_period = 1           
-
-  # Associate the custom security group with the RDS instance
-  vpc_security_group_ids = [aws_security_group.rds_sg.id] 
 }
 
 # S3 Bucket for Django Images
