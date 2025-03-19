@@ -4,50 +4,173 @@ provider "aws" {
   region = "us-west-1"
 }
 
-####### FRONTEND RESOURCES
-# TODO: PROVISION S3 WITH DEPLOY, CLOUDFRONT, ROUTE 53
+# Create a BITMATCH VPC
+resource "aws_vpc" "bitmatch_vpc" {
+  cidr_block = "10.0.0.0/16"
 
+  tags = {
+    Name = "BitMatchVPC"
+  }
+}
 
-####### BACKEND RESOURCES
-# TODO: PROVISION EC2 FOR DEPLOYMENT + IMAGING
+# Public Subnet (For EC2)
+resource "aws_subnet" "public_subnet" {
+  vpc_id                  = aws_vpc.bitmatch_vpc.id
+  cidr_block              = "10.0.1.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "us-west-1a"
 
+  tags = {
+    Name = "PublicSubnet"
+  }
+}
 
-# Security Group for RDS (allows inbound PostgreSQL connection from anywhere)
-resource "aws_security_group" "rds_sg" {
-  name        = "rds-security-group"
-  description = "Security group for RDS PostgreSQL access"
-  vpc_id      = "vpc-0d1c3a28194976c4c"  
+# Private Subnet (For RDS)
+resource "aws_subnet" "private_subnet" {
+  vpc_id            = aws_vpc.bitmatch_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-west-1a"
+
+  tags = {
+    Name = "PrivateSubnet"
+  }
+}
+
+resource "aws_subnet" "private_subnet_placeholder" {
+  vpc_id            = aws_vpc.bitmatch_vpc.id
+  cidr_block        = "10.0.3.0/24" 
+  availability_zone = "us-west-1b"
+
+  tags = {
+    Name = "PrivateSubnetPlaceholder"
+  }
+}
+
+# Internet Gateway (For EC2 internet access)
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.bitmatch_vpc.id
+
+  tags = {
+    Name = "InternetGateway"
+  }
+}
+
+# Route Table for Public Subnet (Allows outbound internet access)
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.bitmatch_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.gw.id
+  }
+
+  tags = {
+    Name = "PublicRouteTable"
+  }
+}
+
+# Associate Route Table with Public Subnet
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+# Security Group for EC2
+resource "aws_security_group" "ec2_sg" {
+  vpc_id = aws_vpc.bitmatch_vpc.id
+  name   = "ec2-security-group"
+
+  # Allow SSH 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow HTTP & HTTPS
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]  
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]  
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-# RDS (Postgres DB)
+# Security Group for RDS (Only allows EC2 connections)
+resource "aws_security_group" "rds_sg" {
+  vpc_id      = aws_vpc.bitmatch_vpc.id
+  name        = "rds-security-group"
+  description = "Security group for RDS PostgreSQL access"
+
+  # Allow EC2 to connect to RDS
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_sg.id]  # Only allow EC2
+  }
+
+  egress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_sg.id]  # Only allow EC2
+  }
+}
+
+# RDS Subnet Group (For private RDS)
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "rds-subnet-group"
+  subnet_ids = [aws_subnet.private_subnet.id, aws_subnet.private_subnet_placeholder.id]
+
+  tags = {
+    Name = "RDSSubnetGroup"
+  }
+}
+
+# RDS (Postgres DB in Private Subnet)
 resource "aws_db_instance" "default" {
-  allocated_storage    = 20 # FREE TIER: 20 MAX              
-  db_name              = "bitmatchdjangodb"
-  engine               = "postgres"
-  engine_version       = "17.2"           
-  instance_class       = "db.t4g.micro" # FREE TIER: db.t3.micro, db.t4g.micro, or db.t3.micro
-  username             = var.db_username   
-  password             = var.db_password   
-  parameter_group_name = "default.postgres17"
-  skip_final_snapshot  = true            
-  publicly_accessible  = false             
-  storage_type         = "gp2"             
-  multi_az             = false             
-  backup_retention_period = 1           
+  allocated_storage      = 20
+  db_name                = "bitmatchdjangodb"
+  engine                 = "postgres"
+  engine_version         = "17.2"
+  instance_class         = "db.t4g.micro"
+  username              = var.db_username
+  password              = var.db_password
+  parameter_group_name  = "default.postgres17"
+  skip_final_snapshot   = true
+  publicly_accessible   = false  
+  multi_az              = false
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+}
+
+# EC2 (Django Server in Public Subnet)
+resource "aws_instance" "django_server" {
+  ami                    = "ami-01eb4eefd88522422"  # 2023 AMAZON LINUX AMI
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "DjangoBitMatchServer"
+  }
 }
 
 # S3 Bucket for Django Images
@@ -134,3 +257,7 @@ resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
 resource "aws_iam_access_key" "django_s3_user_key" {
   user = aws_iam_user.django_s3_user.name
 }
+
+
+####### FRONTEND RESOURCES
+# TODO: PROVISION S3 WITH DEPLOY, CLOUDFRONT, ROUTE 53
