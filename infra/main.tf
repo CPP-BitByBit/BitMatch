@@ -158,6 +158,9 @@ resource "aws_db_instance" "default" {
   multi_az              = false
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # EC2 (Django Server in Public Subnet)
@@ -170,6 +173,9 @@ resource "aws_instance" "django_server" {
 
   tags = {
     Name = "DjangoBitMatchServer"
+  }
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
