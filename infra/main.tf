@@ -324,6 +324,7 @@ resource "aws_cloudfront_origin_access_control" "frontend_oac" {
 
 # CloudFront Distribution for React App with OAC
 resource "aws_cloudfront_distribution" "react_cdn" {
+  aliases = ["bitmatchapp.com", "www.bitmatchapp.com"]
   origin {
     domain_name              = aws_s3_bucket.react_frontend.bucket_regional_domain_name
     origin_id                = "S3ReactOrigin"
@@ -366,7 +367,8 @@ resource "aws_cloudfront_distribution" "react_cdn" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = "arn:aws:acm:us-east-1:688567270848:certificate/c668083b-1c33-4bc0-ae7b-ed502199bf99"  
+    ssl_support_method  = "sni-only"
   }
 
   restrictions {
@@ -379,3 +381,28 @@ resource "aws_cloudfront_distribution" "react_cdn" {
     Name = "BitMatchReactCDN"
   }
 }
+
+resource "aws_route53_record" "bitmatch_alias" {
+  zone_id = "Z104455038F52T8T3ETC"  
+  name    = "bitmatchapp.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.react_cdn.domain_name
+    zone_id                = aws_cloudfront_distribution.react_cdn.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "www_bitmatch_alias" {
+  zone_id = "Z104455038F52T8T3ETC"  
+  name    = "www.bitmatchapp.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.react_cdn.domain_name
+    zone_id                = aws_cloudfront_distribution.react_cdn.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
