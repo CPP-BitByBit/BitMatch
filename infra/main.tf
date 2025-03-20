@@ -1,10 +1,11 @@
-# Provider Block
 provider "aws" {
   profile = "default"
   region = "us-west-1"
 }
 
-# Create a BITMATCH VPC
+###################################################
+#  Bitmatch VPC            (FOR BACKEND RESOURCES) #
+###################################################
 resource "aws_vpc" "bitmatch_vpc" {
   cidr_block = "10.0.0.0/16"
 
@@ -12,6 +13,11 @@ resource "aws_vpc" "bitmatch_vpc" {
     Name = "BitMatchVPC"
   }
 }
+
+
+###################################################
+#  Bitmatch VPC Subnets                           #
+###################################################
 
 # Public Subnet (For EC2)
 resource "aws_subnet" "public_subnet" {
@@ -22,17 +28,6 @@ resource "aws_subnet" "public_subnet" {
 
   tags = {
     Name = "PublicSubnet"
-  }
-}
-
-resource "aws_subnet" "public_subnet_placeholder" {
-  vpc_id                  = aws_vpc.bitmatch_vpc.id
-  cidr_block              = "10.0.4.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "us-west-1b"
-
-  tags = {
-    Name = "PublicSubnetPlaceholder"
   }
 }
 
@@ -47,6 +42,7 @@ resource "aws_subnet" "private_subnet" {
   }
 }
 
+# Secondary AZ - Private Subnet Placeholder (RDS Requirement)
 resource "aws_subnet" "private_subnet_placeholder" {
   vpc_id            = aws_vpc.bitmatch_vpc.id
   cidr_block        = "10.0.3.0/24" 
@@ -56,6 +52,10 @@ resource "aws_subnet" "private_subnet_placeholder" {
     Name = "PrivateSubnetPlaceholder"
   }
 }
+
+###################################################
+#  Bitmatch VPC IGW + Route Table                 #
+###################################################
 
 # Internet Gateway (For EC2 internet access)
 resource "aws_internet_gateway" "gw" {
@@ -86,7 +86,11 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public_rt.id
 }
 
-# Security Group for EC2
+###################################################
+#  Security Groups                                #
+###################################################
+
+# Security Group for Django EC2
 resource "aws_security_group" "ec2_sg" {
   vpc_id = aws_vpc.bitmatch_vpc.id
   name   = "ec2-security-group"
@@ -99,25 +103,15 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow HTTP 
   ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]  
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
 
-resource "aws_security_group" "alb_sg" {
-  vpc_id = aws_vpc.bitmatch_vpc.id
-  name   = "alb-security-group"
-
+  # Allow HTTPS
   ingress {
     from_port   = 443
     to_port     = 443
@@ -125,6 +119,7 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Allow all traffic out
   egress {
     from_port   = 0
     to_port     = 0
@@ -133,57 +128,11 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-resource "aws_lb" "bitmatch_alb" {
-  name               = "bitmatch-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.public_subnet.id, aws_subnet.public_subnet_placeholder.id]
+###################################################
+#  RDS                                            #
+###################################################
 
-  enable_deletion_protection = false
-
-  tags = {
-    Name = "bitmatch-alb"
-  }
-}
-
-resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.bitmatch_alb.arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = "arn:aws:acm:us-west-1:688567270848:certificate/08219c45-c568-4929-a461-2e21d162b8a2"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.bitmatch_target_group.arn
-  }
-}
-
-resource "aws_lb_target_group" "bitmatch_target_group" {
-  name     = "bitmatch-target-group"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.bitmatch_vpc.id
-
-  health_check {
-    path                = "/health/"
-    port                = "8000"
-    protocol            = "HTTP"
-    interval            = 30
-    timeout             = 5
-    unhealthy_threshold = 2
-    healthy_threshold   = 2
-  }
-}
-
-resource "aws_lb_target_group_attachment" "ec2_target_attachment" {
-  target_group_arn = aws_lb_target_group.bitmatch_target_group.arn
-  target_id        = aws_instance.django_server.id
-  port             = 8000
-}
-
-# Security Group for RDS (Only allows EC2 connections)
+# Security Group for RDS 
 resource "aws_security_group" "rds_sg" {
   vpc_id      = aws_vpc.bitmatch_vpc.id
   name        = "rds-security-group"
@@ -235,7 +184,10 @@ resource "aws_db_instance" "default" {
   }
 }
 
-# EC2 (Django Server in Public Subnet)
+###################################################
+#  EC2                                            #
+###################################################
+
 resource "aws_instance" "django_server" {
   ami                    = "ami-01eb4eefd88522422"  # 2023 AMAZON LINUX AMI
   instance_type          = "t3.micro"
@@ -352,6 +304,10 @@ resource "aws_iam_access_key" "django_s3_user_key" {
   }
 }
 
+
+###################################################
+#  FRONTEND RESOURCES                             #
+###################################################
 # S3 Bucket for React App
 resource "aws_s3_bucket" "react_frontend" {
   bucket = "bitmatch-frontend-bucket"
@@ -494,14 +450,9 @@ resource "aws_route53_record" "www_bitmatch_alias" {
 }
 
 resource "aws_route53_record" "api_bitmatch_alias" {
-  zone_id = "Z104455038F52T8T3ETC"
+  zone_id = "Z104455038F52T8T3ETC"  
   name    = "api.bitmatchapp.com"
   type    = "A"
-
-  alias {
-    name                   = aws_lb.bitmatch_alb.dns_name
-    zone_id                = aws_lb.bitmatch_alb.zone_id
-    evaluate_target_health = false
-  }
+  ttl     = 300
+  records = ["13.57.226.154"]
 }
-
