@@ -178,6 +178,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "http://localhost:5174", 
     "https://bitmatchapp.com",
+    "https://api.bitmatchapp.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
