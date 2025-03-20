@@ -223,6 +223,10 @@ resource "aws_s3_bucket_public_access_block" "django_media_access" {
 # Create an IAM user for Django to interact with S3
 resource "aws_iam_user" "django_s3_user" {
   name = "django-s3-user"
+
+    lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Attach an IAM policy allowing access to the S3 bucket
@@ -251,19 +255,30 @@ resource "aws_iam_policy" "s3_access_policy" {
   ]
 }
 POLICY
+
+    lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Attach the IAM policy to the IAM user
 resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
   user       = aws_iam_user.django_s3_user.name
   policy_arn = aws_iam_policy.s3_access_policy.arn
+
+    lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # Generate IAM access keys for the IAM user
 resource "aws_iam_access_key" "django_s3_user_key" {
   user = aws_iam_user.django_s3_user.name
-}
 
+    lifecycle {
+    prevent_destroy = true
+  }
+}
 
 # S3 Bucket for React App
 resource "aws_s3_bucket" "react_frontend" {
