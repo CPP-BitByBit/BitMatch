@@ -175,10 +175,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite development server URL
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:5176",
+    "http://localhost:5173", 
+    "http://localhost:5174", 
+    "https://bitmatchapp.com",
+    "https://api.bitmatchapp.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
