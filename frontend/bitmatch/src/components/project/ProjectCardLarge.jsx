@@ -77,11 +77,11 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
           <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
             <div className="flex items-center gap-1">
               <span className="text-gray-400">~</span>
-              <span>{formatNumber(project.followers)} Followers</span>
+              <span>{formatNumber(project.followers_count)} Followers</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-gray-400">~</span>
-              <span>{formatNumber(project.likes)} Likes</span>
+              <span>{formatNumber(project.likes_count)} Likes</span>
             </div>
           </div>
 
@@ -128,8 +128,8 @@ ProjectCardLarge.propTypes = {
     title: PropTypes.string.isRequired,
     institution: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
-    followers: PropTypes.number.isRequired,
-    likes: PropTypes.number.isRequired,
+    followers_count: PropTypes.number.isRequired,
+    likes_count: PropTypes.number.isRequired,
     positions: PropTypes.arrayOf(
       PropTypes.shape({
         title: PropTypes.string.isRequired,

@@ -50,47 +50,63 @@ class ProjectCRUDView(APIView):
         project.delete()
         return Response({"message": "Project deleted"}, status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def toggle_like(request, project_id):
     if request.method == 'POST':
-        data = request.POST
+        data = request.data
         action = data.get('action')
         user_id = data.get('user_id')
 
         project = get_object_or_404(Project, id=project_id)
-        user = get_object_or_404(User, id = user_id)
+        user = get_object_or_404(User, id=user_id)
 
         if action == 'like':
-            if not Like.objects.filter(project = project, user = user).exists():
-                Like.objects.create(project=project,  user=user)
-                project.likes += 1 
+            if not Like.objects.filter(project=project, user=user).exists():
+                Like.objects.create(project=project, user=user)
+                project.likes_count += 1
                 project.save()
+                return Response({'message': 'Project liked successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'You already liked this project.'}, status=status.HTTP_400_BAD_REQUEST)
                 
-             
         elif action == 'unlike':
-            like = Like.objects.filter(project = project, user = user).first()
+            like = Like.objects.filter(project=project, user=user).first()
             if like:
                 like.delete()
-                project.likes -= 1
+                project.likes_count -= 1
                 project.save()
+                return Response({'message': 'Project unliked successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'You already unliked this project.'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def toggle_follow(request, project_id):
     if request.method == 'POST':
-        data = request.POST
+        data = request.data  
         action = data.get('action')
         user_id = data.get('user_id')
 
         project = get_object_or_404(Project, id=project_id)
-        user = get_object_or_404(User, id = user_id)
+        user = get_object_or_404(User, id=user_id)
 
         if action == 'follow':
-            if not Follow.objects.filter(project=project, user = user).exists():
-                Follow.objects.create(project=project,  user=user)
-                project.followers += 1 
+            if not Follow.objects.filter(project=project, user=user).exists():
+                Follow.objects.create(project=project, user=user)
+                project.followers_count += 1
                 project.save()
-             
+                return Response({'message': 'Project followed successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'You already followed this project.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         elif action == 'unfollow':
-            follow = Follow.objects.filter(project=project, user = user).first()
+            follow = Follow.objects.filter(project=project, user=user).first()
             if follow:
                 follow.delete()
-                project.followers -= 1
+                project.followers_count -= 1
                 project.save()
+                return Response({'message': 'Project unfollowed successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'You already unfollowed this project.'}, status=status.HTTP_400_BAD_REQUEST)
