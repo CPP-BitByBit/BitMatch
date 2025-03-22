@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
-from .models import Project
+from .models import Project, Like, Follow, User
 from .serializers import ProjectSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
@@ -49,3 +49,48 @@ class ProjectCRUDView(APIView):
         project = get_object_or_404(Project, pk=pk)
         project.delete()
         return Response({"message": "Project deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+def toggle_like(request, project_id):
+    if request.method == 'POST':
+        data = request.POST
+        action = data.get('action')
+        user_id = data.get('user_id')
+
+        project = get_object_or_404(Project, id=project_id)
+        user = get_object_or_404(User, id = user_id)
+
+        if action == 'like':
+            if not Like.objects.filter(project = project, user = user).exists():
+                Like.objects.create(project=project,  user=user)
+                project.likes += 1 
+                project.save()
+                
+             
+        elif action == 'unlike':
+            like = Like.objects.filter(project = project, user = user).first()
+            if like:
+                like.delete()
+                project.likes -= 1
+                project.save()
+
+def toggle_follow(request, project_id):
+    if request.method == 'POST':
+        data = request.POST
+        action = data.get('action')
+        user_id = data.get('user_id')
+
+        project = get_object_or_404(Project, id=project_id)
+        user = get_object_or_404(User, id = user_id)
+
+        if action == 'follow':
+            if not Follow.objects.filter(project=project, user = user).exists():
+                Follow.objects.create(project=project,  user=user)
+                project.followers += 1 
+                project.save()
+             
+        elif action == 'unfollow':
+            follow = Follow.objects.filter(project=project, user = user).first()
+            if follow:
+                follow.delete()
+                project.followers -= 1
+                project.save()
