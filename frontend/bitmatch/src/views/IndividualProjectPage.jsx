@@ -1,9 +1,24 @@
-import { ChevronRight, ChevronLeft, Plus, Edit, Icon, ThumbsUp, UserRound } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Edit,
+  Icon,
+  ThumbsUp,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { PositionCard } from "@/components/project/PositionCard";
-import { Dialog, DialogTitle, DialogDescription, DialogFooter, DialogContent, DialogHeader } from "@/components/ui/Dialog";
+import {
+  Dialog,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogContent,
+  DialogHeader,
+} from "@/components/ui/Dialog";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -11,13 +26,12 @@ import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
 
-
 const formatNumber = (num) => {
   return num >= 1000000
     ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
     : num >= 1000
-      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-      : num.toString();
+    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+    : num.toString();
 };
 
 const fetchProjectInfo = async (id) => {
@@ -38,9 +52,7 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => {
-
-}
+const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
@@ -53,8 +65,6 @@ const ProjectDetailPage = () => {
   const [discussions, setDiscussions] = useState([]);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
-
-
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -98,14 +108,14 @@ const ProjectDetailPage = () => {
   };
 
   const handleAddComment = () => {
-    setShowCommentForm(true)
-    setReplyingTo(null)
-  }
+    setShowCommentForm(true);
+    setReplyingTo(null);
+  };
 
   const handleCancelComment = () => {
-    setShowCommentForm(false)
-    setReplyingTo(null)
-  }
+    setShowCommentForm(false);
+    setReplyingTo(null);
+  };
 
   const handleSubmitComment = (postId, content) => {
     if (postId) {
@@ -128,11 +138,11 @@ const ProjectDetailPage = () => {
                 datePosted: new Date().toLocaleString(),
               },
             ],
-          }
+          };
         }
-        return discussion
-      })
-      setDiscussions(updatedDiscussions)
+        return discussion;
+      });
+      setDiscussions(updatedDiscussions);
     } else {
       // Add new post
       const newPost = {
@@ -145,46 +155,51 @@ const ProjectDetailPage = () => {
         content,
         datePosted: new Date().toLocaleString(),
         replies: [],
-      }
-      setDiscussions([...discussions, newPost])
+      };
+      setDiscussions([...discussions, newPost]);
     }
-    setShowCommentForm(false)
-    setReplyingTo(null)
-  }
+    setShowCommentForm(false);
+    setReplyingTo(null);
+  };
 
   const handleReplyToPost = (id) => {
-    setReplyingTo(id)
-  }
+    setReplyingTo(id);
+  };
 
   const handleDeletePost = (id) => {
     // In a real app, this would show a confirmation dialog
     if (confirm(`Delete post with ID ${id}?`)) {
       // Check if it's a main post or a reply
-      const isMainPost = discussions.some((discussion) => discussion.id === id)
+      const isMainPost = discussions.some((discussion) => discussion.id === id);
 
       if (isMainPost) {
         // Delete the main post and all its replies
-        const updatedDiscussions = discussions.filter((discussion) => discussion.id !== id)
-        setDiscussions(updatedDiscussions)
+        const updatedDiscussions = discussions.filter(
+          (discussion) => discussion.id !== id
+        );
+        setDiscussions(updatedDiscussions);
       } else {
         // Delete a reply
         const updatedDiscussions = discussions.map((discussion) => {
-          if (discussion.replies && discussion.replies.some((reply) => reply.id === id)) {
+          if (
+            discussion.replies &&
+            discussion.replies.some((reply) => reply.id === id)
+          ) {
             return {
               ...discussion,
               replies: discussion.replies.filter((reply) => reply.id !== id),
-            }
+            };
           }
-          return discussion
-        })
-        setDiscussions(updatedDiscussions)
+          return discussion;
+        });
+        setDiscussions(updatedDiscussions);
       }
     }
-  }
+  };
 
   const handleReaction = (id) => {
-    alert(`Add reaction to post with ID ${id}`)
-  }
+    alert(`Add reaction to post with ID ${id}`);
+  };
 
   // Loading state
   if (loading) {
@@ -232,7 +247,6 @@ const ProjectDetailPage = () => {
 
           {/* Project showcase */}
           <div className="grid md:grid-cols-2 gap-6 mb-9">
-
             {/* Image Slider */}
             <div className="relslative bg-gray-200 aspect-[4/3] flex items-center justify-center mt-1">
               {project.images && project.images.length > 0 ? (
@@ -264,8 +278,7 @@ const ProjectDetailPage = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2"></div>
                 </>
               ) : (
                 <span>No images available</span>
@@ -295,13 +308,13 @@ const ProjectDetailPage = () => {
                   <Button variant="ghost" size="icon">
                     <ThumbsUp className="h-6 w-6"></ThumbsUp>
                   </Button>
-                  <span>{project.likes} Likes</span>
+                  <span>{project.likes_count} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="icon">
                     <UserRound className="h-6 w-6"></UserRound>
                   </Button>
-                  <span>{project.followers} Followers</span>
+                  <span>{project.followers_count} Followers</span>
                 </div>
               </div>
             </div>
@@ -314,8 +327,9 @@ const ProjectDetailPage = () => {
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                      }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
+                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                    }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -333,9 +347,25 @@ const ProjectDetailPage = () => {
           {/* Tabs */}
           <Tabs
             className="mb-2"
-            selectedIndex={["overview", "updates", "members", "wanted", "discussions", "contact", "edit"].indexOf(activeTab)}
+            selectedIndex={[
+              "overview",
+              "updates",
+              "members",
+              "wanted",
+              "discussions",
+              "contact",
+              "edit",
+            ].indexOf(activeTab)}
             onSelect={(index) => {
-              const tabNames = ["overview", "updates", "members", "wanted", "discussions", "contact", "edit"];
+              const tabNames = [
+                "overview",
+                "updates",
+                "members",
+                "wanted",
+                "discussions",
+                "contact",
+                "edit",
+              ];
               const selectedTab = tabNames[index];
 
               if (selectedTab === "edit") {
@@ -450,9 +480,7 @@ const ProjectDetailPage = () => {
             <TabPanel value="updates">
               <div className="border rounded-lg p-4 overflow-hidden">
                 <div className="p-5 border-solid">
-                  <h2 className="text-2xl font-bold text-left mb-5">
-                    Updates
-                  </h2>
+                  <h2 className="text-2xl font-bold text-left mb-5">Updates</h2>
                   <div className="gap-4">
                     <h3 className="text-sm mb-3">Title</h3>
                     <Input
@@ -460,7 +488,11 @@ const ProjectDetailPage = () => {
                       className="flex-1 border rounded px-4 py-2 mb-6 h-10"
                     />
                     {showCommentForm ? (
-                      <ReplyForm postId={replyingTo || ""} onCancel={handleCancelComment} onSubmit={handleSubmitComment} />
+                      <ReplyForm
+                        postId={replyingTo || ""}
+                        onCancel={handleCancelComment}
+                        onSubmit={handleSubmitComment}
+                      />
                     ) : (
                       <div className="border p-4 mb-4">
                         <div className="mb-4">
@@ -468,7 +500,9 @@ const ProjectDetailPage = () => {
                             className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
                             onClick={handleAddComment}
                           >
-                            <p className="text-gray-500">Add your comments here</p>
+                            <p className="text-gray-500">
+                              Add your comments here
+                            </p>
                           </div>
                         </div>
                         <div className="flex justify-end space-x-2">
@@ -492,7 +526,6 @@ const ProjectDetailPage = () => {
                   </div>
                 </div>
               </div>
-
             </TabPanel>
 
             <TabPanel value="members">
@@ -505,7 +538,10 @@ const ProjectDetailPage = () => {
                       placeholder="Search for students to add"
                       className="flex-1 border rounded px-4 py-2"
                     />
-                    <Button variant="secondary" className="bg-gray-300 hover:bg-gray-400 text-black">
+                    <Button
+                      variant="secondary"
+                      className="bg-gray-300 hover:bg-gray-400 text-black"
+                    >
                       Add Member
                     </Button>
                   </div>
@@ -513,7 +549,9 @@ const ProjectDetailPage = () => {
 
                 {/* Members List Section */}
                 <div className="p-5">
-                  <h2 className="text-2xl font-bold mb-6">Students Working on This Project</h2>
+                  <h2 className="text-2xl font-bold mb-6">
+                    Students Working on This Project
+                  </h2>
 
                   <div className="space-y-4">
                     {/* Member 1 */}
@@ -549,7 +587,9 @@ const ProjectDetailPage = () => {
                 {/* Positions Section */}
                 <div>
                   <div className="p-6 flex justify-between items-center border-b">
-                    <h2 className="text-2xl font-bold">Positions Needed for This Project</h2>
+                    <h2 className="text-2xl font-bold">
+                      Positions Needed for This Project
+                    </h2>
                     <Button
                       variant="secondary"
                       className="hover:bg-gray-400 text-black"
@@ -573,7 +613,12 @@ const ProjectDetailPage = () => {
                       skillSets={{
                         technical: ["Python", "SQL", "C++", "Java"],
                         tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: ["Communication", "Analytical", "Problem Solver", "Detail Oriented"],
+                        soft: [
+                          "Communication",
+                          "Analytical",
+                          "Problem Solver",
+                          "Detail Oriented",
+                        ],
                       }}
                       qualification="Pursuing a BA in Computer Science"
                       skillMatch="35"
@@ -591,7 +636,12 @@ const ProjectDetailPage = () => {
                       skillSets={{
                         technical: ["Python", "SQL", "C++", "Java"],
                         tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: ["Communication", "Analytical", "Problem Solver", "Detail Oriented"],
+                        soft: [
+                          "Communication",
+                          "Analytical",
+                          "Problem Solver",
+                          "Detail Oriented",
+                        ],
                       }}
                       qualification="Pursuing a BA in Computer Science"
                       skillMatch="35"
@@ -613,7 +663,11 @@ const ProjectDetailPage = () => {
                 {/* Comment Form */}
                 <div className="bg-white border-t p-6">
                   {showCommentForm ? (
-                    <ReplyForm postId={replyingTo || ""} onCancel={handleCancelComment} onSubmit={handleSubmitComment} />
+                    <ReplyForm
+                      postId={replyingTo || ""}
+                      onCancel={handleCancelComment}
+                      onSubmit={handleSubmitComment}
+                    />
                   ) : (
                     <div className="border p-4 mb-4">
                       <div className="mb-4">
@@ -621,7 +675,9 @@ const ProjectDetailPage = () => {
                           className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
                           onClick={handleAddComment}
                         >
-                          <p className="text-gray-500">Add your comments here</p>
+                          <p className="text-gray-500">
+                            Add your comments here
+                          </p>
                         </div>
                       </div>
                       <div className="flex justify-end space-x-2">
@@ -697,7 +753,9 @@ const ProjectDetailPage = () => {
                         </div>
                       ))
                     ) : (
-                      <p className="text-center py-8">No discussions yet. Start the conversation!</p>
+                      <p className="text-center py-8">
+                        No discussions yet. Start the conversation!
+                      </p>
                     )}
                   </div>
                 </div>
@@ -707,7 +765,9 @@ const ProjectDetailPage = () => {
             <TabPanel value="contact">
               <div className="border rounded-lg overflow-hidden">
                 <div className="p-5 border-b">
-                  <h1 className="text-2xl font-bold mb-10">Contact The Owner of This Project</h1>
+                  <h1 className="text-2xl font-bold mb-10">
+                    Contact The Owner of This Project
+                  </h1>
                   <h3 className="text-sm mb-3">Full Name</h3>
                   <Input
                     type="text"
@@ -728,7 +788,11 @@ const ProjectDetailPage = () => {
                     type="text"
                     className="flex-1 border rounded px-4 py-2 mb-6 h-60"
                   />
-                  <Button variant="secondary" size="lg" className="bg-gray-100 hover:bg-gray-400 text-black">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="bg-gray-100 hover:bg-gray-400 text-black"
+                  >
                     Submit
                   </Button>
                 </div>
@@ -736,7 +800,6 @@ const ProjectDetailPage = () => {
             </TabPanel>
             <TabPanel value="edit"></TabPanel>
           </Tabs>
-
         </main>
 
         {/* Footer */}
@@ -746,7 +809,7 @@ const ProjectDetailPage = () => {
       </div>
 
       {/* Action Buttons */}
-    </div >
+    </div>
   );
 };
 
