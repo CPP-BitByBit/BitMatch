@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import ProjectCardLarge from "@/components/project/ProjectCardLarge";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
@@ -51,10 +52,13 @@ export default function ProjectListPage() {
         <h1 className="font-bold sans-display flex-grow">
           Public Projects List
         </h1>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Project
-        </Button>
+        <a href="/create-project/">
+          <Button variant="outline" className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add New Project
+
+          </Button>
+        </a>
       </div>
       <hr className="border-t-2 border-gray-200 my-2" />
 
