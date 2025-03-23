@@ -73,6 +73,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY_PEM }}
           script: |
             echo "SSH connection successful"
+            touch test
+            ls -l test
 
   frontend_deploy:
     runs-on: ubuntu-latest
