@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
   pull_request:
     branches:
       - main
@@ -22,6 +23,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Set up AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          aws --version
+
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          aws configure set region us-west-1
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -34,8 +48,8 @@ jobs:
         if: github.event_name == 'pull_request'
         run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
-      - name: Terraform Plan (for push to main)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Terraform Plan (for push to main or dev)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
         run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Terraform Apply (for push to main)
