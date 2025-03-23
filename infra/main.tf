@@ -456,3 +456,63 @@ resource "aws_route53_record" "api_bitmatch_alias" {
   ttl     = 300
   records = ["13.57.226.154"]
 }
+
+# Create S3 Bucket for Terraform State
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "bitmatch-terraform-state"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = {
+    Name = "TerraformStateBucket"
+  }
+}
+
+# Versioning
+resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Block Public Access to the bucket
+resource "aws_s3_bucket_public_access_block" "terraform_state_block" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# Create DynamoDB Table for State Locking
+resource "aws_dynamodb_table" "terraform_locks" {
+  name         = "terraform-state-lock"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  tags = {
+    Name = "TerraformStateLock"
+  }
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "bitmatch-terraform-state"
+    key            = "terraform.tfstate"
+    region         = "us-west-1"
+    dynamodb_table = "terraform-state-lock"
+    encrypt        = true
+  }
+}
+
+# no changes
