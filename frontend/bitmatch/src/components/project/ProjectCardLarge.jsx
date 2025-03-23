@@ -4,11 +4,13 @@ import { Link } from "react-router-dom";
 export default function ProjectCardLarge({ project, highlighted = false }) {
   // Helper function to format large numbers
   const formatNumber = (num) => {
-    return num >= 1000000
-      ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
-      : num >= 1000
-      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-      : num.toString();
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M");
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`.replace(".0K", "K");
+    } else {
+      return num; // Return the number as is, no need to call .toString()
+    }
   };
 
   // Highlighted border class logic (does not affect hover state, only initial state)
