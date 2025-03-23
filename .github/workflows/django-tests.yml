@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Backend Unit Tests
 
 on:
   push:
@@ -36,12 +36,12 @@ jobs:
           pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Run migrations
+      - name: Run db migrations
         run: |
           source venv/bin/activate
           python backend/manage.py migrate
 
-      - name: Run backend tests
+      - name: Run projects app unit tests
         run: |
           source venv/bin/activate
           python backend/manage.py test projects
