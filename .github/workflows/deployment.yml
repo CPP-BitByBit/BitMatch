@@ -65,12 +65,18 @@ jobs:
           docker build -t lqla/bitmatch-backend:${GITHUB_SHA} ./backend
           docker push lqla/bitmatch-backend:${GITHUB_SHA}
 
-      # - name: Deploy Docker container
-      #   run: |
-      #     docker pull lqla/bitmatch-backend:${GITHUB_SHA}
-      #     docker stop bitmatch-backend || true  # Stop any existing container
-      #     docker rm bitmatch-backend || true    # Remove the existing container
-      #     docker run -d -p 8000:8000 --env-file .env --name bitmatch-backend lqla/bitmatch-backend:${GITHUB_SHA}
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
+
+      - name: SSH into EC2 and run Docker commands
+        run: |
+          ssh -i ~/.ssh/id_rsa ec2-user@<EC2-PUBLIC-IP> << EOF
+            echo test
+          EOF
 
   frontend_deploy:
     runs-on: ubuntu-latest
