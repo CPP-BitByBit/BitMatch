@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - "*"
+    paths:
+      - "infra/**"
   pull_request:
     branches:
       - "*"
+    paths:
+      - "infra/**"
 
 jobs:
   terraform:
