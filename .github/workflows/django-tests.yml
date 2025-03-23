@@ -1,12 +1,12 @@
-name: Backend Unit Tests
+name: Django Unit Tests
 
 on:
   push:
     branches:
-      - ci/cd-setup
+      - "*"
   pull_request:
     branches:
-      - dev
+      - "*"
   workflow_dispatch:
 
 jobs:
