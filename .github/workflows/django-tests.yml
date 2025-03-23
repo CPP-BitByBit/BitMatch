@@ -44,4 +44,5 @@ jobs:
       - name: Run projects app unit tests
         run: |
           source venv/bin/activate
-          python backend/manage.py test projects
+          python backend/coverage run manage.py test
+          coverage report
