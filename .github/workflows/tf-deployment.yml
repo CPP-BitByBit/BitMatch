@@ -78,8 +78,10 @@ jobs:
         working-directory: frontend/bitmatch
 
       - name: Build frontend
-        run: |
-          npm run build
+        run: npm run build
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_SERVER_HOST: ${{ secrets.VITE_SERVER_HOST }}
         working-directory: frontend/bitmatch
 
       - name: Sync build to S3
