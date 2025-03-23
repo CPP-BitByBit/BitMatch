@@ -40,7 +40,7 @@ jobs:
 
       - name: Terraform Apply (for push to main)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform -chdir=infra apply -auto-approve -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+        run: terraform -chdir=infra destroy -auto-approve -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
   backend_deploy:
     runs-on: ubuntu-latest
