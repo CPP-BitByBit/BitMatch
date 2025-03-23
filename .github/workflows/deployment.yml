@@ -60,24 +60,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        run: |
-          docker build -t lqla/bitmatch-backend:${GITHUB_SHA} ./backend
-          docker push lqla/bitmatch-backend:${GITHUB_SHA}
-
-      - name: Set up SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} "echo SSH connection successful"
-
-      # - name: SSH into EC2 and run Docker commands
+      # - name: Build and push Docker image
       #   run: |
-      #     ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << EOF
-      #       echo test
-      #     EOF
+      #     docker build -t lqla/bitmatch-backend:${GITHUB_SHA} ./backend
+      #     docker push lqla/bitmatch-backend:${GITHUB_SHA}
+
+      - name: Set up SSH and SSH into EC2
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY_PEM }}
+          script: |
+            echo "SSH connection successful"
 
   frontend_deploy:
     runs-on: ubuntu-latest
