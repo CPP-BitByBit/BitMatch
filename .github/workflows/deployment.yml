@@ -71,12 +71,15 @@ jobs:
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
-
-      - name: SSH into EC2 and run Docker commands
-        run: |
           ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << EOF
             echo test
           EOF
+
+      # - name: SSH into EC2 and run Docker commands
+      #   run: |
+      #     ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << EOF
+      #       echo test
+      #     EOF
 
   frontend_deploy:
     runs-on: ubuntu-latest
