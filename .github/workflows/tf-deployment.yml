@@ -1,16 +1,12 @@
-name: Terraform CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - "*"
-    paths:
-      - "infra/**"
   pull_request:
     branches:
       - "*"
-    paths:
-      - "infra/**"
 
 jobs:
   terraform:
@@ -43,5 +39,58 @@ jobs:
         run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Terraform Apply (for push to main)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/ci/cd-setup'
         run: terraform -chdir=infra apply -auto-approve -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
+
+  backend_deploy:
+    runs-on: ubuntu-latest
+    needs: terraform
+    if: github.event_name == 'push' && github.ref == 'refs/heads/ci/cd-setup'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Navigate to backend directory
+        run: cd backend
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # TODO: Build Docker image and deploy
+
+  frontend_deploy:
+    runs-on: ubuntu-latest
+    needs: backend_deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/ci/cd-setup'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Navigate to frontend directory
+        run: cd frontend/bitmatch
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Build frontend
+        run: |
+          npm run build
+
+      - name: Sync build to S3
+        run: |
+          aws s3 sync ./dist s3://bitmatch-frontend-bucket --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id E29MAKOIPEX4G3 --paths "/*"
