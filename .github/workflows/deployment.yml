@@ -79,7 +79,6 @@ jobs:
             docker rm $(docker ps -aq)
             fi
 
-            docker rm $(docker ps -aq)
             docker image prune -a -f
             docker run -d -p 8000:8000 --env-file .env --name bitmatch-backend lqla/bitmatch-backend:latest
 
