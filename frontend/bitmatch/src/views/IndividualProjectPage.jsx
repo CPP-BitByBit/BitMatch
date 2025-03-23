@@ -1,28 +1,13 @@
-import {
-  ChevronRight,
-  ChevronLeft,
-  Plus,
-  Edit,
-  Icon,
-  ThumbsUp,
-  UserRound,
-} from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, Edit, Icon, ThumbsUp, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { PositionCard } from "@/components/project/PositionCard";
-import {
-  Dialog,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogContent,
-  DialogHeader,
-} from "@/components/ui/Dialog";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
+import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
 
@@ -30,8 +15,8 @@ const formatNumber = (num) => {
   return num >= 1000000
     ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
     : num >= 1000
-    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-    : num.toString();
+      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+      : num.toString();
 };
 
 const fetchProjectInfo = async (id) => {
@@ -52,7 +37,9 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => {};
+const editProjectInfo = async (id) => { 
+
+};
 
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
@@ -86,6 +73,12 @@ const ProjectDetailPage = () => {
 
     loadProjectInfo();
   }, [id]);
+
+  const handleSave = (data) => {
+    console.log("Saving project data:", data)
+    editProjectInfo(data)
+    // Here you would typically send this data to your backend
+  }
 
   const nextImage = () => {
     if (project.images) {
@@ -327,9 +320,8 @@ const ProjectDetailPage = () => {
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
-                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                    }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                      }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -424,47 +416,14 @@ const ProjectDetailPage = () => {
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
                 onClick={(e) => {
-                  e.preventDefault(); // Prevent tab selection
-                  if (!isOpen) setIsOpen(true); // Open the dialog
+                  setIsOpen(true);
+                  e.preventDefault(); // Prevent tab selection 
                 }}
               >
                 Edit Project
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit Project</DialogTitle>
-                      <DialogDescription>
-                        Make changes to your Project here.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <p className="text-right">Title</p>
-                      <Input
-                        id="title"
-                        defaultValue={project.title}
-                        className="col-span-3"
-                      />
-                      <p className="text-right">Group</p>
-                      <Input
-                        id="group"
-                        defaultValue={project.group}
-                        className="col-span-3"
-                      />
-                      <p className="text-right">Description</p>
-                      <Input
-                        id="description"
-                        defaultValue={project.description}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <DialogFooter>
-                      <Button>Save Changes</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
               </Tab>
             </TabList>
-
+            <EditProjectDialog open={isOpen} onOpenChange={setIsOpen} projectData={project} onSave={handleSave} />
             <TabPanel value="overview" className="mt-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold">Overview</h2>
