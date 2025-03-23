@@ -74,7 +74,7 @@ jobs:
 
       - name: SSH into EC2 and run Docker commands
         run: |
-          ssh -i ~/.ssh/id_rsa ec2-user@<EC2-PUBLIC-IP> << EOF
+          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << EOF
             echo test
           EOF
 
