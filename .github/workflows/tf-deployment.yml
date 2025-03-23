@@ -67,12 +67,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Navigate to frontend directory
-        run: cd frontend/bitmatch
-
-      - name: list
-        run: ls -a
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -81,14 +75,17 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+        working-directory: frontend/bitmatch
 
       - name: Build frontend
         run: |
           npm run build
+        working-directory: frontend/bitmatch
 
       - name: Sync build to S3
         run: |
           aws s3 sync ./dist s3://bitmatch-frontend-bucket --delete
+        working-directory: frontend/bitmatch
 
       - name: Invalidate CloudFront cache
         run: |
