@@ -70,6 +70,9 @@ jobs:
       - name: Navigate to frontend directory
         run: cd frontend/bitmatch
 
+      - name: list
+        run: ls -a
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
