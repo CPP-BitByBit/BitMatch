@@ -461,16 +461,21 @@ resource "aws_route53_record" "api_bitmatch_alias" {
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "bitmatch-terraform-state"
 
-  versioning {
-    enabled = true
-  }
-
   lifecycle {
     prevent_destroy = true
   }
 
   tags = {
     Name = "TerraformStateBucket"
+  }
+}
+
+# Versioning
+resource "aws_s3_bucket_versioning" "terraform_state_versioning" {
+  bucket = aws_s3_bucket.terraform_state.id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
