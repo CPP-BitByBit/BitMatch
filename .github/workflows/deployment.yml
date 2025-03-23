@@ -62,8 +62,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t lqla/bitmatch-backend:${GITHUB_SHA} ./backend
-          docker push lqla/bitmatch-backend:${GITHUB_SHA}
+          docker build -t lqla/bitmatch-backend:latest ./backend
+          docker push lqla/bitmatch-backend:latest
 
       - name: Set up SSH and SSH into EC2
         uses: appleboy/ssh-action@v0.1.9
@@ -72,14 +72,16 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY_PEM }}
           script: |
-            echo "Using GITHUB_SHA: ${GITHUB_SHA}"
-            docker pull lqla/bitmatch-backend:${GITHUB_SHA}
+            docker pull lqla/bitmatch-backend:latest
+
+            if [ "$(docker ps -q)" ]; then
             docker stop $(docker ps -q)
             docker rm $(docker ps -aq)
+            fi
+
+            docker rm $(docker ps -aq)
             docker image prune -a -f
-            docker run -d -p 8000:8000 --env-file .env --name bitmatch-backend lqla/bitmatch-backend:${GITHUB_SHA}
-        env:
-          GITHUB_SHA: ${{ github.sha }}
+            docker run -d -p 8000:8000 --env-file .env --name bitmatch-backend lqla/bitmatch-backend:latest
 
   frontend_deploy:
     runs-on: ubuntu-latest
