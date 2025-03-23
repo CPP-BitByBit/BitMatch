@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t lqla/bitmatch-backend:${GITHUB_SHA} .
+          docker build -t lqla/bitmatch-backend:${GITHUB_SHA} ./backend
           docker push lqla/bitmatch-backend:${GITHUB_SHA}
 
       # - name: Deploy Docker container
