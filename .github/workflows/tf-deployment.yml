@@ -39,12 +39,7 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=infra init
 
-      - name: Terraform Plan (for PR)
-        if: github.event_name == 'pull_request'
-        run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
-
-      - name: Terraform Plan (for push to main or dev)
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+      - name: Terraform Plan
         run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Terraform Apply (for push to main)
