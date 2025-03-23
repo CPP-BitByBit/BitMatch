@@ -1,5 +1,6 @@
 # ![BITMATCH Logo](https://github.com/user-attachments/assets/86a9155c-f1ad-49d0-b01d-2580ee7b71a4)
 
+test
 BitMatch is a web application platform designed to bridge the gap between innovators seeking project feedback and college students looking for hands-on experience. Many innovators struggle to promote their ideas, receive constructive input, and recruit talent, while students face challenges in finding meaningful projects to build skills and enhance their resumes.
 
 ## 🚀 Solution
@@ -46,6 +47,7 @@ BitMatch provides a streamlined platform where:
 - Terraform for infrastructure as code (IaC)
 
 ## 🏗 Architecture Diagram
+
 ![BitMatchAWSDiagram](https://github.com/user-attachments/assets/ebf5667b-e255-4933-bee9-9970bd0c6f9a)
 
 ## 🛠 Running Locally
