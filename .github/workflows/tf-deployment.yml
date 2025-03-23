@@ -2,7 +2,7 @@ name: Terraform CI/CD
 
 on:
   workflow_run:
-    workflows: ["Django Tests"]
+    workflows: ["Django Unit Tests"]
     types:
       - completed
 
