@@ -9,7 +9,9 @@ class User(models.Model):
     followers = models.IntegerField(default=0)
     likes = models.IntegerField(default=0)
     position = models.JSONField(default=list)
-    tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)
+    image_url = models.ImageField(upload_to="userauth/", blank=True, null=True)
+    images = models.JSONField(default=list)
 
     def __str__(self):
         return self.username
