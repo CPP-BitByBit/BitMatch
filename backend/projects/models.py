@@ -1,5 +1,6 @@
 from django.db import models
 from userauth.models import User
+from django.contrib.postgres.fields import ArrayField
 
 # PROJECTS MODEL
 class Project(models.Model):
@@ -13,6 +14,7 @@ class Project(models.Model):
     positions = models.JSONField(default=list)  
     image_url = models.ImageField(upload_to="projects/", blank=True, null=True)
     images = models.JSONField(default=list)
+    tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
 
     def __str__(self):
         return self.title
