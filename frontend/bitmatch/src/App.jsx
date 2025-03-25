@@ -37,7 +37,13 @@ export default function App() {
             {/* Maintenance Note */}
             {showMaintenanceNote && (
               <div className="bg-yellow-100 text-yellow-800 p-4 mb-4 rounded max-w-xs mx-auto">
-                <strong>Maintenance Notice: TESTING</strong>
+                <strong>
+                  Maintenance Notice: We are currently performing maintenance to
+                  improve the performance and reliability of our service. Some
+                  features may be temporarily unavailable. We appreciate your
+                  patience and understanding as we work to enhance your
+                  experience.
+                </strong>
               </div>
             )}
             <SignInButton mode="modal">
