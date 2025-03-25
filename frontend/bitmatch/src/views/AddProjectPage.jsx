@@ -91,27 +91,17 @@ export default function CreateProjectForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Cover Image Section */}
           <div>
-            <h2 className="font-lg mb-1">
-              Cover Image <span className="text-red-500">*</span>
-            </h2>
+            <h2 className="font-lg mb-1">Cover Image (Required)</h2>
             <p className="text-sm text-gray-600 mb-2">
               Minimum: 315x250, Recommended: 630x500
             </p>
             <div className="bg-gray-200 h-64 flex items-center justify-center relative">
               {coverImage ? (
-                <>
-                  <img
-                    src={coverImage || "/placeholder.svg"}
-                    alt="Cover"
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={handleRemoveCoverImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full"
-                  >
-                    Remove
-                  </button>
-                </>
+                <img
+                  src={coverImage || "/placeholder.svg"}
+                  alt="Cover"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <label
                   htmlFor="cover-upload"
@@ -126,8 +116,37 @@ export default function CreateProjectForm() {
                 className="hidden"
                 onChange={handleCoverImageUpload}
                 accept="image/*"
-                required
               />
+            </div>
+          </div>
+
+          {/* Additional Images Section */}
+          <div className="hidden">
+            <h2 className="font-medium mb-1">
+              Additional profile slider images (Optional)
+            </h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Minimum: 315x250, Recommended: 630x500
+            </p>
+            <p className="text-sm text-gray-600 mb-2">
+              Maximum: amount of images: 5
+            </p>
+
+            <div className="bg-gray-100 border h-40 overflow-y-auto mb-4">
+              {sliderImages.map((img, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between px-3 py-2 border-b"
+                >
+                  <span className="text-sm">{img}</span>
+                  {index === 0 && <div className="h-4 w-4 bg-gray-300"></div>}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex space-x-4">
+              <button className="bg-black text-white px-6 py-2">Upload</button>
+              <button className="bg-black text-white px-6 py-2">Remove</button>
             </div>
           </div>
         </div>
@@ -195,6 +214,29 @@ export default function CreateProjectForm() {
             <div className="flex justify-between text-sm text-gray-600 mt-1">
               <span>Max Characters: 255</span>
               <span>Character Count: {shortDescription.length}</span>
+            </div>
+          </div>
+
+          {/* Full Description */}
+          <div className="hidden">
+            <label htmlFor="full-desc" className="block font-medium mb-2">
+              Full Description
+              <p className="font-normal text-sm text-gray-600">
+                Write a full description of you project here. This will appear
+                in your project profile page.
+              </p>
+            </label>
+            <textarea
+              id="full-desc"
+              className="w-full border rounded-md p-2 resize-none bg-gray-100"
+              rows={6}
+              placeholder="text for the description"
+              value={fullDescription}
+              onChange={handleFullDescriptionChange}
+            ></textarea>
+            <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <span>Max Characters: 540</span>
+              <span>Current Character Count: {fullDescription.length}</span>
             </div>
           </div>
 
