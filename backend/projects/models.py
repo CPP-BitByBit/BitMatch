@@ -4,29 +4,34 @@ from django.contrib.postgres.fields import ArrayField
 import uuid
 # PROJECTS MODEL
 class Project(models.Model):
-    project_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)                                                          
-    group = models.CharField(max_length=255)
-    match_percentage = models.FloatField()
-    title = models.CharField(max_length=255)
-    institution = models.CharField(max_length=255)
-    description = models.TextField()
+    # Auto generated
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)  
+
+    # REQUIRED
+    title = models.CharField(max_length=255, blank=False, null=False)
+    institution = models.CharField(max_length=255, blank=False, null=False)
+    description = models.TextField(blank=False, null=False)
+    positions = models.JSONField(default=list)  
+    image_url = models.ImageField(upload_to="projects/", blank=False, null=False)
+
+    # Not Required
+    group = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(default=0) 
     likes_count = models.IntegerField(default=0)  
-    positions = models.JSONField(default=list)  
-    image_url = models.ImageField(upload_to="projects/", blank=True, null=True)
-    images = models.JSONField(default=list)
-    tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    match_percentage = models.FloatField(blank=True, null=True)
+    location = models.JSONField(default=list, blank=True)
+    images = models.JSONField(default=list, blank=True)
+    interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
     full_description = models.CharField(max_length=1000, blank=True, null=True)
     email = models.EmailField(unique=True, blank=True, null=True)  
     other_contact = models.CharField(max_length=225, blank=True, null=True)
-    #discussion = ArrayField(models.CharField(max_length=540), blank=True, null=True)
     updates = ArrayField(models.CharField(max_length=540), blank=True, null=True)
     wanted_description = models.CharField(max_length=540, blank=True, null=True)
-    members = models.ForeignKey(
+    
+    members = models.ManyToManyField(
         'userauth.User',
-        on_delete=models.CASCADE,
         related_name='member_of_projects',
-        null=True,
         blank=True
     )
     
@@ -37,6 +42,8 @@ class Project(models.Model):
         null=True,
         blank=True
     )
+
+    #discussion = ArrayField(models.CharField(max_length=540), blank=True, null=True) - for future
 
     def __str__(self):
         return self.title

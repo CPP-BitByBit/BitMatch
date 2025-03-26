@@ -8,21 +8,19 @@ class User(models.Model):
     institution = models.CharField(max_length=255, blank=True, null=True)
     followers = models.IntegerField(default=0)
     likes = models.IntegerField(default=0)
-    position = models.JSONField(default=list)
-    tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
-    
-    projects = models.ForeignKey(
+    positions = models.JSONField(default=list)
+    interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    location_preference = models.JSONField(default=list)
+
+    projects = models.ManyToManyField(
         'projects.Project', 
-        on_delete=models.CASCADE,
-        related_name='contributors',  # good practice to add related_name
-        null=True,  # add null=True if this can be blank
+        related_name='contributors',  
         blank=True
     )
-    owned = models.ForeignKey(
+    owned = models.ManyToManyField(
         'projects.Project',
-        on_delete=models.CASCADE,
         related_name='owners',
-        null=True,
         blank=True
     )
 
