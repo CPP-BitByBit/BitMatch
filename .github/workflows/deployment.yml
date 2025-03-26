@@ -33,9 +33,11 @@ jobs:
           terraform_version: 1.3.0
 
       - name: Terraform Init
+        if: github.event_name == 'pull_request'
         run: terraform -chdir=infra init
 
       - name: Terraform Plan
+        if: github.event_name == 'pull_request'
         run: terraform -chdir=infra plan -var="db_username=${{ secrets.DB_USER_PROD }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
 
       - name: Terraform Apply (for push to main)
