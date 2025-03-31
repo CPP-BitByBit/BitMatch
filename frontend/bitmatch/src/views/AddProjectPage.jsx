@@ -1,11 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
+const CREATE_PROJECT_ENDPOINT = `${SERVER_HOST}/projects/create/`;
 
 export default function CreateProjectForm() {
-  const [coverImage, setCoverImage] = useState(null);
+  const navigate = useNavigate();
+  const [projectName, setProjectName] = useState("");
+  const [university, setUniversity] = useState("");
+  const [group, setGroup] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [fullDescription, setFullDescription] = useState("");
+  const [roles, setRoles] = useState([]);
+  const [newRole, setNewRole] = useState("");
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [coverImageFile, setCoverImageFile] = useState(null);
   const [sliderImages, setSliderImages] = useState([
     "slideshow_img1.jpg",
     "slideshow_img2.jpg",
@@ -13,34 +26,39 @@ export default function CreateProjectForm() {
     "slideshow_img4.jpg",
     "slideshow_img5.jpg",
   ]);
-  const [shortDescription, setShortDescription] = useState("");
-  const [fullDescription, setFullDescription] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([
     "Technology",
     "Health & Fitness",
   ]);
-  const [roles, setRoles] = useState([]);
-  const [newRole, setNewRole] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [roleError, setRoleError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleCoverImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCoverImageFile(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setCoverImage(e.target.result);
-        }
+      reader.onloadend = () => {
+        setCoverImagePreview(reader.result);
       };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
+      setError("");
     }
   };
 
   const handleRemoveCoverImage = () => {
-    setCoverImage(null);
+    setCoverImagePreview(null);
+    setCoverImageFile(null);
+    const fileInput = document.getElementById("cover-upload");
+    if (fileInput) {
+      fileInput.value = "";
+    }
   };
 
   const handleShortDescriptionChange = (e) => {
-    if (e.target.value.length <= 133) {
+    if (e.target.value.length <= 255) {
       setShortDescription(e.target.value);
     }
   };
@@ -51,10 +69,9 @@ export default function CreateProjectForm() {
     }
   };
 
-  // Add role to the roles array
   const handleAddRole = () => {
     if (newRole.trim()) {
-      setRoles((prevRoles) => [...prevRoles, newRole.trim()]);
+      setRoles((prevRoles) => [...prevRoles, { title: newRole.trim() }]);
       setNewRole("");
       setRoleError("");
     } else {
@@ -62,9 +79,70 @@ export default function CreateProjectForm() {
     }
   };
 
-  // Remove a role from the roles array
   const handleRemoveRole = (index) => {
     setRoles((prevRoles) => prevRoles.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setIsLoading(true);
+
+    if (!projectName.trim()) {
+      setError("Project Name is required.");
+      setIsLoading(false);
+      return;
+    }
+    if (!university.trim()) {
+      setError("University / College Name is required.");
+      setIsLoading(false);
+      return;
+    }
+    if (!shortDescription.trim()) {
+      setError("Description is required.");
+      setIsLoading(false);
+      return;
+    }
+    if (!coverImageFile) {
+      setError("Cover Image is required.");
+      setIsLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", projectName);
+    formData.append("institution", university);
+    formData.append("group", group);
+    formData.append("description", shortDescription);
+    formData.append("positions", JSON.stringify(roles));
+    formData.append("image_url", coverImageFile);
+
+    try {
+      const response = await fetch(CREATE_PROJECT_ENDPOINT, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message || `HTTP error! status: ${response.status}`
+        );
+      }
+
+      setSuccessMessage("Project created successfully!");
+      if (result.id) {
+        navigate(`/projects/${result.id}`);
+      }
+    } catch (err) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -81,41 +159,55 @@ export default function CreateProjectForm() {
           </Button>
         </div>
       </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-bold mb-8 border-b pb-4">
           Add a New Project
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Cover Image Section */}
           <div>
-            <h2 className="font-lg mb-1">Cover Image (Required)</h2>
+            <h2 className="font-lg mb-1">
+              Cover Image <span className="text-red-500">*</span>
+            </h2>
             <p className="text-sm text-gray-600 mb-2">
               Minimum: 315x250, Recommended: 630x500
             </p>
-            <div className="bg-gray-200 h-64 flex items-center justify-center relative">
-              {coverImage ? (
+            <div className="bg-gray-200 h-64 flex items-center justify-center relative border">
+              {coverImagePreview ? (
                 <>
                   <img
-                    src={coverImage || "/placeholder.svg"}
-                    alt="Cover"
+                    src={coverImagePreview}
+                    alt="Cover Preview"
                     className="w-full h-full object-cover"
                   />
                   <button
+                    type="button"
                     onClick={handleRemoveCoverImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm"
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full leading-none hover:bg-red-600 transition-colors"
+                    aria-label="Remove cover image"
                   >
-                    X
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
                   </button>
                 </>
               ) : (
                 <label
                   htmlFor="cover-upload"
-                  className="bg-black text-white px-4 py-2 cursor-pointer"
+                  className="bg-black text-white px-4 py-2 cursor-pointer hover:bg-gray-800 transition-colors"
                 >
-                  Upload cover Image
+                  Upload Cover Image
                 </label>
               )}
               <input
@@ -127,97 +219,70 @@ export default function CreateProjectForm() {
               />
             </div>
           </div>
-
-          {/* Additional Images Section */}
-          <div className="hidden">
-            <h2 className="font-medium mb-1">
-              Additional profile slider images (Optional)
-            </h2>
-            <p className="text-sm text-gray-600 mb-2">
-              Minimum: 315x250, Recommended: 630x500
-            </p>
-            <p className="text-sm text-gray-600 mb-2">
-              Maximum: amount of images: 5
-            </p>
-
-            <div className="bg-gray-100 border h-40 overflow-y-auto mb-4">
-              {sliderImages.map((img, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between px-3 py-2 border-b"
-                >
-                  <span className="text-sm">{img}</span>
-                  {index === 0 && <div className="h-4 w-4 bg-gray-300"></div>}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex space-x-4">
-              <button className="bg-black text-white px-6 py-2">Upload</button>
-              <button className="bg-black text-white px-6 py-2">Remove</button>
-            </div>
-          </div>
         </div>
 
-        {/* Form Fields */}
         <div className="space-y-6">
-          {/* Title */}
           <div>
-            <label htmlFor="title" className="block font-medium mb-2">
+            <label htmlFor="title" className="block font-medium mb-1">
               Project Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="title"
-              className="w-full border rounded-md p-2"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter Project Name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              required
             />
           </div>
 
-          {/* University/College */}
           <div>
-            <label htmlFor="university" className="block font-medium mb-2">
+            <label htmlFor="university" className="block font-medium mb-1">
               University / College Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="university"
-              className="w-full border rounded-md p-2"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter University Name"
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
               required
             />
           </div>
 
-          {/* Group Assignment */}
           <div>
-            <label htmlFor="group" className="block font-medium mb-2">
-              Group
+            <label htmlFor="group" className="block font-medium mb-1">
+              Group (Optional)
             </label>
             <input
               type="text"
               id="group"
-              className="w-full border rounded-md p-2"
-              placeholder="Enter Group Name"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter Group Name (if applicable)"
+              value={group}
+              onChange={(e) => setGroup(e.target.value)}
             />
             <p className="text-sm text-gray-600 mt-1">
               Will this project be associated with a Group? If so, type the
-              group name to assign this project to it.
+              group name.
             </p>
           </div>
 
-          {/* Description */}
           <div>
-            <label htmlFor="short-desc" className="block font-medium mb-2">
+            <label htmlFor="short-desc" className="block font-medium mb-1">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
               id="short-desc"
-              className="w-full border rounded-md p-2 resize-none"
-              rows={3}
+              className="w-full border rounded-md p-2 resize-none focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
               value={shortDescription}
               onChange={handleShortDescriptionChange}
               required
-              placeholder="Enter Description"
+              placeholder="Enter a concise description of your project"
+              maxLength={255}
             ></textarea>
             <div className="flex justify-between text-sm text-gray-600 mt-1">
               <span>Max Characters: 255</span>
@@ -225,73 +290,83 @@ export default function CreateProjectForm() {
             </div>
           </div>
 
-          {/* Full Description */}
-          <div className="hidden">
-            <label htmlFor="full-desc" className="block font-medium mb-2">
-              Full Description
-              <p className="font-normal text-sm text-gray-600">
-                Write a full description of you project here. This will appear
-                in your project profile page.
-              </p>
-            </label>
-            <textarea
-              id="full-desc"
-              className="w-full border rounded-md p-2 resize-none bg-gray-100"
-              rows={6}
-              placeholder="text for the description"
-              value={fullDescription}
-              onChange={handleFullDescriptionChange}
-            ></textarea>
-            <div className="flex justify-between text-sm text-gray-600 mt-1">
-              <span>Max Characters: 540</span>
-              <span>Current Character Count: {fullDescription.length}</span>
-            </div>
-          </div>
+          <div className="hidden"></div>
 
-          {/* Roles Section */}
           <div>
-            <div className="flex items-center space-x-4">
-              <label className="font-lg mb-1">Roles/Positions Needed:</label>
+            <label className="block font-medium mb-2">
+              Roles/Positions Needed (Optional)
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
               <input
                 type="text"
                 value={newRole}
-                onChange={(e) => setNewRole(e.target.value)}
-                className="w-50 h-6.5 border rounded-md p-2"
-                placeholder="Enter Role/Position"
+                onChange={(e) => {
+                  setNewRole(e.target.value);
+                  setRoleError("");
+                }}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Frontend Developer, UI/UX Designer"
               />
               <button
+                type="button"
                 onClick={handleAddRole}
-                className="bg-black text-white px-2 py-0.5 rounded-md"
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
               >
-                +
+                Add Role
               </button>
             </div>
 
             {roleError && (
-              <p className="text-red-500 text-sm mt-2">{roleError}</p>
+              <p className="text-red-500 text-sm mt-1">{roleError}</p>
             )}
 
-            <div className="mt-4">
-              {roles.map((role, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between px-4 py-2 border-b"
-                >
-                  <span>{role}</span>
-                  <button
-                    onClick={() => handleRemoveRole(index)}
-                    className="text-red-500 text-xl"
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {roles.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No roles added yet.
+                </p>
+              ) : (
+                roles.map((role, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
                   >
-                    -
-                  </button>
-                </div>
-              ))}
+                    <span className="text-sm">{role.title}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRole(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove role: ${role.title}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          <button className="bg-black text-white px-8 py-2 mt-6">Create</button>
+          {error && (
+            <p className="mb-4 text-red-600 bg-red-100 border border-red-400 p-3 rounded">
+              {error}
+            </p>
+          )}
+          {successMessage && (
+            <p className="mb-4 text-green-600 bg-green-100 border border-green-400 p-3 rounded">
+              {successMessage}
+            </p>
+          )}
+          <div className="mt-8 pt-6 border-t">
+            <button
+              type="submit"
+              className={`bg-black text-white px-8 py-2 rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating..." : "Create Project"}
+            </button>
+          </div>
         </div>
-      </main>
+      </form>
     </div>
   );
 }

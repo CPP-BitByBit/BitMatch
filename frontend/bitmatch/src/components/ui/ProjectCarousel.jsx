@@ -10,6 +10,7 @@ export default function ProjectCarousel({ projects }) {
   const [maxScroll, setMaxScroll] = useState(0);
   const [visibleCards, setVisibleCards] = useState(3);
   const carouselRef = useRef(null);
+  const limitedProjects = projects.slice(0, 5);
 
   useEffect(() => {
     const handleResize = () => {
@@ -33,10 +34,11 @@ export default function ProjectCarousel({ projects }) {
   useEffect(() => {
     if (carouselRef.current) {
       const containerWidth = carouselRef.current.clientWidth;
-      const totalWidth = containerWidth * (projects.length / visibleCards);
+      const totalWidth =
+        containerWidth * (limitedProjects.length / visibleCards);
       setMaxScroll(totalWidth - containerWidth);
     }
-  }, [projects.length, visibleCards]);
+  }, [limitedProjects.length, visibleCards]);
 
   const scrollLeft = () => {
     if (carouselRef.current) {
@@ -74,9 +76,9 @@ export default function ProjectCarousel({ projects }) {
         className="flex overflow-x-hidden scroll-smooth"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {projects.map((project, index) => (
+        {limitedProjects.map((project, index) => (
           <div
-            key={project.id || `project-${index}`} // Ensures a unique key, even if `id` is missing
+            key={project.id || `project-${index}`}
             className={`flex-shrink-0 px-1 ${
               visibleCards === 1
                 ? "w-full"
