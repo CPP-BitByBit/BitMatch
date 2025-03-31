@@ -97,11 +97,19 @@ export default function CreateProjectForm() {
             </p>
             <div className="bg-gray-200 h-64 flex items-center justify-center relative">
               {coverImage ? (
-                <img
-                  src={coverImage || "/placeholder.svg"}
-                  alt="Cover"
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={coverImage || "/placeholder.svg"}
+                    alt="Cover"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={handleRemoveCoverImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm"
+                  >
+                    X
+                  </button>
+                </>
               ) : (
                 <label
                   htmlFor="cover-upload"

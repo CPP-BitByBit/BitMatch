@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-b4wn$=0zp6j)8%uejmc)hp&3$j3myn$(&i_69(c@shw1i285*v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "bitmatchapp.com", "www.bitmatchapp.com"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
