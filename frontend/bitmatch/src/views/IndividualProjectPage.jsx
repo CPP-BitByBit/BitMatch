@@ -1,4 +1,12 @@
-import { ChevronRight, ChevronLeft, Plus, Edit, Icon, ThumbsUp, UserRound } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Edit,
+  Icon,
+  ThumbsUp,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
@@ -15,8 +23,8 @@ const formatNumber = (num) => {
   return num >= 1000000
     ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
     : num >= 1000
-      ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-      : num.toString();
+    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
+    : num.toString();
 };
 
 const fetchProjectInfo = async (id) => {
@@ -37,9 +45,7 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => { 
-
-};
+const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
@@ -75,10 +81,10 @@ const ProjectDetailPage = () => {
   }, [id]);
 
   const handleSave = (data) => {
-    console.log("Saving project data:", data)
-    editProjectInfo(data)
+    console.log("Saving project data:", data);
+    editProjectInfo(data);
     // Here you would typically send this data to your backend
-  }
+  };
 
   const nextImage = () => {
     if (project.images) {
@@ -320,8 +326,9 @@ const ProjectDetailPage = () => {
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                      }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
+                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                    }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -411,19 +418,26 @@ const ProjectDetailPage = () => {
               >
                 Contact
               </Tab>
+
               <Tab
                 value="edit"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
                 onClick={(e) => {
                   setIsOpen(true);
-                  e.preventDefault(); // Prevent tab selection 
+                  e.preventDefault();
                 }}
               >
                 Edit Project
               </Tab>
             </TabList>
-            <EditProjectDialog open={isOpen} onOpenChange={setIsOpen} projectData={project} onSave={handleSave} />
+            <EditProjectDialog
+              open={isOpen}
+              onOpenChange={setIsOpen}
+              projectData={project}
+              onSave={handleSave}
+            />
+
             <TabPanel value="overview" className="mt-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold">Overview</h2>
