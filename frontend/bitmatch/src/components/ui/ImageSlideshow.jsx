@@ -51,12 +51,7 @@ export default function ImageSlideshow({ items }) {
     "absolute top-1/2 -translate-y-1/2 cursor-pointer z-20 hover:scale-110 transition-transform";
 
   return (
-    <a
-      href={items[currentIndex]?.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block"
-    >
+    <div className="block">
       <div className="relative w-full h-[600px] bg-gray-200 overflow-hidden">
         <div className="h-full relative cursor-pointer">
           {items.map((slide, index) => (
@@ -136,9 +131,10 @@ export default function ImageSlideshow({ items }) {
           ))}
         </div>
       </div>
-    </a>
+    </div>
   );
 }
+
 ImageSlideshow.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
