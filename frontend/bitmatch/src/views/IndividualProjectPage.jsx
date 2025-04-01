@@ -90,6 +90,10 @@ const ProjectDetailPage = () => {
     formData.append("institution", data.institution);
     formData.append("description", data.description);
 
+    if (data.image_url) {
+      formData.append("image_url", data.image_url);
+    }
+
     try {
       const response = await axios.put(
         `${SERVER_HOST}/projects/${data.id}/`,
@@ -455,6 +459,7 @@ const ProjectDetailPage = () => {
                 Edit Project
               </Tab>
             </TabList>
+
             <EditProjectDialog
               open={isOpen}
               onOpenChange={setIsOpen}

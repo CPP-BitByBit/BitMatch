@@ -48,7 +48,13 @@ class ProjectCRUDView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            print(serializer.errors)
+            error_details = {
+                "message": "Invalid project data provided.",
+                "errors": serializer.errors,
+            }
+            return Response(error_details, status=status.HTTP_400_BAD_REQUEST)
 
     # Delete a project by ID (DELETE)
     def delete(self, request, pk):

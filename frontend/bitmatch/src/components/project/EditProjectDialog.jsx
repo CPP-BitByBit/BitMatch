@@ -164,6 +164,39 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
             />
           </div>
 
+          {/* Image Upload Section */}
+          <div className="space-y-2">
+            <Label htmlFor="image" className="text-sm font-medium">
+              Project Image
+            </Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    image_url: file,
+                  }));
+                }
+              }}
+              className="w-full"
+            />
+            {formData.image_url && (
+              <div className="mt-2">
+                {formData.image_url instanceof File && (
+                  <img
+                    src={URL.createObjectURL(formData.image_url)}
+                    alt="Project"
+                    className="max-h-40 rounded-md"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Open Positions Section */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
@@ -256,12 +289,6 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
               </div>
             </Card>
           </div>
-
-          {/* <Card className="p-3 bg-muted/50">
-            <p className="text-xs text-muted-foreground">
-              Last updated: {new Date().toLocaleDateString()} by Current User
-            </p>
-          </Card> */}
 
           <DialogFooter className="pt-2">
             <Button
