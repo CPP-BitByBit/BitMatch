@@ -163,6 +163,19 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="full_description" className="text-sm font-medium">
+              Project Background/More Details
+            </Label>
+            <Textarea
+              id="full_description"
+              value={formData.full_description}
+              onChange={(e) => handleChange("full_description", e.target.value)}
+              className="min-h-[120px] w-full"
+              placeholder="Enter project background/more details"
+            />
+          </div>
+
           {/* Image Upload Section */}
           <div className="space-y-2">
             <Label htmlFor="image" className="text-sm font-medium">

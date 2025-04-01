@@ -115,6 +115,7 @@ export default function CreateProjectForm() {
     formData.append("institution", university);
     formData.append("group", group);
     formData.append("description", shortDescription);
+    formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
 
@@ -288,9 +289,27 @@ export default function CreateProjectForm() {
               <span>Max Characters: 255</span>
               <span>Character Count: {shortDescription.length}</span>
             </div>
-          </div>
 
-          <div className="hidden"></div>
+            <br></br>
+
+            <label htmlFor="full-desc" className="block font-medium mb-1">
+              Project Background/More Details (Optional)
+            </label>
+            <textarea
+              id="full-desc"
+              className="w-full border rounded-md p-2 resize-none focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+              value={fullDescription}
+              onChange={handleFullDescriptionChange}
+              required
+              placeholder="Enter your project's background information, or any additional details."
+              maxLength={1000}
+            ></textarea>
+            <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <span>Max Characters: 1000</span>
+              <span>Character Count: {fullDescription.length}</span>
+            </div>
+          </div>
 
           <div>
             <label className="block font-medium mb-2">

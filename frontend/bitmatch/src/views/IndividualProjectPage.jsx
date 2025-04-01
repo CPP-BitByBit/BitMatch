@@ -88,6 +88,7 @@ const ProjectDetailPage = () => {
     formData.append("group", data.group);
     formData.append("institution", data.institution);
     formData.append("description", data.description);
+    formData.append("full_description", data.full_description);
     formData.append("positions", JSON.stringify(data.positions));
 
     if (data.new_image) {
@@ -475,14 +476,17 @@ const ProjectDetailPage = () => {
                 Background & More Details About the Project
               </h2>
               <div className="mb-6">
-                <p className="text-sm mb-8">{project.description}</p>
+                <p className="text-sm mb-8">{project.full_description}</p>
               </div>
             </TabPanel>
 
             <TabPanel value="updates">
               <div className="border rounded-lg p-4 overflow-hidden">
                 <div className="p-5 border-solid">
-                  <h2 className="text-2xl font-bold text-left mb-5">Updates</h2>
+                  <h2 className="text-2xl font-bold text-left mb-5">
+                    Updates{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                  </h2>
                   <div className="gap-4">
                     <h3 className="text-sm mb-3">Title</h3>
                     <Input
@@ -552,7 +556,8 @@ const ProjectDetailPage = () => {
                 {/* Members List Section */}
                 <div className="p-5">
                   <h2 className="text-2xl font-bold mb-6">
-                    Students Working on This Project
+                    Students Working on This Project{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
                   </h2>
 
                   <div className="space-y-4">
@@ -585,7 +590,10 @@ const ProjectDetailPage = () => {
             <TabPanel value="wanted">
               <div className="rounded-lg overflow-hidden">
                 {/* Wanted Header */}
-                <h2 className="text-4xl font-bold mb-6">Wanted</h2>
+                <h2 className="text-4xl font-bold mb-6">
+                  Wanted{" "}
+                  <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                </h2>
                 {/* Positions Section */}
                 <div>
                   <div className="p-6 flex justify-between items-center border-b">
@@ -658,7 +666,10 @@ const ProjectDetailPage = () => {
                 {/* Discussions Header */}
                 <div className="p-6">
                   <div className="inline-block bg-white border rounded-lg px-4 py-2 mb-4">
-                    <span className="font-bold">Discussions</span>
+                    <span className="font-bold">
+                      Discussions{" "}
+                      <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                    </span>
                   </div>
                 </div>
 
@@ -768,7 +779,8 @@ const ProjectDetailPage = () => {
               <div className="border rounded-lg overflow-hidden">
                 <div className="p-5 border-b">
                   <h1 className="text-2xl font-bold mb-10">
-                    Contact The Owner of This Project
+                    Contact The Owner of This Project{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
                   </h1>
                   <h3 className="text-sm mb-3">Full Name</h3>
                   <Input
