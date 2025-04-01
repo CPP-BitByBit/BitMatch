@@ -16,12 +16,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
 export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(projectData);
-  const [newPosition, setNewPosition] = useState({ title: "", count: 1 });
+  const [newPosition, setNewPosition] = useState({ title: "" });
   const [editingIndex, setEditingIndex] = useState(-1);
 
   const handleChange = (field, value) => {
@@ -56,31 +57,29 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
 
     if (editingIndex >= 0) {
       // Update existing position
-      const updatedPositions = [...formData.openPositions];
-      updatedPositions[editingIndex] = { ...newPosition };
-      setFormData((prev) => ({ ...prev, openPositions: updatedPositions }));
+      const updatedPositions = [...formData.positions];
+      updatedPositions[editingIndex] = { title: newPosition.title };
+      setFormData((prev) => ({ ...prev, positions: updatedPositions }));
       setEditingIndex(-1);
     } else {
       // Add new position
       setFormData((prev) => ({
         ...prev,
-        openPositions: [...prev.openPositions, { ...newPosition }],
+        positions: [...prev.positions, { title: newPosition.title }],
       }));
     }
 
     // Reset the input fields
-    setNewPosition({ title: "", count: 1 });
+    setNewPosition({ title: "" });
   };
 
   const removePosition = (index) => {
-    const updatedPositions = formData.openPositions.filter(
-      (_, i) => i !== index
-    );
-    setFormData((prev) => ({ ...prev, openPositions: updatedPositions }));
+    const updatedPositions = formData.positions.filter((_, i) => i !== index);
+    setFormData((prev) => ({ ...prev, positions: updatedPositions }));
   };
 
   const editPosition = (index) => {
-    setNewPosition({ ...formData.openPositions[index] });
+    setNewPosition({ title: formData.positions[index].title });
     setEditingIndex(index);
   };
 
@@ -167,7 +166,7 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
           {/* Image Upload Section */}
           <div className="space-y-2">
             <Label htmlFor="image" className="text-sm font-medium">
-              Project Image
+              Cover Image
             </Label>
             <Input
               id="image"
@@ -178,17 +177,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 if (file) {
                   setFormData((prev) => ({
                     ...prev,
-                    image_url: file,
+                    new_image: file,
                   }));
                 }
               }}
               className="w-full"
             />
-            {formData.image_url && (
+            {formData.new_image && (
               <div className="mt-2">
-                {formData.image_url instanceof File && (
+                {formData.new_image instanceof File && (
                   <img
-                    src={URL.createObjectURL(formData.image_url)}
+                    src={URL.createObjectURL(formData.new_image)}
                     alt="Project"
                     className="max-h-40 rounded-md"
                   />
@@ -220,20 +219,6 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                         }
                       />
                     </div>
-                    <div>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="Count"
-                        value={newPosition.count}
-                        onChange={(e) =>
-                          setNewPosition({
-                            ...newPosition,
-                            count: Number.parseInt(e.target.value) || 1,
-                          })
-                        }
-                      />
-                    </div>
                   </div>
                   <Button
                     type="button"
@@ -247,7 +232,6 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                   </Button>
                 </div>
 
-                {/* Position List */}
                 {formData.positions.length > 0 && (
                   <ScrollArea className="h-[150px] pr-4">
                     <div className="space-y-2">
@@ -258,10 +242,6 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                         >
                           <div className="flex-1">
                             <p className="font-medium">{position.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {position.count} position
-                              {position.count !== 1 ? "s" : ""} available
-                            </p>
                           </div>
                           <div className="flex items-center gap-1">
                             <Button
@@ -269,6 +249,7 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                               size="icon"
                               onClick={() => editPosition(index)}
                               className="h-7 w-7"
+                              type="button"
                             >
                               <Edit2 className="h-3.5 w-3.5" />
                             </Button>
@@ -277,6 +258,7 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                               size="icon"
                               onClick={() => removePosition(index)}
                               className="h-7 w-7 text-destructive"
+                              type="button"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>

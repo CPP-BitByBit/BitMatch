@@ -36,7 +36,6 @@ const fetchProjectInfo = async (id) => {
     }
 
     const projectData = await response.json();
-    console.log(projectData);
 
     return projectData;
   } catch (error) {
@@ -89,9 +88,10 @@ const ProjectDetailPage = () => {
     formData.append("group", data.group);
     formData.append("institution", data.institution);
     formData.append("description", data.description);
+    formData.append("positions", JSON.stringify(data.positions));
 
-    if (data.image_url) {
-      formData.append("image_url", data.image_url);
+    if (data.new_image) {
+      formData.append("image_url", data.new_image);
     }
 
     try {
