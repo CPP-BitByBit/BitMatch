@@ -80,10 +80,34 @@ const ProjectDetailPage = () => {
     loadProjectInfo();
   }, [id]);
 
-  const handleSave = (data) => {
+  const handleSave = async (data) => {
     console.log("Saving project data:", data);
-    editProjectInfo(data);
-    // Here you would typically send this data to your backend
+
+    const formData = new FormData();
+
+    formData.append("title", data.title);
+    formData.append("group", data.group);
+    formData.append("institution", data.institution);
+    formData.append("description", data.description);
+
+    try {
+      const response = await axios.put(
+        `${SERVER_HOST}/projects/${data.id}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("Project updated successfully!");
+      editProjectInfo(response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert("Failed to update the project. Please try again.");
+    }
   };
 
   const nextImage = () => {
