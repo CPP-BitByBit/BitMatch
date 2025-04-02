@@ -11,6 +11,7 @@ import { Button } from "./components/ui/button";
 import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
 import ProjectDetailPage from "./views/IndividualProjectPage";
+import AddProjectPage from "./views/AddProjectPage";
 import "./styles/global.css";
 
 export default function App() {
@@ -99,6 +100,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/project-list" element={<ProjectListPage />} />
             <Route path="/projects/:id" element={<ProjectDetailPage />} />
+            <Route path="/create-project" element={<AddProjectPage />} />
           </Routes>
         </SignedIn>
       </div>

@@ -1,10 +1,21 @@
-import { ChevronRight, ChevronLeft, Plus, Edit, Icon } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Edit,
+  Icon,
+  ThumbsUp,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MemberCard } from "@/components/project/MemberCard";
+import { PositionCard } from "@/components/project/PositionCard";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import Modal from "@/components/project/Modal";
+import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
+import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
 
@@ -25,7 +36,6 @@ const fetchProjectInfo = async (id) => {
     }
 
     const projectData = await response.json();
-    console.log(projectData);
 
     return projectData;
   } catch (error) {
@@ -34,14 +44,19 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
+const editProjectInfo = async (id) => {};
+
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [project, setProject] = useState(null); // State to store project details
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [discussions, setDiscussions] = useState([]);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -64,6 +79,42 @@ const ProjectDetailPage = () => {
     loadProjectInfo();
   }, [id]);
 
+  const handleSave = async (data) => {
+    console.log("Saving project data:", data);
+
+    const formData = new FormData();
+
+    formData.append("title", data.title);
+    formData.append("group", data.group);
+    formData.append("institution", data.institution);
+    formData.append("description", data.description);
+    formData.append("full_description", data.full_description);
+    formData.append("positions", JSON.stringify(data.positions));
+
+    if (data.new_image) {
+      formData.append("image_url", data.new_image);
+    }
+
+    try {
+      const response = await axios.put(
+        `${SERVER_HOST}/projects/${data.id}/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      alert("Project updated successfully!");
+      editProjectInfo(response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert("Failed to update the project. Please try again.");
+    }
+  };
+
   const nextImage = () => {
     if (project.images) {
       setCurrentImageIndex((prev) =>
@@ -82,6 +133,100 @@ const ProjectDetailPage = () => {
 
   const selectImage = (index) => {
     setCurrentImageIndex(index);
+  };
+
+  const handleAddComment = () => {
+    setShowCommentForm(true);
+    setReplyingTo(null);
+  };
+
+  const handleCancelComment = () => {
+    setShowCommentForm(false);
+    setReplyingTo(null);
+  };
+
+  const handleSubmitComment = (postId, content) => {
+    if (postId) {
+      // Add reply to existing post
+      const updatedDiscussions = discussions.map((discussion) => {
+        if (discussion.id === postId) {
+          return {
+            ...discussion,
+            replies: [
+              ...(discussion.replies || []),
+              {
+                id: Date.now().toString(),
+                parentId: postId,
+                author: {
+                  name: "Current User",
+                  title: "Project Member",
+                  profileImage: "",
+                },
+                content,
+                datePosted: new Date().toLocaleString(),
+              },
+            ],
+          };
+        }
+        return discussion;
+      });
+      setDiscussions(updatedDiscussions);
+    } else {
+      // Add new post
+      const newPost = {
+        id: Date.now().toString(),
+        author: {
+          name: "Current User",
+          title: "Project Member",
+          profileImage: "",
+        },
+        content,
+        datePosted: new Date().toLocaleString(),
+        replies: [],
+      };
+      setDiscussions([...discussions, newPost]);
+    }
+    setShowCommentForm(false);
+    setReplyingTo(null);
+  };
+
+  const handleReplyToPost = (id) => {
+    setReplyingTo(id);
+  };
+
+  const handleDeletePost = (id) => {
+    // In a real app, this would show a confirmation dialog
+    if (confirm(`Delete post with ID ${id}?`)) {
+      // Check if it's a main post or a reply
+      const isMainPost = discussions.some((discussion) => discussion.id === id);
+
+      if (isMainPost) {
+        // Delete the main post and all its replies
+        const updatedDiscussions = discussions.filter(
+          (discussion) => discussion.id !== id
+        );
+        setDiscussions(updatedDiscussions);
+      } else {
+        // Delete a reply
+        const updatedDiscussions = discussions.map((discussion) => {
+          if (
+            discussion.replies &&
+            discussion.replies.some((reply) => reply.id === id)
+          ) {
+            return {
+              ...discussion,
+              replies: discussion.replies.filter((reply) => reply.id !== id),
+            };
+          }
+          return discussion;
+        });
+        setDiscussions(updatedDiscussions);
+      }
+    }
+  };
+
+  const handleReaction = (id) => {
+    alert(`Add reaction to post with ID ${id}`);
   };
 
   // Loading state
@@ -119,19 +264,19 @@ const ProjectDetailPage = () => {
               onClick={() => window.history.back()}
             >
               <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
-              Back
+              Back to Projects
             </Button>
           </div>
         </header>
 
         {/* Main content */}
         <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-          <h1 className="text-4xl font-bold mb-8">{project.title}</h1>
+          <h1 className="text-5xl font-bold mb-6">{project.title}</h1>
 
           {/* Project showcase */}
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 gap-6 mb-9">
             {/* Image Slider */}
-            <div className="relative bg-gray-200 aspect-[4/3] flex items-center justify-center">
+            <div className="relslative bg-gray-200 aspect-[4/3] flex items-center justify-center mt-1">
               {project.images && project.images.length > 0 ? (
                 <>
                   <div className="relative w-full h-full">
@@ -142,7 +287,7 @@ const ProjectDetailPage = () => {
                       alt="Project image"
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-between px-4">
+                    <div className="relative inset-0 flex items-center justify-between px-4">
                       <Button
                         variant="secondary"
                         size="icon"
@@ -161,13 +306,7 @@ const ProjectDetailPage = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                    <p className="text-center text-sm text-gray-600 bg-white/80 px-2 py-1 rounded">
-                      Slider
-                      <br />
-                      Image snapshots are below
-                    </p>
-                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2"></div>
                 </>
               ) : (
                 <span>No images available</span>
@@ -175,7 +314,7 @@ const ProjectDetailPage = () => {
             </div>
             {/* Project info */}
             <div className="bg-muted/30 rounded-lg p-6">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-4 mb-2">
                 {project.image_url ? (
                   <img
                     src={project.image_url}
@@ -186,19 +325,23 @@ const ProjectDetailPage = () => {
                   <span>Cover Image goes here</span>
                 )}
               </div>
-
               <div className="mb-6">
+                <h5 className="text-sm">From</h5>
                 <h2 className="text-xl font-bold">{project.group}</h2>
                 <p className="text-sm">{project.description}</p>
               </div>
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <Button variant="ghost" size="icon">
+                    <ThumbsUp className="h-6 w-6"></ThumbsUp>
+                  </Button>
                   <span>{project.likes_count} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                  <Button variant="ghost" size="icon">
+                    <UserRound className="h-6 w-6"></UserRound>
+                  </Button>
                   <span>{project.followers_count} Followers</span>
                 </div>
               </div>
@@ -206,7 +349,7 @@ const ProjectDetailPage = () => {
           </div>
 
           {/* Thumbnails */}
-          <div className="relative mb-8">
+          <div className="relative mt-1 mb-6">
             <div className="flex overflow-x-auto space-x-2 py-2">
               {project.images &&
                 project.images.map((image, index) => (
@@ -220,8 +363,8 @@ const ProjectDetailPage = () => {
                     <img
                       src={image || "/placeholder.svg"}
                       alt={`Pic ${index + 1}`}
-                      width={64}
-                      height={64}
+                      width={60}
+                      height={60}
                       className="object-cover w-full h-full"
                     />
                   </div>
@@ -231,149 +374,451 @@ const ProjectDetailPage = () => {
 
           {/* Tabs */}
           <Tabs
-            defaultValue="overview"
-            className="mb-8"
-            onValueChange={setActiveTab}
+            className="mb-2"
+            selectedIndex={[
+              "overview",
+              "updates",
+              "members",
+              "wanted",
+              "discussions",
+              "contact",
+              "edit",
+            ].indexOf(activeTab)}
+            onSelect={(index) => {
+              const tabNames = [
+                "overview",
+                "updates",
+                "members",
+                "wanted",
+                "discussions",
+                "contact",
+                "edit",
+              ];
+              const selectedTab = tabNames[index];
+
+              if (selectedTab === "edit") {
+                setIsOpen(true); // Open the dialog
+                setActiveTab("overview"); // Stay on the default tab (e.g., Overview)
+              } else {
+                setActiveTab(selectedTab); // Change tab normally
+              }
+            }}
           >
-            <TabList className="grid grid-cols-6 w-full bg-gray-100 mb-8">
+            <TabList className="grid grid-cols-7 w-full bg-gray-100 mb-8">
               <Tab
                 value="overview"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Overview
               </Tab>
               <Tab
                 value="updates"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Updates
               </Tab>
               <Tab
                 value="members"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Members
               </Tab>
               <Tab
                 value="wanted"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Wanted
               </Tab>
               <Tab
                 value="discussions"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Discussions
               </Tab>
               <Tab
                 value="contact"
-                className="font-medium px-4 py-2 transition-all hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                 selectedClassName="bg-blue-200 text-black"
               >
                 Contact
               </Tab>
+
+              <Tab
+                value="edit"
+                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                selectedClassName="bg-blue-200 text-black"
+                onClick={(e) => {
+                  setIsOpen(true);
+                  e.preventDefault();
+                }}
+              >
+                Edit Project
+              </Tab>
             </TabList>
+
+            <EditProjectDialog
+              open={isOpen}
+              onOpenChange={setIsOpen}
+              projectData={project}
+              onSave={handleSave}
+            />
 
             <TabPanel value="overview" className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-bold">Overview</h3>
+                <h2 className="text-3xl font-bold">Overview</h2>
               </div>
-              <h4 className="text-xl font-semibold mb-4">
+              <h2 className="text-xl font-semibold mb-4">
                 Background & More Details About the Project
-              </h4>
+              </h2>
               <div className="mb-6">
-                <h5 className="font-semibold mb-2">
-                  This space will be filled in by the owner
-                </h5>
-                <p className="text-sm">{project.description}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit Project
-                </Button>
-                <Modal
-                  isOpen={isModalOpen}
-                  onClose={() => setIsModalOpen(false)}
-                >
-                  <h2 className="text-xl font-bold">Edit Project</h2>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <p hclassName="text-right">Title</p>
-                    <Input
-                      id="title"
-                      defaultValue={project.title}
-                      className="col-span-3"
-                    />
-                    <p hclassName="text-right">Description</p>
-                    <Input
-                      id="description"
-                      defaultValue={project.description}
-                      className="col-span-3"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
-                  >
-                    Close
-                  </button>
-                </Modal>
+                <p className="text-sm mb-8">{project.full_description}</p>
               </div>
             </TabPanel>
 
             <TabPanel value="updates">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Updates content will go here
-                </p>
+              <div className="border rounded-lg p-4 overflow-hidden">
+                <div className="p-5 border-solid">
+                  <h2 className="text-2xl font-bold text-left mb-5">
+                    Updates{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                  </h2>
+                  <div className="gap-4">
+                    <h3 className="text-sm mb-3">Title</h3>
+                    <Input
+                      type="text"
+                      className="flex-1 border rounded px-4 py-2 mb-6 h-10"
+                    />
+                    {showCommentForm ? (
+                      <ReplyForm
+                        postId={replyingTo || ""}
+                        onCancel={handleCancelComment}
+                        onSubmit={handleSubmitComment}
+                      />
+                    ) : (
+                      <div className="border p-4 mb-4">
+                        <div className="mb-4">
+                          <div
+                            className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
+                            onClick={handleAddComment}
+                          >
+                            <p className="text-gray-500">
+                              Add your comments here
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="secondary"
+                            className="bg-gray-300 hover:bg-gray-400 text-black"
+                            onClick={handleCancelComment}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            className="bg-gray-300 hover:bg-gray-400 text-black"
+                            onClick={handleAddComment}
+                          >
+                            Comment
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
             <TabPanel value="members">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Members content will go here
-                </p>
+              <div className="border rounded-lg overflow-hidden">
+                {/* Search and Add Member Section */}
+                <div className="p-5 border-b">
+                  <div className="flex gap-4">
+                    <Input
+                      type="text"
+                      placeholder="Search for students to add"
+                      className="flex-1 border rounded px-4 py-2"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="bg-gray-300 hover:bg-gray-400 text-black"
+                    >
+                      Add Member
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Members List Section */}
+                <div className="p-5">
+                  <h2 className="text-2xl font-bold mb-6">
+                    Students Working on This Project{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                  </h2>
+
+                  <div className="space-y-4">
+                    {/* Member 1 */}
+                    <MemberCard
+                      name="John Doe"
+                      position="Backend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                    {/* Member 2 */}
+                    <MemberCard
+                      name="Jane Done"
+                      position="Frontend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                    {/* Member 3 */}
+                    <MemberCard
+                      name="Jim Dope"
+                      position="Backend Developer"
+                      joinDate="01-01-2024"
+                      profileImage="/placeholder.svg"
+                    />
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
             <TabPanel value="wanted">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Wanted content will go here
-                </p>
+              <div className="rounded-lg overflow-hidden">
+                {/* Wanted Header */}
+                <h2 className="text-4xl font-bold mb-6">
+                  Wanted{" "}
+                  <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                </h2>
+                {/* Positions Section */}
+                <div>
+                  <div className="p-6 flex justify-between items-center border-b">
+                    <h2 className="text-2xl font-bold">
+                      Positions Needed for This Project
+                    </h2>
+                    <Button
+                      variant="secondary"
+                      className="hover:bg-gray-400 text-black"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Position
+                    </Button>
+                  </div>
+
+                  <div>
+                    <PositionCard
+                      id="1"
+                      title="Backend Developer"
+                      datePosted="02-02-2024"
+                      description="Work with Java Spring to implement the backend for a web app"
+                      responsibilities={[
+                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
+                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                      ]}
+                      skillSets={{
+                        technical: ["Python", "SQL", "C++", "Java"],
+                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
+                        soft: [
+                          "Communication",
+                          "Analytical",
+                          "Problem Solver",
+                          "Detail Oriented",
+                        ],
+                      }}
+                      qualification="Pursuing a BA in Computer Science"
+                      skillMatch="35"
+                    />
+                    <PositionCard
+                      id="2"
+                      title="Backend Developer"
+                      datePosted="02-02-2024"
+                      description="Work with Java Spring to implement the backend for a web app"
+                      responsibilities={[
+                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
+                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+                      ]}
+                      skillSets={{
+                        technical: ["Python", "SQL", "C++", "Java"],
+                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
+                        soft: [
+                          "Communication",
+                          "Analytical",
+                          "Problem Solver",
+                          "Detail Oriented",
+                        ],
+                      }}
+                      qualification="Pursuing a BA in Computer Science"
+                      skillMatch="35"
+                    />
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
-            <TabPanel value="discussions">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Discussions content will go here
-                </p>
+            <TabPanel value="discussions" className="mt-6">
+              <div className="bg-gray-100 rounded-lg overflow-hidden">
+                {/* Discussions Header */}
+                <div className="p-6">
+                  <div className="inline-block bg-white border rounded-lg px-4 py-2 mb-4">
+                    <span className="font-bold">
+                      Discussions{" "}
+                      <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Comment Form */}
+                <div className="bg-white border-t p-6">
+                  {showCommentForm ? (
+                    <ReplyForm
+                      postId={replyingTo || ""}
+                      onCancel={handleCancelComment}
+                      onSubmit={handleSubmitComment}
+                    />
+                  ) : (
+                    <div className="border p-4 mb-4">
+                      <div className="mb-4">
+                        <div
+                          className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
+                          onClick={handleAddComment}
+                        >
+                          <p className="text-gray-500">
+                            Add your comments here
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="secondary"
+                          className="bg-gray-300 hover:bg-gray-400 text-black"
+                          onClick={handleCancelComment}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          className="bg-gray-300 hover:bg-gray-400 text-black"
+                          onClick={handleAddComment}
+                        >
+                          Comment
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Discussion Posts */}
+                  <div>
+                    {discussions.length > 0 ? (
+                      discussions.map((discussion) => (
+                        <div key={discussion.id}>
+                          <DiscussionPost
+                            id={discussion.id}
+                            author={discussion.author}
+                            content={discussion.content}
+                            datePosted={discussion.datePosted}
+                            onReply={handleReplyToPost}
+                            onDelete={handleDeletePost}
+                            onReaction={handleReaction}
+                          />
+
+                          {replyingTo === discussion.id && (
+                            <div className="ml-12 mt-4">
+                              <ReplyForm
+                                postId={discussion.id}
+                                onCancel={handleCancelComment}
+                                onSubmit={handleSubmitComment}
+                              />
+                            </div>
+                          )}
+
+                          {discussion.replies &&
+                            discussion.replies.map((reply) => (
+                              <div key={reply.id}>
+                                <DiscussionPost
+                                  id={reply.id}
+                                  author={reply.author}
+                                  content={reply.content}
+                                  datePosted={reply.datePosted}
+                                  isReply={true}
+                                  parentId={discussion.id}
+                                  onReply={handleReplyToPost}
+                                  onDelete={handleDeletePost}
+                                  onReaction={handleReaction}
+                                />
+
+                                {replyingTo === reply.id && (
+                                  <div className="ml-12 mt-4">
+                                    <ReplyForm
+                                      postId={reply.id}
+                                      onCancel={handleCancelComment}
+                                      onSubmit={handleSubmitComment}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-center py-8">
+                        No discussions yet. Start the conversation!
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </TabPanel>
 
             <TabPanel value="contact">
-              <div className="p-4 text-center">
-                <p className="text-muted-foreground">
-                  Contact content will go here
-                </p>
+              <div className="border rounded-lg overflow-hidden">
+                <div className="p-5 border-b">
+                  <h1 className="text-2xl font-bold mb-10">
+                    Contact The Owner of This Project{" "}
+                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
+                  </h1>
+                  <h3 className="text-sm mb-3">Full Name</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Email Address</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Subject</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6"
+                  />
+                  <h3 className="text-sm mb-3">Description</h3>
+                  <Input
+                    type="text"
+                    className="flex-1 border rounded px-4 py-2 mb-6 h-60"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="bg-gray-100 hover:bg-gray-400 text-black"
+                  >
+                    Submit
+                  </Button>
+                </div>
               </div>
             </TabPanel>
+            <TabPanel value="edit"></TabPanel>
           </Tabs>
         </main>
 
         {/* Footer */}
         <footer className="border-t p-4 text-center">
-          <p className="text-muted-foreground">Footer</p>
+          <p className="text-muted-foreground"></p>
         </footer>
       </div>
 
