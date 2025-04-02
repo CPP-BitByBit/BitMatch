@@ -25,12 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b4wn$=0zp6j)8%uejmc)hp&3$j3myn$(&i_69(c@shw1i285*v'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DJANGO_ENV = os.getenv("DJANGO_ENV", "DEV").upper()  
 
-ALLOWED_HOSTS = ["*"]
+DEBUG = DJANGO_ENV == "DEV"
+
+if DJANGO_ENV == "PROD":
+    ALLOWED_HOSTS = ["bitmatchapp.com", "www.bitmatchapp.com"]
+else:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -178,6 +183,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
     "http://localhost:5174", 
     "https://bitmatchapp.com",
+    "https://www.bitmatchapp.com",
     "https://api.bitmatchapp.com",
 ]
 
