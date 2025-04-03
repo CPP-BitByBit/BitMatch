@@ -9,6 +9,7 @@ import {
   useUser,
 } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 export default function Navbar({ links = [] }) {
   const defaultLinks = [
@@ -37,7 +38,7 @@ export default function Navbar({ links = [] }) {
         <div className="max-w-[1485px] mx-auto flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-blue-600" />
+            <img src={logo} alt="Bitmatch logo" className="h-6 w-6" />
             <h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2>
           </Link>
 
@@ -58,7 +59,7 @@ export default function Navbar({ links = [] }) {
           <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
-                <Button className="px-6 py-3 text-black bg-white rounded-lg hover:bg-black hover:text-white">
+                <Button className="px-6 py-4 text-white hover:bg-blue-700 transition duration-200 ease-in-out">
                   Sign In
                 </Button>
               </SignInButton>
@@ -80,7 +81,7 @@ export default function Navbar({ links = [] }) {
         </div>
       </header>
 
-      {/* Mobile Menu - Appears Below Header */}
+      {/* Mobile Drop Down Menu - Appears Below Header */}
       {menuOpen && (
         <div className="md:hidden bg-white shadow-md px-4 pt-20 pb-4 space-y-2 fixed top-0 left-0 w-full z-40">
           {navLinks.map((link) => (

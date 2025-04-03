@@ -40,7 +40,7 @@ export function HeroSection({ user }) {
 
               <Link to="/sign-up" className="w-full">
 
-                <Button size="lg" className="px-8">
+                <Button size="lg" className="px-8 py-4 text-white hover:bg-blue-700 transition duration-200 ease-in-out">
                   Get Started<ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
