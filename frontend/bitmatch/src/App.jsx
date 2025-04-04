@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 
 import MainNavbar from "./components/navbar";
@@ -21,27 +26,54 @@ function AppRoutes() {
   const location = useLocation();
   const { isSignedIn } = useUser();
   const isLanding = location.pathname === "/";
-  const layoutClass = isLanding && !isSignedIn ? "py-8" : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
+  const layoutClass =
+    isLanding && !isSignedIn
+      ? "py-8"
+      : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
 
   return (
     <div className={layoutClass}>
       <Routes>
-        
         {/* Landing or Home */}
         <Route
           path="/"
           element={
             <>
-              <SignedOut><LandingPage /></SignedOut>
-              <SignedIn><HomePage /></SignedIn>
+              <SignedOut>
+                <LandingPage />
+              </SignedOut>
+              <SignedIn>
+                <HomePage />
+              </SignedIn>
             </>
           }
         />
 
         {/* Signed-in only routes */}
-        <Route path="/project-list" element={<SignedIn><ProjectListPage /></SignedIn>} />
-        <Route path="/projects/:id" element={<SignedIn><ProjectDetailPage /></SignedIn>} />
-        <Route path="/create-project" element={<SignedIn><AddProjectPage /></SignedIn>} />
+        <Route
+          path="/project-list"
+          element={
+            <SignedIn>
+              <ProjectListPage />
+            </SignedIn>
+          }
+        />
+        <Route
+          path="/projects/:id"
+          element={
+            <SignedIn>
+              <ProjectDetailPage />
+            </SignedIn>
+          }
+        />
+        <Route
+          path="/create-project"
+          element={
+            <SignedIn>
+              <AddProjectPage />
+            </SignedIn>
+          }
+        />
 
         {/* Public pages */}
         <Route path="/sign-up" element={<SignUpPage />} />
