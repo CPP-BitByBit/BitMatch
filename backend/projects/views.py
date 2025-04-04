@@ -69,7 +69,6 @@ def toggle_like(request, project_id):
         data = request.data
         action = data.get('action')
         user_id = data.get('user_id')
-
         project = get_object_or_404(Project, id=project_id)
         user = get_object_or_404(User, id=user_id)
 
@@ -101,6 +100,8 @@ def toggle_follow(request, project_id):
         action = data.get('action')
         user_id = data.get('user_id')
 
+        print("test 1")
+
         project = get_object_or_404(Project, id=project_id)
         user = get_object_or_404(User, id=user_id)
 
@@ -109,6 +110,7 @@ def toggle_follow(request, project_id):
                 Follow.objects.create(project=project, user=user)
                 project.followers_count += 1
                 project.save()
+                print("saved")
                 return Response({'message': 'Project followed successfully'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already followed this project.'}, status=status.HTTP_400_BAD_REQUEST)

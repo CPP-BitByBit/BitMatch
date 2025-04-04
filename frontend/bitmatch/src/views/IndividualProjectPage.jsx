@@ -44,8 +44,6 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => {};
-
 const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [project, setProject] = useState(null); // State to store project details
@@ -57,6 +55,7 @@ const ProjectDetailPage = () => {
   const [discussions, setDiscussions] = useState([]);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [following, setFollowing] = useState(false)
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -78,6 +77,26 @@ const ProjectDetailPage = () => {
 
     loadProjectInfo();
   }, [id]);
+  
+  const handleFollow = async () => {
+    const fdata = {
+      "action": following ? "unfollow" : "follow",
+      "user_id" : 1
+    };
+    console.log("id is ", project.id)
+  
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/follow/${project.id}`, fdata, 
+      )
+      editProjectInfo(response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating follows: ', error);
+    }
+  };
+
+  const editProjectInfo = async (id) => {};
 
   const handleSave = async (data) => {
     console.log("Saving project data:", data);
@@ -339,7 +358,7 @@ const ProjectDetailPage = () => {
                   <span>{project.likes_count} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" onClick={handleFollow}>
                     <UserRound className="h-6 w-6"></UserRound>
                   </Button>
                   <span>{project.followers_count} Followers</span>
