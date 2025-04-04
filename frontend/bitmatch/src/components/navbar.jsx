@@ -39,7 +39,9 @@ export default function Navbar({ links = [] }) {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="Bitmatch logo" className="h-6 w-6" />
-            <h2 className="font-sans text-xl font-black text-gray-800">BITMATCH</h2>
+            <h2 className="font-sans text-xl font-black text-gray-800">
+              BITMATCH
+            </h2>
           </Link>
 
           {/* Desktop Nav */}
@@ -75,7 +77,11 @@ export default function Navbar({ links = [] }) {
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label="Toggle Menu"
             >
-              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {menuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -99,17 +105,19 @@ export default function Navbar({ links = [] }) {
 
       {/* Development Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md">
-            <h3 className="text-lg font-semibold mb-2">Notice</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-2">Disclaimer</h3>
             <p className="text-sm text-gray-700">
-              This app is currently under development. Features might change!
+              Bitmatch is in early development, so some features may not work as
+              expected. Thanks for your patience and support as we continue to
+              improve!
             </p>
             <button
               onClick={() => setShowModal(false)}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
             >
-              Close
+              Got It!
             </button>
           </div>
         </div>

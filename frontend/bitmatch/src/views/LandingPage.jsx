@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
   const { user } = useUser();
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -32,9 +32,7 @@ export default function LandingPage() {
       <Features />
 
       {/* Development Notice Modal */}
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)} />
-      )}
+      {showModal && <Modal onClose={() => setShowModal(false)} />}
     </main>
   );
 }
@@ -54,9 +52,12 @@ function Modal({ onClose }) {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
       >
-        <h3 id="modal-title" className="text-lg font-bold mb-2">🚧 Heads up!</h3>
+        <h3 id="modal-title" className="text-lg font-bold mb-2">
+          🚧 Heads up!
+        </h3>
         <p className="text-gray-600 text-sm">
-          This site is still in development. Features and data may change.
+          BitMatch is currently undergoing maintenance, so some features may not
+          work as expected.
         </p>
         <Button className="mt-4 bg-blue-600 text-white" onClick={onClose}>
           Got it!
