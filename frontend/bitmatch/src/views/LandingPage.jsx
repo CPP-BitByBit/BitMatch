@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 
-import { HeroSection } from "../components/Landing/HeroSection";
-import { HowItWorks } from "../components/Landing/HowItWorks";
-import { Features } from "../components/Landing/Features";
+import { HeroSection } from "../components/landing/HeroSection";
+import { HowItWorks } from "../components/landing/HowItWorks";
+import { Features } from "../components/landing/Features";
 import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
