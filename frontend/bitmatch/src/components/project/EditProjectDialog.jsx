@@ -9,12 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/Dialog";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/Label";
+import { Textarea } from "@/components/ui/Textarea";
+import { Card } from "@/components/ui/Card";
 import { useNavigate } from "react-router-dom";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
