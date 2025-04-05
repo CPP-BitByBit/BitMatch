@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/Label";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/Textarea";
 
 export default function OnboardPage() {
   const navigate = useNavigate();
