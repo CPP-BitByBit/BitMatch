@@ -47,7 +47,8 @@ BitMatch provides a streamlined platform where:
 
 ## 🏗 Architecture Diagram
 
-![BitMatchAWSDiagram](https://github.com/user-attachments/assets/ebf5667b-e255-4933-bee9-9970bd0c6f9a)
+![BitMatchArchitecture](https://github.com/user-attachments/assets/f359c19f-edbb-413d-a025-b9c5cde63bd0)
+
 
 ## 🛠 Running Locally
 
