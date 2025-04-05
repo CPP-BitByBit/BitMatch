@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function OnboardPage() {
@@ -33,7 +33,8 @@ export default function OnboardPage() {
       <div className="w-full max-w-xl bg-white shadow-md rounded-lg p-8 space-y-6">
         <h1 className="text-3xl font-bold text-center">Work in Progress!</h1>
         <p className="text-muted-foreground text-center">
-          This is just a placeholder for the onboarding process. Nothing works right now.
+          This is just a placeholder for the onboarding process. Nothing works
+          right now.
         </p>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
