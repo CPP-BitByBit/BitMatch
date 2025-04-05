@@ -32,10 +32,7 @@ DJANGO_ENV = os.getenv("DJANGO_ENV", "DEV").upper()
 
 DEBUG = DJANGO_ENV == "DEV"
 
-if DJANGO_ENV == "PROD":
-    ALLOWED_HOSTS = ["bitmatchapp.com", "www.bitmatchapp.com"]
-else:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
