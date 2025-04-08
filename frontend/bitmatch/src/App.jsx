@@ -16,7 +16,15 @@ import ProjectDetailPage from "./views/IndividualProjectPage";
 import AddProjectPage from "./views/AddProjectPage";
 import SignUpPage from "./views/SignUpPage";
 import SignInPage from "./views/SignInPage";
+
 import OnboardPage from "./views/OnboardPage";
+import InterestPage from './components/onboarding/Interest';
+import LocationPage from './components/onboarding/Location';
+import PositionPage from './components/onboarding/Roles';
+import SkillsPage from './components/onboarding/Skills';
+import UserPage from './components/onboarding/CreateProfile';
+
+// Uncomment when ready
 // import BrowsePage from "./views/BrowsePage";
 // import AboutPage from "./views/AboutPage";
 
@@ -26,10 +34,9 @@ function AppRoutes() {
   const location = useLocation();
   const { isSignedIn } = useUser();
   const isLanding = location.pathname === "/";
-  const layoutClass =
-    isLanding && !isSignedIn
-      ? "py-8"
-      : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
+  const layoutClass = !isSignedIn
+    ? "py-8"
+    : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
 
   return (
     <div className={layoutClass}>
@@ -78,10 +85,18 @@ function AppRoutes() {
         {/* Public pages */}
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/onboard" element={<OnboardPage />} />
+
+        {/* Onboarding with redirect and nested routes */}
+        <Route path="/onboard" element={<OnboardPage />}>
+          <Route path="interests" element={<InterestPage />} />
+          <Route path="location" element={<LocationPage />} />
+          <Route path="positions" element={<PositionPage />} />
+          <Route path="skills" element={<SkillsPage />} />
+          <Route path="user" element={<UserPage />} />
+        </Route>
 
         {/* Uncomment when ready */}
-        {/*
+        {/* 
         <Route path="/browse" element={<BrowsePage />} />
         <Route path="/about" element={<AboutPage />} />
         */}
