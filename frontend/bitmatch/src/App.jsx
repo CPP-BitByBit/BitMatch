@@ -24,93 +24,83 @@ import PositionPage from './components/onboarding/Roles';
 import SkillsPage from './components/onboarding/Skills';
 import UserPage from './components/onboarding/CreateProfile';
 
-// Uncomment when ready
-// import BrowsePage from "./views/BrowsePage";
-// import AboutPage from "./views/AboutPage";
-
 import "./styles/global.css";
 
+// AppRoutes is separated for access to hooks
 function AppRoutes() {
   const location = useLocation();
   const { isSignedIn } = useUser();
-  const isLanding = location.pathname === "/";
-  const layoutClass = !isSignedIn
-    ? "py-8"
-    : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
+
+  const pathname = location.pathname;
+  const isLanding = pathname === "/" && !isSignedIn;
+  const isOnboard = pathname.startsWith("/onboard");
+
+  const shouldUseContainer = !isLanding && !isOnboard;
+
+  const layoutClass = shouldUseContainer
+    ? "container mx-auto px-4 py-16 pb-6 min-h-screen"
+    : "";
 
   return (
-    <div className={layoutClass}>
-      <Routes>
-        {/* Landing or Home */}
-        <Route
-          path="/"
-          element={
-            <>
-              <SignedOut>
-                <LandingPage />
-              </SignedOut>
-              <SignedIn>
-                <HomePage />
-              </SignedIn>
-            </>
-          }
-        />
+    <>
+      <MainNavbar />
 
-        {/* Signed-in only routes */}
-        <Route
-          path="/project-list"
-          element={
-            <SignedIn>
-              <ProjectListPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/projects/:id"
-          element={
-            <SignedIn>
-              <ProjectDetailPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/create-project"
-          element={
-            <SignedIn>
-              <AddProjectPage />
-            </SignedIn>
-          }
-        />
+      <main className={layoutClass}>
+        <Routes>
+          {/* Landing or Home */}
+          <Route
+            path="/"
+            element={
+              <>
+                <SignedOut>
+                  <LandingPage />
+                </SignedOut>
+                <SignedIn>
+                  <HomePage />
+                </SignedIn>
+              </>
+            }
+          />
 
-        {/* Public pages */}
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
+          {/* Signed-in only routes */}
+          <Route
+            path="/project-list"
+            element={<SignedIn><ProjectListPage /></SignedIn>}
+          />
+          <Route
+            path="/projects/:id"
+            element={<SignedIn><ProjectDetailPage /></SignedIn>}
+          />
+          <Route
+            path="/create-project"
+            element={<SignedIn><AddProjectPage /></SignedIn>}
+          />
 
-        {/* Onboarding with redirect and nested routes */}
-        <Route path="/onboard" element={<OnboardPage />}>
-          <Route path="interests" element={<InterestPage />} />
-          <Route path="location" element={<LocationPage />} />
-          <Route path="positions" element={<PositionPage />} />
-          <Route path="skills" element={<SkillsPage />} />
-          <Route path="user" element={<UserPage />} />
-        </Route>
+          {/* Public pages */}
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
 
-        {/* Uncomment when ready */}
-        {/* 
-        <Route path="/browse" element={<BrowsePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        */}
-      </Routes>
-    </div>
+          {/* Onboarding */}
+          <Route path="/onboard" element={<SignedIn><OnboardPage /></SignedIn>}>
+            <Route path="interests" element={<InterestPage />} />
+            <Route path="location" element={<LocationPage />} />
+            <Route path="positions" element={<PositionPage />} />
+            <Route path="skills" element={<SkillsPage />} />
+            <Route path="user" element={<UserPage />} />
+          </Route>
+        </Routes>
+      </main>
+
+      <MainFooter />
+    </>
   );
 }
 
+// Default export so main.jsx works
 export default function App() {
   return (
     <Router>
-      <MainNavbar />
       <AppRoutes />
-      <MainFooter />
     </Router>
   );
 }

@@ -108,78 +108,75 @@ export default function OnboardPage() {
   }
 
   return (
-    <>
-      <Toaster /> {/* ✅ Required for showing toasts */}
-
-      <div className="pt-8 min-h-screen flex flex-col items-center">
-        {/* Header */}
-        <div className="py-16 w-full bg-black text-white text-center">
-          <h1>{stepTitles[currentStep - 1]}</h1>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full h-2 bg-gray-200">
-          <div
-            className="h-2 bg-blue-600 transition-all duration-500 ease-in-out"
-            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-          />
-        </div>
-
-        {/* Step Indicator */}
-        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} titles={stepTitles} />
-
-        {/* Main Content */}
-        <div className="w-full max-w-3xl px-6 py-10 flex-1">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.3 }}
-            >
-              {renderStep()}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Optional JSON debug preview */}
-          {/* <pre className="text-xs mt-6 bg-gray-100 p-4 rounded w-full overflow-auto">
-            {JSON.stringify(formData, null, 2)}
-          </pre> */}
-        </div>
-
-        {/* Navigation */}
-        <div className="w-full max-w-3xl px-6 mt-8 mb-12 flex justify-between items-center">
-          {currentStep > 1 ? (
-            <Button
-              onClick={handlePrevious}
-              variant="outline"
-              size="sm"
-              className="w-28 text-white bg-black hover:bg-blue-700 hover:text-white"
-            >
-              <ChevronLeft className="mr-1 h-4 w-4" />
-              Previous
-            </Button>
-          ) : (
-            <div className="w-28" />
-          )}
-
-          {currentStep < totalSteps ? (
-            <Button onClick={handleNext} size="sm" className="w-28 hover:bg-blue-700">
-              Next
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              className="w-28 bg-green-600 hover:bg-green-700"
-              size="sm"
-            >
-              Submit
-            </Button>
-          )}
-        </div>
+    <main className="my-16 flex flex-col items-center justify-center min-h-screen">
+      <Toaster /> {/* Required for showing toasts */}
+      {/* Header */}
+      <div className="py-16 w-full bg-black text-white text-center">
+        <h1>{stepTitles[currentStep - 1]}</h1>
       </div>
-    </>
+
+      {/* Progress Bar */}
+      <div className="w-full h-2 bg-gray-200">
+        <div
+          className="h-2 bg-blue-600 transition-all duration-500 ease-in-out"
+          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        />
+      </div>
+
+      {/* Step Indicator */}
+      <StepIndicator currentStep={currentStep} totalSteps={totalSteps} titles={stepTitles} />
+
+      {/* Main Content */}
+      <div className="w-full max-w-3xl px-6 py-10 flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderStep()}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Optional JSON debug preview */}
+        {/* <pre className="text-xs mt-6 bg-gray-100 p-4 rounded w-full overflow-auto">
+          {JSON.stringify(formData, null, 2)}
+        </pre> */}
+      </div>
+
+      {/* Navigation */}
+      <div className="w-full max-w-3xl px-6 mt-8 mb-12 flex justify-between items-center">
+        {currentStep > 1 ? (
+          <Button
+            onClick={handlePrevious}
+            variant="outline"
+            size="sm"
+            className="w-28 text-white bg-black hover:bg-blue-700 hover:text-white"
+          >
+            <ChevronLeft className="mr-1 h-4 w-4" />
+            Previous
+          </Button>
+        ) : (
+          <div className="w-28" />
+        )}
+
+        {currentStep < totalSteps ? (
+          <Button onClick={handleNext} size="sm" className="w-28 hover:bg-blue-700">
+            Next
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            className="w-28 bg-green-600 hover:bg-green-700"
+            size="sm"
+          >
+            Submit
+          </Button>
+        )}
+      </div>
+    </main>
   )
 }

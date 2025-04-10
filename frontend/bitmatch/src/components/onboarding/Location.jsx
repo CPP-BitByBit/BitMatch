@@ -11,15 +11,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 const Location = forwardRef(({ onDataChange, formData }, ref) => {
   const [location, setLocation] = useState(formData?.location || '')
   const [preferences, setPreferences] = useState(
-    formData?.location_preferences?.filter(p => p !== '') || ["I'm location flexible (REMOTE)"]
+    formData?.location_preferences?.filter(p => p !== '') || ["Remote friendly projects"]
   )
   const [other, setOther] = useState('')
   const [errors, setErrors] = useState({})
 
   const options = [
-    "At my location",
-    "At my University or College location",
-    "I'm location flexible (REMOTE)",
+    "Near my location",
+    "Near my University or College location",
+    "Remote friendly projects",
   ]
 
   useEffect(() => {

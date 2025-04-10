@@ -102,15 +102,15 @@ const CreateProfile = forwardRef(({ onDataChange, formData }, ref) => {
           </Button>
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 py-2">
           {colleges.map((college) => (
-            <Badge key={college} className="bg-blue-600 text-white">
+            <Badge key={college} className="px-4 py-2 bg-blue-600 text-white">
               {college}
               <button
                 onClick={() => handleRemoveCollege(college)}
                 className="ml-1 hover:text-gray-200"
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </button>
             </Badge>
           ))}
