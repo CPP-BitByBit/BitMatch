@@ -56,7 +56,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="home-container">
       <ImageSlideshow items={slideshowItems} />
 
       <div className="mt-12 mb-8">

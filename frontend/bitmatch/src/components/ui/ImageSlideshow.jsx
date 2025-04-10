@@ -67,26 +67,25 @@ export default function ImageSlideshow({ items }) {
               }}
             >
               {/* Darker Overlay */}
-              <div className="absolute inset-0 bg-black bg-opacity-50">
-                <div
-                  className={`${slideContentClasses} ${
-                    index === currentIndex
-                      ? "translate-y-0 opacity-100 max-w-xl"
-                      : "translate-y-8 opacity-0"
-                  }`}
-                >
-                  <h2 className="text-3xl font-bold text-white mb-3">
-                    {slide.title}
-                  </h2>
-                  <p className="mb-4 text-white">{slide.description}</p>
-                  <Button
-                    variant="outline"
-                    className="bg-white hover:bg-gray-100"
+              <Link to={`/projects/${slide.id}`}>
+                <div className="absolute inset-0 bg-black bg-opacity-50">
+                  <div
+                    className={`${slideContentClasses} ${
+                      index === currentIndex
+                        ? "translate-y-0 opacity-100 max-w-xl"
+                        : "translate-y-8 opacity-0"
+                    }`}
                   >
-                    <Link to={`/projects/${slide.id}`}>View Project</Link>
-                  </Button>
+                    <h2 className="text-3xl font-bold text-white mb-3">
+                      {slide.title}
+                    </h2>
+                    <p className="mb-4 text-white">{slide.description}</p>
+                    <Button variant="outline" className="bg-white hover:bg-gray-100">
+                      View Project
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
