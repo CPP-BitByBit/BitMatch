@@ -81,7 +81,7 @@ function AppRoutes() {
           <Route path="/sign-in" element={<SignInPage />} />
 
           {/* Onboarding */}
-          <Route path="/onboard" element={<SignedIn><OnboardPage /></SignedIn>}>
+          <Route path="/onboard" element={<OnboardPage />}>
             <Route path="interests" element={<InterestPage />} />
             <Route path="location" element={<LocationPage />} />
             <Route path="positions" element={<PositionPage />} />
