@@ -57,6 +57,8 @@ const ProjectDetailPage = () => {
   const [discussions, setDiscussions] = useState([]);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [following, setFollowing ] = useState(false);
+  const [likeStatus, setLiked] = useState(false); 
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -78,6 +80,46 @@ const ProjectDetailPage = () => {
 
     loadProjectInfo();
   }, [id]);
+
+  const handleFollow = async () => {
+    setFollowing(!following);
+    console.log("current following status:", following)
+    const fdata = {
+      "action": following ? "unfollow" : "follow",
+      "user_id" : 1
+    };
+    console.log("id is ", id)
+  
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/follow/${id}`, fdata, 
+      )
+      console.log("response: ", response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating follows: ', error);
+    }
+  };
+
+  const handleLike = async () => {
+    setLiked(!likeStatus);
+    console.log("current like status:", likeStatus)
+    const fdata = {
+      "action": likeStatus ? "unlike" : "like",
+      "user_id" : 1
+    };
+    console.log("id is ", id)
+  
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/like/${id}`, fdata, 
+      )
+      console.log("response: ", response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating likes: ', error);
+    }
+  };
 
   const handleSave = async (data) => {
     console.log("Saving project data:", data);
@@ -333,13 +375,13 @@ const ProjectDetailPage = () => {
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" onClick={handleLike}>
                     <ThumbsUp className="h-6 w-6"></ThumbsUp>
                   </Button>
                   <span>{project.likes_count} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" onClick={handleFollow}>
                     <UserRound className="h-6 w-6"></UserRound>
                   </Button>
                   <span>{project.followers_count} Followers</span>
