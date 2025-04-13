@@ -16,6 +16,7 @@ import ProjectDetailPage from "./views/IndividualProjectPage";
 import AddProjectPage from "./views/AddProjectPage";
 import SignUpPage from "./views/SignUpPage";
 import SignInPage from "./views/SignInPage";
+import ProfilePage from "./views/ProfilePage";
 
 import OnboardPage from "./views/OnboardPage";
 import InterestPage from './components/onboarding/Interest';
@@ -74,6 +75,10 @@ function AppRoutes() {
           <Route
             path="/create-project"
             element={<SignedIn><AddProjectPage /></SignedIn>}
+          />
+          <Route
+            path="/my-profile"
+            element={<SignedIn><ProfilePage /></SignedIn>}
           />
 
           {/* Public pages */}
