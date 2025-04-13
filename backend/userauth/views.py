@@ -5,7 +5,15 @@ from django.shortcuts import get_object_or_404
 from .models import User
 from .serializers import UserSerializer
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_if_onboarded(request, clerk_id):
+    if User.objects.filter(auth_id=clerk_id).exists():
+        return Response({"message": "User already onboarded"})
+    else:
+        return Response({"message": "User not onboarded yet!"})
 
 # DRF CRUD views for Users model
 class UsersCRUDView(APIView):
