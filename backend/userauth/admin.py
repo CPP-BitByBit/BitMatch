@@ -4,7 +4,10 @@ from .models import User
 # Register the User model
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'institution', 'followers', 'likes')
-    search_fields = ('username', 'email', 'institution')  
-    list_filter = ('institution',) 
-    ordering = ('username',)  
+    list_display = (
+        'id', 'auth_id', 'username', 'email', 'first_name', 'last_name',
+        'followers', 'likes', 'location'
+    )
+    search_fields = ('username', 'email', 'first_name', 'last_name')
+    list_filter = ('location',)
+    filter_horizontal = ('projects', 'owned')
