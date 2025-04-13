@@ -1,10 +1,12 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+import uuid
 
 class User(models.Model):
-    auth_id = models.CharField(default=999)
-    username = models.CharField(max_length=255, unique=True)
-    email = models.EmailField(unique=True, blank=True, null=True)  
+    id = models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    auth_id = models.CharField(unique=True)
+    username = models.CharField(unique=True)
+    email = models.EmailField(unique=True)  
     first_name = models.CharField(max_length=255, default="")
     last_name = models.CharField(max_length=255, default="")
     colleges = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
