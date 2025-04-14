@@ -14,16 +14,14 @@ import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
 import ProjectDetailPage from "./views/IndividualProjectPage";
 import AddProjectPage from "./views/AddProjectPage";
-import SignUpPage from "./views/SignUpPage";
-import SignInPage from "./views/SignInPage";
 import ProfilePage from "./views/ProfilePage";
 
 import OnboardPage from "./views/OnboardPage";
-import InterestPage from './components/onboarding/Interest';
-import LocationPage from './components/onboarding/Location';
-import PositionPage from './components/onboarding/Roles';
-import SkillsPage from './components/onboarding/Skills';
-import UserPage from './components/onboarding/CreateProfile';
+import InterestPage from "./components/onboarding/Interest";
+import LocationPage from "./components/onboarding/Location";
+import PositionPage from "./components/onboarding/Roles";
+import SkillsPage from "./components/onboarding/Skills";
+import UserPage from "./components/onboarding/CreateProfile";
 
 import "./styles/global.css";
 
@@ -66,24 +64,36 @@ function AppRoutes() {
           {/* Signed-in only routes */}
           <Route
             path="/project-list"
-            element={<SignedIn><ProjectListPage /></SignedIn>}
+            element={
+              <SignedIn>
+                <ProjectListPage />
+              </SignedIn>
+            }
           />
           <Route
             path="/projects/:id"
-            element={<SignedIn><ProjectDetailPage /></SignedIn>}
+            element={
+              <SignedIn>
+                <ProjectDetailPage />
+              </SignedIn>
+            }
           />
           <Route
             path="/create-project"
-            element={<SignedIn><AddProjectPage /></SignedIn>}
+            element={
+              <SignedIn>
+                <AddProjectPage />
+              </SignedIn>
+            }
           />
           <Route
             path="/my-profile"
-            element={<SignedIn><ProfilePage /></SignedIn>}
+            element={
+              <SignedIn>
+                <ProfilePage />
+              </SignedIn>
+            }
           />
-
-          {/* Public pages */}
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/sign-in" element={<SignInPage />} />
 
           {/* Onboarding */}
           <Route path="/onboard" element={<OnboardPage />}>

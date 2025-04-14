@@ -5,8 +5,8 @@ import uuid
 class User(models.Model):
     id = models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
     auth_id = models.CharField(unique=True)
-    username = models.CharField(unique=True)
-    email = models.EmailField(unique=True)  
+    username = models.CharField(max_length=150, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)  
     first_name = models.CharField(max_length=255, default="")
     last_name = models.CharField(max_length=255, default="")
     colleges = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
@@ -30,4 +30,4 @@ class User(models.Model):
     )
 
     def __str__(self):
-        return self.username
+        return self.username or f"User-{self.id}"

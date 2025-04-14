@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import Roles from "@/components/onboarding/Roles";
 import Interest from "@/components/onboarding/Interest";
 import Skills from "@/components/onboarding/Skills";
 import StepIndicator from "@/components/onboarding/StepIndicator";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
 export default function OnboardPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -22,6 +25,41 @@ export default function OnboardPage() {
   const rolesRef = useRef();
   const interestRef = useRef();
   const skillsRef = useRef();
+
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const checkIfUserOnboarded = async (userId) => {
+    try {
+      const response = await fetch(
+        `${SERVER_HOST}/userauth/onboard/check/${userId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to check onboarding status");
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const runCheck = async () => {
+      if (!user) return;
+      const onboarded = await checkIfUserOnboarded(user.id);
+
+      if (onboarded.message === "User already onboarded") {
+        alert("You're already onboarded! Redirecting to home...");
+        navigate("/");
+      }
+    };
+
+    runCheck();
+  }, [user, navigate]);
 
   const stepTitles = [
     "Create your Profile",
@@ -71,24 +109,32 @@ export default function OnboardPage() {
   };
 
   const handleSubmit = async () => {
-    try {
-      console.log(JSON.stringify(formData));
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/user-profiles/`,
-        {
+    const onboarded = await checkIfUserOnboarded(user.id);
+    if (onboarded.message === "User not onboarded yet!") {
+      try {
+        const finalFormData = {
+          ...formData,
+          auth_id: user.id,
+          email: user.primaryEmailAddress.emailAddress,
+          username: user.username,
+        };
+        const res = await fetch(`${SERVER_HOST}/userauth/onboard/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to submit");
-      alert("✅ Profile submitted successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Submission failed");
+          body: JSON.stringify(finalFormData),
+        });
+        if (!res.ok) throw new Error("Failed to submit");
+        alert("✅ Successfully onboarded, welcome aboard!");
+        navigate("/");
+      } catch (err) {
+        console.error(err);
+        alert("❌ Onboarding failed, please try again!");
+      }
+    } else {
+      alert("You have already onboarded, redirecting you to the home page!");
+      navigate("/");
     }
   };
 
