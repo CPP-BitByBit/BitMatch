@@ -35,6 +35,7 @@ export default [
         { allowConstantExport: true },
       ],
       "react/prop-types": "warn",
+      "react/display-name": "warn",
     },
   },
 ];

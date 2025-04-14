@@ -5,8 +5,44 @@ import { Link } from "react-router-dom";
 import ProjectCardLarge from "@/components/project/ProjectCardLarge";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 export default function ProjectListPage() {
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const checkIfUserOnboarded = async (userId) => {
+    try {
+      const response = await fetch(
+        `${SERVER_HOST}/userauth/onboard/check/${userId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to check onboarding status");
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const runCheck = async () => {
+      if (!user) return;
+      const onboarded = await checkIfUserOnboarded(user.id);
+
+      if (onboarded.message === "User not onboarded yet!") {
+        navigate("/onboard");
+      }
+    };
+
+    runCheck();
+  }, [user, navigate]);
+
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
