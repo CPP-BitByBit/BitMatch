@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { EditProfileDialog } from "@/components/project/EditProfileDialog";
 import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 import gardenImage from "../assets/j-garden2.jpg";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
@@ -16,6 +17,8 @@ export default function StudentProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [projectsData, setProjectsData] = useState([]);
+  const [userUuid, setUserUuid] = useState(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -26,11 +29,32 @@ export default function StudentProfile() {
         }
         const data = await response.json();
         setProfile(data);
+        setUserUuid(data.id);
+        fetchProjectDetails(data.projects);
       } catch (error) {
         console.error("Error fetching profile data:", error);
       } finally {
         setLoading(false);
       }
+    };
+
+    // Function to fetch project details
+    const fetchProjectDetails = async (projectIds) => {
+      const projects = await Promise.all(
+        projectIds.map(async (projectId) => {
+          try {
+            const response = await fetch(
+              `${SERVER_HOST}/projects/${projectId}/`
+            );
+            const project = await response.json();
+            return project;
+          } catch (error) {
+            console.error("Error fetching project:", error);
+            return null;
+          }
+        })
+      );
+      setProjectsData(projects.filter((project) => project !== null));
     };
 
     fetchProfileData();
@@ -122,15 +146,32 @@ export default function StudentProfile() {
 
         {/* Current Projects */}
         <div className="mb-8 border rounded-lg p-6">
-          <h3 className="text-xl font-bold mb-4">Current Projects</h3>
+          <h3 className="text-xl font-bold mb-4">Projects</h3>
 
           <div className="relative">
             <div className="flex gap-4 overflow-hidden">
-              {profile.projects.map((project, index) => (
-                <div key={index} className="w-1/3 flex-shrink-0">
-                  <div className="bg-gray-200 h-32 mb-2 rounded"></div>
-                  <p className="text-sm">{project}</p>
-                </div>
+              {projectsData.map((project, index) => (
+                <Link
+                  key={index}
+                  to={`/projects/${project.id}`}
+                  className="w-1/3 flex-shrink-0"
+                >
+                  <div className="bg-white-200 h-32 mb-2 rounded">
+                    {project.image_url && (
+                      <img
+                        src={project.image_url}
+                        alt={project.title}
+                        className="w-full h-full object-contain rounded"
+                      />
+                    )}
+                  </div>
+                  <p className="text-lg ml-5 font-bold text-gray-800">
+                    {project.title}
+                    <span className="ml-2 text-sm font-medium-bold text-blue-600">
+                      {project.owner === userUuid ? "– Owner" : "– Member"}
+                    </span>
+                  </p>
+                </Link>
               ))}
             </div>
 
