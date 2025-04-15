@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,42 +8,55 @@ import { EditProfileDialog } from "@/components/project/EditProfileDialog";
 import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import gardenImage from "../assets/j-garden2.jpg";
+const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
 export default function StudentProfile() {
   const { user } = useUser();
   const { id } = useParams();
-  const [following, setFollowing] = useState(false);
-  const [loading, setLoading] = useState(true); // State to handle loading state
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
-  /* if (loading) {
-        return (
-          <div className="flex justify-center items-center h-screen">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>
-          </div>
-        );
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch(`${SERVER_HOST}/userauth/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile data");
+        }
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      } finally {
+        setLoading(false);
       }
-    
-      // Error state
-      if (error) {
-        return (
-          <div className="flex justify-center items-center h-screen">
-            <p className="text-red-500">{error}</p>
-          </div>
-        );
-      }
-    
-      if (!project) {
-        return <div className="p-8 text-center">No project found.</div>;
-      }
-        */
+    };
+
+    fetchProfileData();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-red-500">No profile found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Main Content */}
       <main className="flex-1 max-w-4xl mx-auto w-full p-4">
         {/* Profile Section */}
-
         <div className="mb-4 border rounded-lg overflow-hidden">
           {/* Background Image */}
           <div
@@ -85,12 +98,14 @@ export default function StudentProfile() {
             )}
 
             <div className="ml-36">
-              <h2 className="text-2xl font-bold"> Name</h2>
-              <p className="text-gray-600">Position Title Preference</p>
+              <h2 className="text-2xl font-bold">
+                {profile.first_name} {profile.last_name}
+              </h2>
+              <p className="text-gray-600">{profile.roles.join(", ")}</p>
               <p className="text-gray-600 text-sm mt-1">
-                Name of University or College
+                {profile.colleges.join(", ")}
               </p>
-              <p className="text-gray-600 text-sm">Students Major</p>
+              <p className="text-gray-600 text-sm">{profile.location}</p>
             </div>
           </div>
         </div>
@@ -101,14 +116,7 @@ export default function StudentProfile() {
           <p className="text-sm text-gray-600">
             Summary of the Student. A small description of the student can be
             typed here. It wont be very long. Standard dummy text. A small
-            description of the Student can be typed here. It wont be very long.
-            Standard dummy text, standard dummy text. Summary of the Student. A
-            small description of the student can be typed here. It wont be very
-            long. Standard standard dummy text. A small description of the
-            Student can be typed here. It wont be very long. Standard dummy
-            text, text, standard dummy text. Summary of the Student. A small
-            description of the student can be typed here. It wont be very long.
-            Standard dummy text, standard dummy text.
+            description of the Student can be typed here.
           </p>
         </div>
 
@@ -118,13 +126,10 @@ export default function StudentProfile() {
 
           <div className="relative">
             <div className="flex gap-4 overflow-hidden">
-              {[1, 2, 3].map((project) => (
-                <div key={project} className="w-1/3 flex-shrink-0">
+              {profile.projects.map((project, index) => (
+                <div key={index} className="w-1/3 flex-shrink-0">
                   <div className="bg-gray-200 h-32 mb-2 rounded"></div>
-                  <p className="text-sm">
-                    The Name of the Project will go here. The Name of the
-                    Project will go here
-                  </p>
+                  <p className="text-sm">{project}</p>
                 </div>
               ))}
             </div>
@@ -143,57 +148,51 @@ export default function StudentProfile() {
           <h3 className="text-xl font-bold mb-4">Education</h3>
 
           <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <GraduationCap className="text-gray-500" />
+            {profile.colleges.map((college, index) => (
+              <div key={index} className="flex gap-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="text-gray-500" />
+                </div>
+                <div>
+                  <h4 className="font-medium">{college} - May 2026</h4>
+                  <p className="text-sm text-gray-600">BA, Computer Science</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-medium">
-                  California State Polytechnic University, Pomona - May 2026
-                </h4>
-                <p className="text-sm text-gray-600">BA, Computer Science</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Positions that Interest Me */}
+        {/* Desired Positions */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Desired Positions</h3>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Front-End Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Full-stack Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Backend Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Data Engineer
-            </Badge>
+            {profile.roles.map((role, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="bg-gray-400 hover:bg-black"
+              >
+                {role}
+              </Badge>
+            ))}
           </div>
         </div>
 
-        {/* Positions that Interest Me */}
+        {/* Interests */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Interests</h3>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Front-End Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Full-stack Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Backend Development
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Data Engineer
-            </Badge>
+            {profile.interests.map((interest, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="bg-gray-400 hover:bg-black"
+              >
+                {interest}
+              </Badge>
+            ))}
           </div>
         </div>
 
@@ -202,21 +201,15 @@ export default function StudentProfile() {
           <h3 className="text-xl font-bold mb-4">Skills</h3>
 
           <div className="flex flex-wrap gap-2 mb-2">
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Python
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              HTML
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              CSS
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Analytical
-            </Badge>
-            <Badge variant="outline" className="bg-gray-400 hover:bg-black">
-              Communication Skills
-            </Badge>
+            {profile.skills.map((skill, index) => (
+              <Badge
+                key={index}
+                variant="outline"
+                className="bg-gray-400 hover:bg-black"
+              >
+                {skill}
+              </Badge>
+            ))}
           </div>
         </div>
       </main>
