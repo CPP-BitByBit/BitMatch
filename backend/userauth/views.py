@@ -36,14 +36,14 @@ class UsersCRUDView(APIView):
             return Response(error_details, status=status.HTTP_400_BAD_REQUEST)
 
     # Get a single user by ID (GET)
-    def get(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+    def get(self, request, clerk_id):
+        user = get_object_or_404(User, auth_id=clerk_id)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
     # Update an existing user by ID (PUT)
-    def put(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+    def put(self, request, clerk_id):
+        user = get_object_or_404(User, auth_id=clerk_id)
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
