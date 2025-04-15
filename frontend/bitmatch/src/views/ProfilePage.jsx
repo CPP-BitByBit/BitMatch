@@ -19,6 +19,7 @@ export default function StudentProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const [projectsData, setProjectsData] = useState([]);
   const [userUuid, setUserUuid] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0); // State for managing the current index of displayed projects
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -59,6 +60,20 @@ export default function StudentProfile() {
 
     fetchProfileData();
   }, [id]);
+
+  // Handling left arrow click
+  const handleLeftArrowClick = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? projectsData.length - 1 : prevIndex - 1
+    );
+  };
+
+  // Handling right arrow click
+  const handleRightArrowClick = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === projectsData.length - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   if (loading) {
     return (
@@ -150,35 +165,46 @@ export default function StudentProfile() {
 
           <div className="relative">
             <div className="flex gap-4 overflow-hidden">
-              {projectsData.map((project, index) => (
-                <Link
-                  key={index}
-                  to={`/projects/${project.id}`}
-                  className="w-1/3 flex-shrink-0"
-                >
-                  <div className="bg-white-200 h-32 mb-2 rounded">
-                    {project.image_url && (
-                      <img
-                        src={project.image_url}
-                        alt={project.title}
-                        className="w-full h-full object-contain rounded"
-                      />
-                    )}
-                  </div>
-                  <p className="text-lg ml-5 font-bold text-gray-800">
-                    {project.title}
-                    <span className="ml-2 text-sm font-medium-bold text-blue-600">
-                      {project.owner === userUuid ? "– Owner" : "– Member"}
-                    </span>
-                  </p>
-                </Link>
-              ))}
+              {projectsData
+                .slice(currentIndex, currentIndex + 3)
+                .map((project, index) => (
+                  <Link
+                    key={index}
+                    to={`/projects/${project.id}`}
+                    className="w-1/3 flex-shrink-0"
+                  >
+                    <div className="bg-gray-200 h-32 mb-2 rounded">
+                      {project.image_url && (
+                        <img
+                          src={project.image_url}
+                          alt={project.title}
+                          className="w-full h-full object-cover rounded"
+                        />
+                      )}
+                    </div>
+                    <p className="text-lg ml-5 font-bold text-gray-800">
+                      {project.title}
+                      <span className="ml-2 text-sm font-medium-bold text-blue-600">
+                        {project.owner === userUuid ? "– Owner" : "– Member"}
+                      </span>
+                    </p>
+                  </Link>
+                ))}
             </div>
 
-            <button className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center">
+            {/* Left Arrow */}
+            <button
+              onClick={handleLeftArrowClick}
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center"
+            >
               <ChevronLeft size={20} />
             </button>
-            <button className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center">
+
+            {/* Right Arrow */}
+            <button
+              onClick={handleRightArrowClick}
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center"
+            >
               <ChevronRight size={20} />
             </button>
           </div>
