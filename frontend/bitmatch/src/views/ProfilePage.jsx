@@ -129,7 +129,6 @@ export default function StudentProfile() {
                 <EditProfileDialog open={isOpen} onOpenChange={setIsOpen} />
               </div>
             )}
-
             <div className="ml-36">
               <h2 className="text-2xl font-bold">
                 {profile.first_name} {profile.last_name}
@@ -138,6 +137,13 @@ export default function StudentProfile() {
                 Student @ {profile.college}
               </p>
               <p className="text-gray-600 text-sm">{profile.location}</p>
+
+              <p className="text-gray-600 text-sm mt-2">
+                Email:{" "}
+                <a href={`mailto:${profile.email}`} className="text-blue-600">
+                  {profile.email}
+                </a>
+              </p>
             </div>
           </div>
         </div>
