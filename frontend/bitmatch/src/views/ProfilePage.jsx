@@ -19,7 +19,7 @@ export default function StudentProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const [projectsData, setProjectsData] = useState([]);
   const [userUuid, setUserUuid] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0); // State for managing the current index of displayed projects
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -39,7 +39,6 @@ export default function StudentProfile() {
       }
     };
 
-    // Function to fetch project details
     const fetchProjectDetails = async (projectIds) => {
       const projects = await Promise.all(
         projectIds.map(async (projectId) => {
@@ -56,19 +55,18 @@ export default function StudentProfile() {
         })
       );
       setProjectsData(projects.filter((project) => project !== null));
+      console.log(projectsData);
     };
 
     fetchProfileData();
   }, [id]);
 
-  // Handling left arrow click
   const handleLeftArrowClick = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? projectsData.length - 1 : prevIndex - 1
     );
   };
 
-  // Handling right arrow click
   const handleRightArrowClick = () => {
     setCurrentIndex((prevIndex) =>
       prevIndex === projectsData.length - 1 ? 0 : prevIndex + 1
@@ -93,11 +91,8 @@ export default function StudentProfile() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Main Content */}
       <main className="flex-1 max-w-4xl mx-auto w-full p-4">
-        {/* Profile Section */}
         <div className="mb-4 border rounded-lg overflow-hidden">
-          {/* Background Image */}
           <div
             className="h-48 bg-cover bg-center flex items-center justify-center text-white"
             style={{
@@ -106,7 +101,6 @@ export default function StudentProfile() {
           ></div>
 
           <div className="px-6 pb-6 relative">
-            {/* Profile Image */}
             <div className="w-32 h-32 bg-gray-100 rounded-full absolute -top-16 flex items-center justify-center border-4 border-white overflow-hidden">
               {user?.imageUrl ? (
                 <img
@@ -140,26 +134,19 @@ export default function StudentProfile() {
               <h2 className="text-2xl font-bold">
                 {profile.first_name} {profile.last_name}
               </h2>
-              <p className="text-gray-600">{profile.roles.join(", ")}</p>
               <p className="text-gray-600 text-sm mt-1">
-                {profile.colleges.join(", ")}
+                Student @ {profile.college}
               </p>
               <p className="text-gray-600 text-sm">{profile.location}</p>
             </div>
           </div>
         </div>
 
-        {/* About Section */}
         <div className="mb-4 border rounded-lg p-6">
           <h3 className="text-xl font-bold mb-4">About</h3>
-          <p className="text-sm text-gray-600">
-            Summary of the Student. A small description of the student can be
-            typed here. It wont be very long. Standard dummy text. A small
-            description of the Student can be typed here.
-          </p>
+          <p className="text-sm text-gray-600">{profile.about_me}</p>
         </div>
 
-        {/* Current Projects */}
         <div className="mb-8 border rounded-lg p-6">
           <h3 className="text-xl font-bold mb-4">Projects</h3>
 
@@ -192,7 +179,6 @@ export default function StudentProfile() {
                 ))}
             </div>
 
-            {/* Left Arrow */}
             <button
               onClick={handleLeftArrowClick}
               className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center"
@@ -200,7 +186,6 @@ export default function StudentProfile() {
               <ChevronLeft size={20} />
             </button>
 
-            {/* Right Arrow */}
             <button
               onClick={handleRightArrowClick}
               className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center"
@@ -210,26 +195,24 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Education */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Education</h3>
 
           <div className="space-y-6">
-            {profile.colleges.map((college, index) => (
-              <div key={index} className="flex gap-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <GraduationCap className="text-gray-500" />
-                </div>
-                <div>
-                  <h4 className="font-medium">{college} - May 2026</h4>
-                  <p className="text-sm text-gray-600">BA, Computer Science</p>
-                </div>
+            <div className="flex gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <GraduationCap className="text-gray-500" />
               </div>
-            ))}
+              <div>
+                <h4 className="font-medium">
+                  {profile.college} - {profile.grad_date}
+                </h4>
+                <p className="text-sm text-gray-600">BA, Computer Science</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Desired Positions */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Desired Positions</h3>
 
@@ -246,7 +229,6 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Interests */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Interests</h3>
 
@@ -263,7 +245,6 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Skills */}
         <div className="mb-4 border rounded-lg p-6 relative">
           <h3 className="text-xl font-bold mb-4">Skills</h3>
 

@@ -44,6 +44,19 @@ class UsersCRUDView(APIView):
     # Update an existing user by ID (PUT)
     def put(self, request, clerk_id):
         user = get_object_or_404(User, auth_id=clerk_id)
+        
+        current_projects = list(user.projects.all())  
+
+        new_projects = request.data.get('projects', [])
+        
+        current_project_ids = [project.id for project in current_projects]
+
+        for project in new_projects:
+            if project not in current_project_ids:  
+                current_project_ids.append(project) 
+
+        request.data['projects'] = current_project_ids
+        
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -58,3 +71,5 @@ class UsersCRUDView(APIView):
                 "errors": serializer.errors,
             }
             return Response(error_details, status=status.HTTP_400_BAD_REQUEST)
+
+

@@ -156,6 +156,26 @@ export default function CreateProjectForm() {
 
       setSuccessMessage("Project created successfully!");
       if (result.id) {
+        // After creating the project, append the project ID to the user's projects
+        const updateUserProjectsResponse = await fetch(
+          `${SERVER_HOST}/userauth/${user.id}/`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              projects: [result.id],
+            }),
+          }
+        );
+
+        if (!updateUserProjectsResponse.ok) {
+          throw new Error(
+            "Failed to update user projects list. Please try again."
+          );
+        }
+
         navigate(`/projects/${result.id}`);
       }
     } catch (err) {
