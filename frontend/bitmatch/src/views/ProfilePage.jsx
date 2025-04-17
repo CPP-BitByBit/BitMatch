@@ -217,7 +217,7 @@ export default function StudentProfile() {
                 <h4 className="font-medium">
                   {profile.college} - {profile.grad_date}
                 </h4>
-                <p className="text-sm text-gray-600">BA, Computer Science</p>
+                <p className="text-sm text-gray-600">{profile.major}</p>
               </div>
             </div>
           </div>

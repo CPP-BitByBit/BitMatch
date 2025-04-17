@@ -21,7 +21,6 @@ export function EditProfileDialog({ open, onOpenChange, profile }) {
   const [userData, setUserData] = useState(profile);
   const [newSkill, setNewSkill] = useState("");
   const [editingSkillIndex, setEditingSkillIndex] = useState(-1);
-  const [gradDateError, setGradDateError] = useState("");
   const [newInterest, setNewInterest] = useState("");
   const [editingInterestIndex, setEditingInterestIndex] = useState(-1);
   const [newPosition, setNewPosition] = useState("");
@@ -33,17 +32,6 @@ export function EditProfileDialog({ open, onOpenChange, profile }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const gradDateRegex =
-      /^(January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/;
-    if (userData.gradDate && !gradDateRegex.test(userData.gradDate)) {
-      setGradDateError("Graduation date must be in format: Month xxxx");
-      return;
-    } else {
-      setGradDateError("");
-    }
-
-    console.log("Profile data to save:", userData);
 
     try {
       const updateUserProjectsResponse = await fetch(
@@ -207,14 +195,15 @@ export function EditProfileDialog({ open, onOpenChange, profile }) {
           {/* Education Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="school">School</Label>
+              <Label htmlFor="college">College</Label>
               <Input
-                id="school"
+                id="college"
                 value={userData.college}
-                onChange={(e) => handleChange("school", e.target.value)}
-                placeholder="Your school name"
+                onChange={(e) => handleChange("college", e.target.value)}
+                placeholder="Your college name"
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="major">Major</Label>
               <Input
@@ -234,14 +223,11 @@ export function EditProfileDialog({ open, onOpenChange, profile }) {
               </span>
             </Label>
             <Input
-              id="gradDate"
+              id="grad_date"
               value={userData.grad_date}
-              onChange={(e) => handleChange("gradDate", e.target.value)}
+              onChange={(e) => handleChange("grad_date", e.target.value)}
               placeholder="May 2027"
             />
-            {gradDateError && (
-              <p className="text-sm text-red-500">{gradDateError}</p>
-            )}
           </div>
 
           {/* Contact Info */}
