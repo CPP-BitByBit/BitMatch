@@ -55,7 +55,6 @@ export default function StudentProfile() {
         })
       );
       setProjectsData(projects.filter((project) => project !== null));
-      console.log(projectsData);
     };
 
     fetchProfileData();

@@ -15,8 +15,9 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
 import PropTypes from "prop-types";
+const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
-export function EditProfileDialog({ open, onOpenChange, onSave, profile }) {
+export function EditProfileDialog({ open, onOpenChange, profile }) {
   const [userData, setUserData] = useState(profile);
   const [newSkill, setNewSkill] = useState("");
   const [editingSkillIndex, setEditingSkillIndex] = useState(-1);
@@ -30,7 +31,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave, profile }) {
     setUserData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const gradDateRegex =
@@ -43,7 +44,30 @@ export function EditProfileDialog({ open, onOpenChange, onSave, profile }) {
     }
 
     console.log("Profile data to save:", userData);
-    onOpenChange(false);
+
+    try {
+      const updateUserProjectsResponse = await fetch(
+        `${SERVER_HOST}/userauth/${userData.auth_id}/`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        }
+      );
+
+      if (!updateUserProjectsResponse.ok) {
+        const errorText = await updateUserProjectsResponse.text();
+        console.error("Failed to update user projects:", errorText);
+      } else {
+        alert("Updated successfully!");
+        onOpenChange(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error updating user projects:", error);
+    }
   };
 
   const addSkill = () => {
@@ -101,26 +125,26 @@ export function EditProfileDialog({ open, onOpenChange, onSave, profile }) {
   const addPosition = () => {
     if (!newPosition.trim()) return;
     if (editingPositionIndex >= 0) {
-      const updated = [...userData.desiredPositions];
+      const updated = [...userData.roles];
       updated[editingPositionIndex] = newPosition;
-      setUserData((prev) => ({ ...prev, desiredPositions: updated }));
+      setUserData((prev) => ({ ...prev, roles: updated }));
       setEditingPositionIndex(-1);
     } else {
       setUserData((prev) => ({
         ...prev,
-        desiredPositions: [...(prev.desiredPositions || []), newPosition],
+        roles: [...(prev.roles || []), newPosition],
       }));
     }
     setNewPosition("");
   };
 
   const removePosition = (index) => {
-    const updated = userData.desiredPositions.filter((_, i) => i !== index);
-    setUserData((prev) => ({ ...prev, desiredPositions: updated }));
+    const updated = userData.roles.filter((_, i) => i !== index);
+    setUserData((prev) => ({ ...prev, roles: updated }));
   };
 
   const editPosition = (index) => {
-    setNewPosition(userData.desiredPositions[index]);
+    setNewPosition(userData.roles[index]);
     setEditingPositionIndex(index);
   };
 
