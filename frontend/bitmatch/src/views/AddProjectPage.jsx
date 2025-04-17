@@ -344,7 +344,6 @@ export default function CreateProjectForm() {
               rows={4}
               value={fullDescription}
               onChange={handleFullDescriptionChange}
-              required
               placeholder="Enter your project's background information, or any additional details."
               maxLength={1000}
             ></textarea>
