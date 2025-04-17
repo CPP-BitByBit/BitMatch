@@ -59,6 +59,7 @@ export default function StudentProfile() {
     };
 
     fetchProfileData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleLeftArrowClick = () => {
@@ -126,7 +127,11 @@ export default function StudentProfile() {
                 >
                   Edit Profile
                 </Button>
-                <EditProfileDialog open={isOpen} onOpenChange={setIsOpen} />
+                <EditProfileDialog
+                  open={isOpen}
+                  onOpenChange={setIsOpen}
+                  profile={profile}
+                />
               </div>
             )}
             <div className="ml-36">

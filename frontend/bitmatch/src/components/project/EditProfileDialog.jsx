@@ -14,23 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
+import PropTypes from "prop-types";
 
-// Default dummy user data
-const DEFAULT_USER_DATA = {
-  name: "John Doe",
-  title: "Software Engineer",
-  bio: "Passionate about building great user experiences and scalable systems.",
-  email: "john.doe@example.com",
-  website: "https://johndoe.dev",
-  skills: ["JavaScript", "React", "Node.js"],
-  school: "",
-  gradDate: "",
-  major: "",
-  location: "",
-};
-
-export function EditProfileDialog({ open, onOpenChange, onSave }) {
-  const [userData, setUserData] = useState(DEFAULT_USER_DATA);
+export function EditProfileDialog({ open, onOpenChange, onSave, profile }) {
+  const [userData, setUserData] = useState(profile);
   const [newSkill, setNewSkill] = useState("");
   const [editingSkillIndex, setEditingSkillIndex] = useState(-1);
   const [gradDateError, setGradDateError] = useState("");
@@ -49,7 +36,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
     const gradDateRegex =
       /^(January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/;
     if (userData.gradDate && !gradDateRegex.test(userData.gradDate)) {
-      setGradDateError("Graduation date must be in format: May 2027");
+      setGradDateError("Graduation date must be in format: Month xxxx");
       return;
     } else {
       setGradDateError("");
@@ -165,29 +152,29 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
             <div className="space-y-2">
               <Label htmlFor="first_name">First Name</Label>
               <Input
-                id="name"
-                value={userData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="Your full name"
+                id="first_name"
+                value={userData.first_name}
+                onChange={(e) => handleChange("first_name", e.target.value)}
+                placeholder="Your first name"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="last_name">Last Name</Label>
               <Input
-                id="title"
-                value={userData.title}
-                onChange={(e) => handleChange("title", e.target.value)}
-                placeholder="Your professional title"
+                id="last_name"
+                value={userData.last_name}
+                onChange={(e) => handleChange("last_name", e.target.value)}
+                placeholder="Your last name"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bio">About Me</Label>
+            <Label htmlFor="about_me">About Me</Label>
             <Textarea
-              id="bio"
-              value={userData.bio}
-              onChange={(e) => handleChange("bio", e.target.value)}
+              id="about_me"
+              value={userData.about_me}
+              onChange={(e) => handleChange("about_me", e.target.value)}
               placeholder="Tell us about yourself"
               className="min-h-[100px]"
             />
@@ -199,7 +186,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
               <Label htmlFor="school">School</Label>
               <Input
                 id="school"
-                value={userData.school}
+                value={userData.college}
                 onChange={(e) => handleChange("school", e.target.value)}
                 placeholder="Your school name"
               />
@@ -218,11 +205,13 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
           <div className="space-y-2 pt-2">
             <Label htmlFor="gradDate">
               Graduation Date{" "}
-              <span className="text-muted-foreground">(e.g. May 2027)</span>
+              <span className="text-muted-foreground">
+                (Format: Month xxxx)
+              </span>
             </Label>
             <Input
               id="gradDate"
-              value={userData.gradDate}
+              value={userData.grad_date}
               onChange={(e) => handleChange("gradDate", e.target.value)}
               placeholder="May 2027"
             />
@@ -271,10 +260,10 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                 </Button>
               </div>
 
-              {userData.desiredPositions?.length > 0 && (
+              {userData.roles?.length > 0 && (
                 <ScrollArea className="h-[120px] pr-2">
                   <div className="space-y-2">
-                    {userData.desiredPositions.map((position, index) => (
+                    {userData.roles.map((position, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between p-2 bg-muted/50 rounded"
@@ -286,6 +275,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => editPosition(index)}
                             className="h-7 w-7"
+                            type="button"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -294,6 +284,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => removePosition(index)}
                             className="h-7 w-7 text-destructive"
+                            type="button"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -337,6 +328,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => editInterest(index)}
                             className="h-7 w-7"
+                            type="button"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -345,6 +337,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => removeInterest(index)}
                             className="h-7 w-7 text-destructive"
+                            type="button"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -388,6 +381,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => editSkill(index)}
                             className="h-7 w-7"
+                            type="button"
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -396,6 +390,7 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
                             size="icon"
                             onClick={() => removeSkill(index)}
                             className="h-7 w-7 text-destructive"
+                            type="button"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -423,3 +418,9 @@ export function EditProfileDialog({ open, onOpenChange, onSave }) {
     </Dialog>
   );
 }
+EditProfileDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onOpenChange: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  profile: PropTypes.object.isRequired,
+};
