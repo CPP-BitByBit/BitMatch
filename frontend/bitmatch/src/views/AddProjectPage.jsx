@@ -196,7 +196,7 @@ export default function CreateProjectForm() {
           <Button
             variant="ghost"
             size="lg"
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/project-list")}
           >
             <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
             Back to Projects

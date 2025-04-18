@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 import gardenImage from "../assets/j-garden2.jpg";
+import placeholderProfileImg from "../assets/profilepic.jpg";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
 export default function StudentProfile() {
@@ -102,14 +103,19 @@ export default function StudentProfile() {
 
           <div className="px-6 pb-6 relative">
             <div className="w-32 h-32 bg-gray-100 rounded-full absolute -top-16 flex items-center justify-center border-4 border-white overflow-hidden">
-              {user?.imageUrl ? (
+              {user?.imageUrl && user.id == id ? (
                 <img
                   src={user.imageUrl}
                   alt="Profile"
                   className="w-full h-full object-cover rounded-full"
                 />
               ) : (
-                <span className="text-gray-400">No Image</span>
+                <div
+                  className="w-full h-full bg-cover bg-center rounded-full"
+                  style={{
+                    backgroundImage: `url('${placeholderProfileImg}')`,
+                  }}
+                ></div>
               )}
             </div>
 

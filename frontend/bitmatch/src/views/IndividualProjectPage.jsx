@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { PositionCard } from "@/components/project/PositionCard";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 import { EditProjectDialog } from "@/components/project/EditProjectDialog";
@@ -40,6 +40,7 @@ const fetchProjectInfo = async (id) => {
 const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
+  const navigate = useNavigate();
   const { user } = useUser();
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [project, setProject] = useState(null); // State to store project details
@@ -317,7 +318,7 @@ const ProjectDetailPage = () => {
             <Button
               variant="ghost"
               size="lg"
-              onClick={() => window.history.back()}
+              onClick={() => navigate("/project-list")}
             >
               <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
               Back to Projects
