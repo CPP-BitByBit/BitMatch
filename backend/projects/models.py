@@ -35,6 +35,7 @@ class Project(models.Model):
         blank=True
     )
     
+    # todo: see if we can remove this without hurting anything
     owner = models.ForeignKey(
         'userauth.User',
         on_delete=models.CASCADE,

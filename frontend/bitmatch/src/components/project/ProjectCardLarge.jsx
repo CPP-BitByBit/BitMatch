@@ -25,7 +25,7 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
       <Link to={`/projects/${project.id}`}>
         {/* Header */}
         <div className="bg-gray-800 text-white p-2 flex justify-between">
-          <span>{project.group}</span>
+          <span>{project.group || "Unaffiliated Project"}</span>
         </div>
 
         {/* Image Placeholder */}

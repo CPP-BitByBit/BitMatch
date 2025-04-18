@@ -87,7 +87,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/my-profile"
+            path="/profile/:id"
             element={
               <SignedIn>
                 <ProfilePage />
@@ -96,12 +96,54 @@ function AppRoutes() {
           />
 
           {/* Onboarding */}
-          <Route path="/onboard" element={<OnboardPage />}>
-            <Route path="interests" element={<InterestPage />} />
-            <Route path="location" element={<LocationPage />} />
-            <Route path="positions" element={<PositionPage />} />
-            <Route path="skills" element={<SkillsPage />} />
-            <Route path="user" element={<UserPage />} />
+          <Route
+            path="/onboard"
+            element={
+              <SignedIn>
+                <OnboardPage />
+              </SignedIn>
+            }
+          >
+            <Route
+              path="interests"
+              element={
+                <SignedIn>
+                  <InterestPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="location"
+              element={
+                <SignedIn>
+                  <LocationPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="positions"
+              element={
+                <SignedIn>
+                  <PositionPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="skills"
+              element={
+                <SignedIn>
+                  <SkillsPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="user"
+              element={
+                <SignedIn>
+                  <UserPage />
+                </SignedIn>
+              }
+            />
           </Route>
         </Routes>
       </main>
