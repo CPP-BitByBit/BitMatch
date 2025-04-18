@@ -82,7 +82,7 @@ export default function Home() {
         console.log(sortedProjects);
       } catch (error) {
         console.error("Error fetching user and projects:", error);
-        setError("Couldn't load projects or user data.");
+        setError("Something went wrong. Please try again later.");
       } finally {
         setLoading(false);
       }
