@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const CREATE_PROJECT_ENDPOINT = `${SERVER_HOST}/projects/create/`;
 
 export default function CreateProjectForm() {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [projectName, setProjectName] = useState("");
   const [university, setUniversity] = useState("");
   const [group, setGroup] = useState("");
@@ -34,6 +36,24 @@ export default function CreateProjectForm() {
   const [error, setError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [userUuid, setUserUuid] = useState(null);
+
+  useEffect(() => {
+    const fetchUserUuid = async () => {
+      try {
+        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUserUuid(data.id);
+      } catch (error) {
+        console.error("Error fetching user UUID:", error);
+      }
+    };
+
+    fetchUserUuid();
+  }, [user.id]);
 
   const handleCoverImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -118,6 +138,7 @@ export default function CreateProjectForm() {
     formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
+    formData.append("owner", userUuid);
 
     try {
       const response = await fetch(CREATE_PROJECT_ENDPOINT, {
@@ -135,6 +156,26 @@ export default function CreateProjectForm() {
 
       setSuccessMessage("Project created successfully!");
       if (result.id) {
+        // After creating the project, append the project ID to the user's projects
+        const updateUserProjectsResponse = await fetch(
+          `${SERVER_HOST}/userauth/${user.id}/`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              projects: [result.id],
+            }),
+          }
+        );
+
+        if (!updateUserProjectsResponse.ok) {
+          throw new Error(
+            "Failed to update user projects list. Please try again."
+          );
+        }
+
         navigate(`/projects/${result.id}`);
       }
     } catch (err) {
@@ -144,6 +185,8 @@ export default function CreateProjectForm() {
     } finally {
       setIsLoading(false);
     }
+
+    // TODO: api call to add project to user also.
   };
 
   return (
@@ -153,7 +196,7 @@ export default function CreateProjectForm() {
           <Button
             variant="ghost"
             size="lg"
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/project-list")}
           >
             <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
             Back to Projects
@@ -301,7 +344,6 @@ export default function CreateProjectForm() {
               rows={4}
               value={fullDescription}
               onChange={handleFullDescriptionChange}
-              required
               placeholder="Enter your project's background information, or any additional details."
               maxLength={1000}
             ></textarea>
