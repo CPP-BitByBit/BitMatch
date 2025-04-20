@@ -11,7 +11,7 @@ export const teamMembers = [
     {
       id: 2,
       name: "Rebecca Smith",
-      title: "Frontend Developer",
+      title: "Software Engineer",
       image: "https://avatars.githubusercontent.com/u/2145912?v=4",
       linkedin: "https://www.linkedin.com/in/rebecca-l-smith-3075604/",
     },
