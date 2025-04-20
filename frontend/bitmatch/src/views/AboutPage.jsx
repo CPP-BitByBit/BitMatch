@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import TeamCard from "@/components/about/TeamCard";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/button";
 
 function ContactItem({ icon: Icon, label, value }) {
