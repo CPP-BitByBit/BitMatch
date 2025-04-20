@@ -15,7 +15,6 @@ export default function Navbar({ links = [] }) {
   const { user } = useUser();
   const defaultLinks = [
     { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
     ...(user?.id
       ? [
           { href: "/project-list", label: "Browse" },

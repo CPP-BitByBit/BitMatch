@@ -15,6 +15,7 @@ import ProjectListPage from "./views/ProjectListPage";
 import ProjectDetailPage from "./views/IndividualProjectPage";
 import AddProjectPage from "./views/AddProjectPage";
 import ProfilePage from "./views/ProfilePage";
+import AboutPage from "./views/AboutPage";
 
 import OnboardPage from "./views/OnboardPage";
 import InterestPage from "./components/onboarding/Interest";
@@ -33,8 +34,9 @@ function AppRoutes() {
   const pathname = location.pathname;
   const isLanding = pathname === "/" && !isSignedIn;
   const isOnboard = pathname.startsWith("/onboard");
+  const isAbout = pathname.startsWith("/about");
 
-  const shouldUseContainer = !isLanding && !isOnboard;
+  const shouldUseContainer = !isLanding && !isOnboard && !isAbout;
 
   const layoutClass = shouldUseContainer
     ? "container mx-auto px-4 py-16 pb-6 min-h-screen"
@@ -145,6 +147,17 @@ function AppRoutes() {
               }
             />
           </Route>
+
+          {/* About */}
+          <Route
+            path="/about"
+            element={
+              <>
+                <AboutPage />
+              </>
+            }
+          />
+
         </Routes>
       </main>
 
