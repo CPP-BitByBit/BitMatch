@@ -1,15 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const CREATE_PROJECT_ENDPOINT = `${SERVER_HOST}/projects/create/`;
 
 export default function CreateProjectForm() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [interests, setInterests] = useState([]);
+  const [newInterest, setNewInterest] = useState("");
+  const [interestError, setInterestError] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [skillError, setSkillError] = useState("");
   const [projectName, setProjectName] = useState("");
   const [university, setUniversity] = useState("");
   const [group, setGroup] = useState("");
@@ -34,6 +42,24 @@ export default function CreateProjectForm() {
   const [error, setError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [userUuid, setUserUuid] = useState(null);
+
+  useEffect(() => {
+    const fetchUserUuid = async () => {
+      try {
+        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUserUuid(data.id);
+      } catch (error) {
+        console.error("Error fetching user UUID:", error);
+      }
+    };
+
+    fetchUserUuid();
+  }, [user.id]);
 
   const handleCoverImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -118,6 +144,14 @@ export default function CreateProjectForm() {
     formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
+    formData.append("owner", userUuid);
+    skills.forEach((skill) => {
+      formData.append("skill_tags", skill);
+    });
+
+    interests.forEach((interest) => {
+      formData.append("interest_tags", interest);
+    });
 
     try {
       const response = await fetch(CREATE_PROJECT_ENDPOINT, {
@@ -135,6 +169,26 @@ export default function CreateProjectForm() {
 
       setSuccessMessage("Project created successfully!");
       if (result.id) {
+        // After creating the project, append the project ID to the user's projects
+        const updateUserProjectsResponse = await fetch(
+          `${SERVER_HOST}/userauth/${user.id}/`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              projects: [result.id],
+            }),
+          }
+        );
+
+        if (!updateUserProjectsResponse.ok) {
+          throw new Error(
+            "Failed to update user projects list. Please try again."
+          );
+        }
+
         navigate(`/projects/${result.id}`);
       }
     } catch (err) {
@@ -153,7 +207,7 @@ export default function CreateProjectForm() {
           <Button
             variant="ghost"
             size="lg"
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/project-list")}
           >
             <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
             Back to Projects
@@ -301,7 +355,6 @@ export default function CreateProjectForm() {
               rows={4}
               value={fullDescription}
               onChange={handleFullDescriptionChange}
-              required
               placeholder="Enter your project's background information, or any additional details."
               maxLength={1000}
             ></textarea>
@@ -356,6 +409,129 @@ export default function CreateProjectForm() {
                       onClick={() => handleRemoveRole(index)}
                       className="text-red-500 hover:text-red-700 transition-colors font-bold"
                       aria-label={`Remove role: ${role.title}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Categories (Optional)
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newInterest}
+                onChange={(e) => {
+                  setNewInterest(e.target.value);
+                  setInterestError("");
+                }}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Backend, Frontend, DevOps, AI"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newInterest.trim()) {
+                    setInterests((prev) => [...prev, newInterest.trim()]);
+                    setNewInterest("");
+                  } else {
+                    setInterestError("Interest can't be empty.");
+                  }
+                }}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Interest
+              </button>
+            </div>
+            {interestError && (
+              <p className="text-red-500 text-sm mt-1">{interestError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {interests.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No interests added yet.
+                </p>
+              ) : (
+                interests.map((interest, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{interest}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInterests((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        )
+                      }
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove interest: ${interest}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Desired Skills (Optional)
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newSkill}
+                onChange={(e) => {
+                  setNewSkill(e.target.value);
+                  setSkillError("");
+                }}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., JavaScript, Figma, Django"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newSkill.trim()) {
+                    setSkills((prev) => [...prev, newSkill.trim()]);
+                    setNewSkill("");
+                  } else {
+                    setSkillError("Skill can't be empty.");
+                  }
+                }}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Skill
+              </button>
+            </div>
+            {skillError && (
+              <p className="text-red-500 text-sm mt-1">{skillError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {skills.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No skills added yet.
+                </p>
+              ) : (
+                skills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSkills((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove skill: ${skill}`}
                     >
                       &#x2715;
                     </button>

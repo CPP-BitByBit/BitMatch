@@ -2,10 +2,47 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ImageSlideshow from "../components/ui/ImageSlideshow";
 import ProjectCarousel from "../components/ui/ProjectCarousel";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { calculateMatchScores } from "./MatchScoreUtils";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
 export default function Home() {
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const checkIfUserOnboarded = async (userId) => {
+    try {
+      const response = await fetch(
+        `${SERVER_HOST}/userauth/onboard/check/${userId}`,
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to check onboarding status");
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const runCheck = async () => {
+      if (!user) return;
+      const onboarded = await checkIfUserOnboarded(user.id);
+
+      if (onboarded.message === "User not onboarded yet!") {
+        navigate("/onboard");
+      }
+    };
+
+    runCheck();
+  }, [user, navigate]);
+
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,23 +56,40 @@ export default function Home() {
 
   // Fetch project data on component mount
   useEffect(() => {
-    axios
-      .get(`${SERVER_HOST}/projects/`)
-      .then((response) => {
-        const sortedProjects = response.data.sort(
+    const fetchUserAndProjects = async () => {
+      try {
+        // Fetch user data
+        const userResponse = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!userResponse.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const userData = await userResponse.json();
+
+        // Fetch project data
+        const projectsResponse = await axios.get(`${SERVER_HOST}/projects/`);
+        const projects = projectsResponse.data;
+
+        // Pass both userData and projects to a function for match score calculation
+        const projectsWithScores = calculateMatchScores(userData, projects);
+
+        // Sort projects based on match score
+        const sortedProjects = projectsWithScores.sort(
           (a, b) => b.match_percentage - a.match_percentage
         );
+
+        // Update state with sorted projects
         setProjects(sortedProjects);
+        console.log(sortedProjects);
+      } catch (error) {
+        console.error("Error fetching user and projects:", error);
+        setError("Something went wrong. Please try again later.");
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching projects:", error);
-        setError(
-          "Couldn't load projects. (DEV MESSAGE: Ensure the backend server is running)"
-        );
-        setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchUserAndProjects();
+  }, [user.id]);
 
   // Loading state
   if (loading) {
@@ -56,7 +110,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="home-container">
       <ImageSlideshow items={slideshowItems} />
 
       <div className="mt-12 mb-8">

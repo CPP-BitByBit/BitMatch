@@ -14,88 +14,163 @@ import HomePage from "./views/HomePage";
 import ProjectListPage from "./views/ProjectListPage";
 import ProjectDetailPage from "./views/IndividualProjectPage";
 import AddProjectPage from "./views/AddProjectPage";
-import SignUpPage from "./views/SignUpPage";
-import SignInPage from "./views/SignInPage";
+import ProfilePage from "./views/ProfilePage";
+import AboutPage from "./views/AboutPage";
+
 import OnboardPage from "./views/OnboardPage";
-// import BrowsePage from "./views/BrowsePage";
-// import AboutPage from "./views/AboutPage";
+import InterestPage from "./components/onboarding/Interest";
+import LocationPage from "./components/onboarding/Location";
+import PositionPage from "./components/onboarding/Roles";
+import SkillsPage from "./components/onboarding/Skills";
+import UserPage from "./components/onboarding/CreateProfile";
 
 import "./styles/global.css";
 
+// AppRoutes is separated for access to hooks
 function AppRoutes() {
   const location = useLocation();
   const { isSignedIn } = useUser();
-  const isLanding = location.pathname === "/";
-  const layoutClass =
-    isLanding && !isSignedIn
-      ? "py-8"
-      : "container mx-auto px-4 py-16 flex pb-6 flex-col items-center justify-center min-h-screen";
+
+  const pathname = location.pathname;
+  const isLanding = pathname === "/" && !isSignedIn;
+  const isOnboard = pathname.startsWith("/onboard");
+  const isAbout = pathname.startsWith("/about");
+
+  const shouldUseContainer = !isLanding && !isOnboard && !isAbout;
+
+  const layoutClass = shouldUseContainer
+    ? "container mx-auto px-4 py-16 pb-6 min-h-screen"
+    : "";
 
   return (
-    <div className={layoutClass}>
-      <Routes>
-        {/* Landing or Home */}
-        <Route
-          path="/"
-          element={
-            <>
-              <SignedOut>
-                <LandingPage />
-              </SignedOut>
+    <>
+      <MainNavbar />
+
+      <main className={layoutClass}>
+        <Routes>
+          {/* Landing or Home */}
+          <Route
+            path="/"
+            element={
+              <>
+                <SignedOut>
+                  <LandingPage />
+                </SignedOut>
+                <SignedIn>
+                  <HomePage />
+                </SignedIn>
+              </>
+            }
+          />
+
+          {/* Signed-in only routes */}
+          <Route
+            path="/project-list"
+            element={
               <SignedIn>
-                <HomePage />
+                <ProjectListPage />
               </SignedIn>
-            </>
-          }
-        />
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <SignedIn>
+                <ProjectDetailPage />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/create-project"
+            element={
+              <SignedIn>
+                <AddProjectPage />
+              </SignedIn>
+            }
+          />
+          <Route
+            path="/profile/:id"
+            element={
+              <SignedIn>
+                <ProfilePage />
+              </SignedIn>
+            }
+          />
 
-        {/* Signed-in only routes */}
-        <Route
-          path="/project-list"
-          element={
-            <SignedIn>
-              <ProjectListPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/projects/:id"
-          element={
-            <SignedIn>
-              <ProjectDetailPage />
-            </SignedIn>
-          }
-        />
-        <Route
-          path="/create-project"
-          element={
-            <SignedIn>
-              <AddProjectPage />
-            </SignedIn>
-          }
-        />
+          {/* Onboarding */}
+          <Route
+            path="/onboard"
+            element={
+              <SignedIn>
+                <OnboardPage />
+              </SignedIn>
+            }
+          >
+            <Route
+              path="interests"
+              element={
+                <SignedIn>
+                  <InterestPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="location"
+              element={
+                <SignedIn>
+                  <LocationPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="positions"
+              element={
+                <SignedIn>
+                  <PositionPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="skills"
+              element={
+                <SignedIn>
+                  <SkillsPage />
+                </SignedIn>
+              }
+            />
+            <Route
+              path="user"
+              element={
+                <SignedIn>
+                  <UserPage />
+                </SignedIn>
+              }
+            />
+          </Route>
 
-        {/* Public pages */}
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/onboard" element={<OnboardPage />} />
+          {/* About */}
+          <Route
+            path="/about"
+            element={
+              <>
+                <AboutPage />
+              </>
+            }
+          />
 
-        {/* Uncomment when ready */}
-        {/*
-        <Route path="/browse" element={<BrowsePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        */}
-      </Routes>
-    </div>
+        </Routes>
+      </main>
+
+      <MainFooter />
+    </>
   );
 }
 
+// Default export so main.jsx works
 export default function App() {
   return (
     <Router>
-      <MainNavbar />
       <AppRoutes />
-      <MainFooter />
     </Router>
   );
 }

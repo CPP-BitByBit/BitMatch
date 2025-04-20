@@ -1,17 +1,25 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+import uuid
 
 class User(models.Model):
-    auth_id = models.IntegerField(default=999)
-    username = models.CharField(max_length=255, unique=True)
+    id = models.CharField(primary_key=True,default=uuid.uuid4, editable=False, max_length=36)
+    auth_id = models.CharField(unique=True)
+    username = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(unique=True, blank=True, null=True)  
-    institution = models.CharField(max_length=255, blank=True, null=True)
+    first_name = models.CharField(max_length=255, default="")
+    last_name = models.CharField(max_length=255, default="")
+    college = models.CharField(max_length=255, default="")
+    major = models.CharField(max_length=255, default="")
+    grad_date = models.CharField(max_length=255, default="")
+    about_me = models.TextField(max_length=500, blank=True, null=True)  
     followers = models.IntegerField(default=0)
     likes = models.IntegerField(default=0)
-    positions = models.JSONField(default=list)
-    interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
-    skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
-    location_preference = models.JSONField(default=list)
+    roles = models.JSONField(default=list)
+    interests = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    skills = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
+    location = models.CharField(max_length=255, default="")
+    location_preferences = models.JSONField(default=list)
 
     projects = models.ManyToManyField(
         'projects.Project', 
@@ -25,4 +33,4 @@ class User(models.Model):
     )
 
     def __str__(self):
-        return self.username
+        return self.username or f"User-{self.id}"

@@ -10,22 +10,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
+import { Badge } from "@/components/ui/badge";
 import { PositionCard } from "@/components/project/PositionCard";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 import { EditProjectDialog } from "@/components/project/EditProjectDialog";
+import { useUser } from "@clerk/clerk-react";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
-
-const formatNumber = (num) => {
-  return num >= 1000000
-    ? `${(num / 1000000).toFixed(1)}M`.replace(".0M", "M")
-    : num >= 1000
-    ? `${(num / 1000).toFixed(1)}K`.replace(".0K", "K")
-    : num.toString();
-};
 
 const fetchProjectInfo = async (id) => {
   try {
@@ -47,6 +41,8 @@ const fetchProjectInfo = async (id) => {
 const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
+  const navigate = useNavigate();
+  const { user } = useUser();
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [project, setProject] = useState(null); // State to store project details
   const [loading, setLoading] = useState(true); // State to handle loading state
@@ -57,6 +53,26 @@ const ProjectDetailPage = () => {
   const [discussions, setDiscussions] = useState([]);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [following, setFollowing] = useState(false);
+  const [likeStatus, setLiked] = useState(false);
+  const [userUuid, setUserUuid] = useState(null);
+
+  useEffect(() => {
+    const fetchUserUuid = async () => {
+      try {
+        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUserUuid(data.id);
+      } catch (error) {
+        console.error("Error fetching user UUID:", error);
+      }
+    };
+
+    fetchUserUuid();
+  }, [user.id]);
 
   useEffect(() => {
     // Fetch project details when the component mounts or the `id` changes
@@ -78,6 +94,48 @@ const ProjectDetailPage = () => {
 
     loadProjectInfo();
   }, [id]);
+
+  const handleFollow = async () => {
+    setFollowing(!following);
+    console.log("current following status:", following);
+    const fdata = {
+      action: following ? "unfollow" : "follow",
+      user_id: 1,
+    };
+    console.log("id is ", id);
+
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/follow/${id}`,
+        fdata
+      );
+      console.log("response: ", response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating follows: ", error);
+    }
+  };
+
+  const handleLike = async () => {
+    setLiked(!likeStatus);
+    console.log("current like status:", likeStatus);
+    const fdata = {
+      action: likeStatus ? "unlike" : "like",
+      user_id: 1,
+    };
+    console.log("id is ", id);
+
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/like/${id}`,
+        fdata
+      );
+      console.log("response: ", response.data);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating likes: ", error);
+    }
+  };
 
   const handleSave = async (data) => {
     console.log("Saving project data:", data);
@@ -261,7 +319,7 @@ const ProjectDetailPage = () => {
             <Button
               variant="ghost"
               size="lg"
-              onClick={() => window.history.back()}
+              onClick={() => navigate("/project-list")}
             >
               <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
               Back to Projects
@@ -333,13 +391,13 @@ const ProjectDetailPage = () => {
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" onClick={handleLike}>
                     <ThumbsUp className="h-6 w-6"></ThumbsUp>
                   </Button>
                   <span>{project.likes_count} Likes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" onClick={handleFollow}>
                     <UserRound className="h-6 w-6"></UserRound>
                   </Button>
                   <span>{project.followers_count} Followers</span>
@@ -404,7 +462,11 @@ const ProjectDetailPage = () => {
               }
             }}
           >
-            <TabList className="grid grid-cols-7 w-full bg-gray-100 mb-8">
+            <TabList
+              className={`grid ${
+                project.owner === userUuid ? "grid-cols-7" : "grid-cols-6"
+              } w-full bg-gray-100 mb-8`}
+            >
               <Tab
                 value="overview"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
@@ -448,17 +510,19 @@ const ProjectDetailPage = () => {
                 Contact
               </Tab>
 
-              <Tab
-                value="edit"
-                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                selectedClassName="bg-blue-200 text-black"
-                onClick={(e) => {
-                  setIsOpen(true);
-                  e.preventDefault();
-                }}
-              >
-                Edit Project
-              </Tab>
+              {project.owner === userUuid && (
+                <Tab
+                  value="edit"
+                  className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                  selectedClassName="bg-blue-200 text-black"
+                  onClick={(e) => {
+                    setIsOpen(true);
+                    e.preventDefault();
+                  }}
+                >
+                  Edit Project
+                </Tab>
+              )}
             </TabList>
 
             <EditProjectDialog
@@ -472,11 +536,49 @@ const ProjectDetailPage = () => {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold">Overview</h2>
               </div>
-              <h2 className="text-xl font-semibold mb-4">
+              <h2 className="text-xl font-bold mb-4">
                 Background & More Details About the Project
               </h2>
               <div className="mb-6">
                 <p className="text-sm mb-8">{project.full_description}</p>
+
+                <div className="mb-4">
+                  {project.interest_tags?.length > 0 && (
+                    <>
+                      <h3 className="text-xl font-bold mb-4">
+                        Project Categories
+                      </h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.interest_tags.map((interest, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-gray-400 hover:bg-black"
+                          >
+                            {interest}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {project.skill_tags?.length > 0 && (
+                    <>
+                      <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {project.skill_tags.map((skill, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-gray-400 hover:bg-black"
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </TabPanel>
 
