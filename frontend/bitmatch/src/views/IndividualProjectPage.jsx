@@ -544,20 +544,22 @@ const ProjectDetailPage = () => {
 
                 <div className="mb-4">
                   {project.interest_tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <>
                       <h3 className="text-xl font-bold mb-4">
                         Project Categories
                       </h3>
-                      {project.interest_tags.map((interest, index) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="bg-gray-400 hover:bg-black"
-                        >
-                          {interest}
-                        </Badge>
-                      ))}
-                    </div>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.interest_tags.map((interest, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-gray-400 hover:bg-black"
+                          >
+                            {interest}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
                   )}
 
                   {project.skill_tags?.length > 0 && (
