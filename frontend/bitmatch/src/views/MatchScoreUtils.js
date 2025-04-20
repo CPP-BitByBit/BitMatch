@@ -6,6 +6,8 @@
 //     tags: 0.6,
 //   };
 
+import ProjectCardLarge from "@/components/project/ProjectCardLarge";
+
 //   // Function to compare two values and return a score (0 to 1)
 //   function compareValues(valueA, valueB) {
 //     if (valueA === valueB) {
@@ -64,12 +66,52 @@
 
 // let sample = calculateMatchScore(Project, User);
 // console.log(sample);*/
+export function compareTags (userTags, projectTags) {
+  /*const sortedUserTags = userTags.sort();
+  const sortedProjectTags = projectTags.sort();
+  const count = 0;
+  for(let i = 0; i < sortedProjectTags.length; i ++){
+    if (sortedUserTags[i] == sortedProjectTags[i]){
+      count ++
+    }
+  }*/
 
+  const userSet = new Set(userTags);
+  const projectSet = new Set(projectTags);
+  let matches = 0;
+  for(let tags of projectSet){
+    if(userSet.has(tags)){
+      matches ++;
+    }
+  }
+
+  return matches / projectSet.size;
+}
+
+export function compareValues (userAtt, projectAtt){
+  if(userAtt == projectAtt){
+    return 1;
+  }
+  else{
+    return 0;
+  }
+}
+
+export function roleSearch(userRole, projectPosition){
+  const userSet = new Set(userRole);
+  const projectSet = new Set(projectPosition);
+  for (let role of projectSet){
+   if (userSet.has(role)){
+      return 1;
+    }
+  }
+  return 0;
+}
 // Placeholder function to calculate the match score
 // TODO: MAKE THIS ACTUALLY CALCULATE CORRECTLY BASED OFF DATA, RN IT IS RANDOMLY CALCULATING BELOW ARE THE EXAMPLES OF THE DATA PASSED IN.
 // PLEASE USE HELPER FUNCTIONS, ONE GIANT FUNCTION NOT IDEAL.
 export const calculateMatchScores = (userData, projects) => {
-  console.log(userData);
+  console.log(userData.location);
 
   // Mock User Profile:
   // {
@@ -124,11 +166,29 @@ export const calculateMatchScores = (userData, projects) => {
   //   updates: null,
   //   wanted_description: null,
   // }
-
+  
+  //3 institution 15
+  //5 location 5
+  //4 intrest tags 10
+  //1 skill tags 50
+  //2 positions/roles 20
+  
+  
   return projects.map((project) => {
-    // Placeholder logic: randomly assign a score between 1 and 100
-    const match_percentage = Math.floor(Math.random() * 100) + 1;
+    
 
+  const interests = compareTags(userData.interests, project.interest_tags || []);
+  const skills = compareTags(userData.skills, project.skill_tags || []);
+  const school = compareValues(userData.college, project.institution);
+  const location = compareValues(userData.location, project.location?.[0] || '');
+  const role = roleSearch(userData.roles, project.positions);
+
+  const weightedScore = (interests * 0.1) + (skills * 0.5) + (school * 0.15) + (location * 0.05) + (role * 0.2);
+
+  
+    //Creates a match percentage and rounds the value
+    const match_percentage = Math.round(weightedScore * 100);
+    
     return {
       ...project,
       match_percentage: match_percentage,
