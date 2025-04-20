@@ -45,13 +45,20 @@ export default function AboutPage() {
           transition={{ delay: 0.3 }}
         >
           <p>
-            BitMatch was created by a team of students from Cal Poly Pomona who came together under the name Bit by Bit to solve a common challenge: helping students connect with meaningful project opportunities.
+            BitMatch was created by a team of students from Cal Poly Pomona who
+            came together under the name Bit by Bit to solve a common challenge:
+            helping students connect with meaningful project opportunities.
           </p>
           <p>
-            Our platform acts as a digital project incubator, where users can post their ideas, specify skills they need, and discover teammates with shared interests. Meanwhile, students looking to contribute can receive intelligent project recommendations based on their profile.
+            Our platform acts as a digital project incubator, where users can
+            post their ideas, specify skills they need, and discover teammates
+            with shared interests. Meanwhile, students looking to contribute can
+            receive intelligent project recommendations based on their profile.
           </p>
           <p>
-            Our mission is to foster collaboration, drive innovation, and give students real-world experience in their fields by enabling them to build together.
+            Our mission is to foster collaboration, drive innovation, and give
+            students real-world experience in their fields by enabling them to
+            build together.
           </p>
         </motion.div>
       </motion.section>
@@ -82,22 +89,28 @@ export default function AboutPage() {
 
       {/* Contact Form Section */}
       <motion.section
-        className="bg-muted py-24 mt-32 px-4 sm:px-6"
+        className="bg-muted py-24 mt-32 px-4 sm:px-6 hidden"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
       >
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-6 text-center text-foreground">Contact Us</h2>
+          <h2 className="text-3xl font-bold mb-6 text-center text-foreground">
+            Contact Us
+          </h2>
           <p className="text-muted-foreground mb-10 text-center text-sm md:text-base">
-            Have questions or want to learn more about our mission? Send us a message—we'd love to hear from you.
+            Have questions or want to learn more about our mission? Send us a
+            message—we'd love to hear from you.
           </p>
 
           <form className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="first-name" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="first-name"
+                  className="text-sm font-medium text-foreground"
+                >
                   First name
                 </label>
                 <Input
@@ -108,7 +121,10 @@ export default function AboutPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="last-name" className="text-sm font-medium text-foreground">
+                <label
+                  htmlFor="last-name"
+                  className="text-sm font-medium text-foreground"
+                >
                   Last name
                 </label>
                 <Input
@@ -120,7 +136,10 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-foreground">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-foreground"
+              >
                 Email
               </label>
               <Input
@@ -132,7 +151,10 @@ export default function AboutPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="subject" className="text-sm font-medium text-foreground">
+              <label
+                htmlFor="subject"
+                className="text-sm font-medium text-foreground"
+              >
                 Subject
               </label>
               <Input
@@ -143,7 +165,10 @@ export default function AboutPage() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium text-foreground">
+              <label
+                htmlFor="message"
+                className="text-sm font-medium text-foreground"
+              >
                 Message
               </label>
               <Textarea
