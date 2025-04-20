@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
+import { Badge } from "@/components/ui/badge";
 import { PositionCard } from "@/components/project/PositionCard";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -535,11 +536,47 @@ const ProjectDetailPage = () => {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-bold">Overview</h2>
               </div>
-              <h2 className="text-xl font-semibold mb-4">
+              <h2 className="text-xl font-bold mb-4">
                 Background & More Details About the Project
               </h2>
               <div className="mb-6">
                 <p className="text-sm mb-8">{project.full_description}</p>
+
+                <div className="mb-4">
+                  {project.interest_tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <h3 className="text-xl font-bold mb-4">
+                        Project Categories
+                      </h3>
+                      {project.interest_tags.map((interest, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="bg-gray-400 hover:bg-black"
+                        >
+                          {interest}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {project.skill_tags?.length > 0 && (
+                    <>
+                      <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {project.skill_tags.map((skill, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="bg-gray-400 hover:bg-black"
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </TabPanel>
 

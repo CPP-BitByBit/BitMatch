@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { ChevronRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import ProjectCardLarge from "@/components/project/ProjectCardLarge";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
+import { calculateMatchScores } from "./MatchScoreUtils";
 
 export default function ProjectListPage() {
   const navigate = useNavigate();
@@ -46,22 +46,42 @@ export default function ProjectListPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   useEffect(() => {
-    axios
-      .get(`${SERVER_HOST}/projects/`)
-      .then((response) => {
-        const sortedProjects = response.data.sort(
+    const fetchUserAndProjects = async () => {
+      try {
+        // Fetch user data
+        const userResponse = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!userResponse.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const userData = await userResponse.json();
+
+        // Fetch project data
+        const projectsResponse = await axios.get(`${SERVER_HOST}/projects/`);
+        const projects = projectsResponse.data;
+
+        // Pass both userData and projects to a function for match score calculation
+        const projectsWithScores = calculateMatchScores(userData, projects);
+
+        // Sort projects based on match score
+        const sortedProjects = projectsWithScores.sort(
           (a, b) => b.match_percentage - a.match_percentage
         );
+
+        // Update state with sorted projects
         setProjects(sortedProjects);
+        console.log(sortedProjects);
+      } catch (error) {
+        console.error("Error fetching user and projects:", error);
+        setError("Something went wrong. Please try again later.");
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        setError("Couldn't load projects.");
-        console.error("Error fetching projects:", error);
-        setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchUserAndProjects();
+  }, [user.id]);
 
   if (loading) {
     return (
