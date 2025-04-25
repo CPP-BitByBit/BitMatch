@@ -2,28 +2,24 @@ import {
   ChevronRight,
   ChevronLeft,
   Plus,
-  Edit,
-  Icon,
   ThumbsUp,
   UserRound,
   Star,
-  CheckCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { PositionCard } from "@/components/project/PositionCard";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 import { useUser } from "@clerk/clerk-react";
 import { Spinner } from "@/components/ui/Spinner";
+import ReactMarkdown from "react-markdown";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -47,6 +43,7 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
@@ -61,12 +58,10 @@ const ProjectDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [discussions, setDiscussions] = useState([]);
-  const [showCommentForm, setShowCommentForm] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null);
   const [following, setFollowing] = useState(false);
   const [likeStatus, setLiked] = useState(false);
   const [userUuid, setUserUuid] = useState(null);
+  const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     const fetchUserUuid = async () => {
@@ -93,9 +88,11 @@ const ProjectDetailPage = () => {
         const data = await fetchProjectInfo(id);
         if (data) {
           setProject(data);
+          console.log(data);
         } else {
           setError("Project not found.");
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setError("Failed to load project details.");
       } finally {
@@ -128,15 +125,63 @@ const ProjectDetailPage = () => {
   };
 
   const ai_feedback = async () => {
+    if (cooldown) return;
+    setCooldown(true);
     setaiFeedbackLoading(true);
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
-      contents:
-        "Can you provide brief feedback on the following project: " +
-        project.description +
-        project.full_description,
+      contents: `
+  You are an professional evaluator.
+  
+  Based ONLY on the information provided, give the following feedback:
+  
+  1. Display a score out of 10 **in big font** at the very top, based on the following breakdown:
+     - **Clarity**: Rate the project’s clarity (out of 10)
+     - **Originality**: Rate how original the idea is (out of 10)
+     - **Completeness**: Rate how complete the project is (out of 10)
+  
+  ---
+  
+  2. Provide a **rating breakdown** for each category (Clarity, Originality, and Completeness), explaining why you gave each score.
+  
+  ---
+  
+  3. Strengths: 
+     - List up to 3 strengths ONLY if they are notable.
+     - If there are no notable strengths, say "None or there is a lack of information, if it looks like a test record just say this is a test record for the entire response."
+  
+  ---
+  
+  4. Areas for improvement:
+     - List 3 concrete ways the project could be improved.
+     - Keep it honest and constructive.
+  
+  ---
+  
+  DO NOT ask for additional information or clarification.
+  Format it cleanly with section headers, a prominent rating at the top, and spacing between each section.
+  
+  ---
+
+  ---PROJECT TITLE---
+  ${project.full_description}
+  
+  ---BRIEF PROJECT DESCRIPTION---
+  ${project.description}
+  
+  ---FULL DESCRIPTION---
+  ${project.full_description}
+
+  ---PROJECT CATEGORIES---
+  ${project.interest_tags}
+
+  ---PROJECT SKILLS---
+  ${project.skill_tags}
+
+  ---PROJECT POSITIONS NEEDED---
+  ${project.positions}
+      `,
     });
-    console.log(response.text);
     setAI_Response(response.text);
     setaiFeedbackLoading(false);
   };
@@ -149,18 +194,25 @@ const ProjectDetailPage = () => {
         project.description +
         project.full_description,
     });
-    console.log(response.text);
     setAI_Response(response.text);
   };
 
+  useEffect(() => {
+    let timer;
+    if (cooldown) {
+      timer = setTimeout(() => {
+        setCooldown(false);
+      }, 300000);
+    }
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
   const handleLike = async () => {
     setLiked(!likeStatus);
-    console.log("current like status:", likeStatus);
     const fdata = {
       action: likeStatus ? "unlike" : "like",
       user_id: 1,
     };
-    console.log("id is ", id);
 
     try {
       const response = await axios.post(
@@ -175,8 +227,6 @@ const ProjectDetailPage = () => {
   };
 
   const handleSave = async (data) => {
-    console.log("Saving project data:", data);
-
     const formData = new FormData();
 
     formData.append("title", data.title);
@@ -228,100 +278,6 @@ const ProjectDetailPage = () => {
 
   const selectImage = (index) => {
     setCurrentImageIndex(index);
-  };
-
-  const handleAddComment = () => {
-    setShowCommentForm(true);
-    setReplyingTo(null);
-  };
-
-  const handleCancelComment = () => {
-    setShowCommentForm(false);
-    setReplyingTo(null);
-  };
-
-  const handleSubmitComment = (postId, content) => {
-    if (postId) {
-      // Add reply to existing post
-      const updatedDiscussions = discussions.map((discussion) => {
-        if (discussion.id === postId) {
-          return {
-            ...discussion,
-            replies: [
-              ...(discussion.replies || []),
-              {
-                id: Date.now().toString(),
-                parentId: postId,
-                author: {
-                  name: "Current User",
-                  title: "Project Member",
-                  profileImage: "",
-                },
-                content,
-                datePosted: new Date().toLocaleString(),
-              },
-            ],
-          };
-        }
-        return discussion;
-      });
-      setDiscussions(updatedDiscussions);
-    } else {
-      // Add new post
-      const newPost = {
-        id: Date.now().toString(),
-        author: {
-          name: "Current User",
-          title: "Project Member",
-          profileImage: "",
-        },
-        content,
-        datePosted: new Date().toLocaleString(),
-        replies: [],
-      };
-      setDiscussions([...discussions, newPost]);
-    }
-    setShowCommentForm(false);
-    setReplyingTo(null);
-  };
-
-  const handleReplyToPost = (id) => {
-    setReplyingTo(id);
-  };
-
-  const handleDeletePost = (id) => {
-    // In a real app, this would show a confirmation dialog
-    if (confirm(`Delete post with ID ${id}?`)) {
-      // Check if it's a main post or a reply
-      const isMainPost = discussions.some((discussion) => discussion.id === id);
-
-      if (isMainPost) {
-        // Delete the main post and all its replies
-        const updatedDiscussions = discussions.filter(
-          (discussion) => discussion.id !== id
-        );
-        setDiscussions(updatedDiscussions);
-      } else {
-        // Delete a reply
-        const updatedDiscussions = discussions.map((discussion) => {
-          if (
-            discussion.replies &&
-            discussion.replies.some((reply) => reply.id === id)
-          ) {
-            return {
-              ...discussion,
-              replies: discussion.replies.filter((reply) => reply.id !== id),
-            };
-          }
-          return discussion;
-        });
-        setDiscussions(updatedDiscussions);
-      }
-    }
-  };
-
-  const handleReaction = (id) => {
-    alert(`Add reaction to post with ID ${id}`);
   };
 
   // Loading state
@@ -755,17 +711,26 @@ const ProjectDetailPage = () => {
                     </h2>
                     <Button
                       onClick={ai_feedback}
-                      disabled={aiFeedbackLoading}
+                      disabled={aiFeedbackLoading || cooldown}
                       className="flex items-center"
                     >
                       {aiFeedbackLoading ? (
-                        <Spinner className="mr-2 h-4 w-4" />
+                        <>
+                          <Spinner className="mr-2 h-4 w-4" />
+                          Generating...
+                        </>
                       ) : (
-                        <Star className="mr-2 h-4 w-4" />
+                        <>
+                          <Star className="mr-2 h-4 w-4" />
+                          {cooldown
+                            ? "Cooldown between ratings, try again in 5 minutes."
+                            : "Rate Project"}
+                        </>
                       )}
-                      Rate Project
                     </Button>
                   </CardHeader>
+
+                  <div className="my-4 border-t border-gray-300 w-full" />
 
                   <CardContent className="p-6">
                     <AnimatePresence>
@@ -777,7 +742,7 @@ const ProjectDetailPage = () => {
                           exit={{ opacity: 0 }}
                           className="text-center text-gray-500 py-8"
                         >
-                          Thinking…
+                          Rating...
                         </motion.div>
                       )}
 
@@ -788,11 +753,9 @@ const ProjectDetailPage = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.3 }}
-                          className="prose prose-lg"
+                          className="prose prose-lg text-center "
                         >
-                          {AI_response.split("\n").map((line, i) => (
-                            <p key={i}>{line}</p>
-                          ))}
+                          <ReactMarkdown>{AI_response}</ReactMarkdown>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -807,7 +770,7 @@ const ProjectDetailPage = () => {
                       🤖 AI Match Score 🤖
                     </CardTitle>
                     <Button
-                      onClick={ai_feedback}
+                      onClick={ai_suggest}
                       disabled={aiFeedbackLoading}
                       className="flex items-center"
                     >
