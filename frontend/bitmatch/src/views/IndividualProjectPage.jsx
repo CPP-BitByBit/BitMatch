@@ -6,19 +6,28 @@ import {
   Icon,
   ThumbsUp,
   UserRound,
+  Star,
+  CheckCircle
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { PositionCard } from "@/components/project/PositionCard";
 import React, { useEffect, useState } from "react";
+import { GoogleGenAI } from "@google/genai";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 import { useUser } from "@clerk/clerk-react";
+import { Spinner } from "@/components/ui/Spinner";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
 import axios from "axios";
 
 const fetchProjectInfo = async (id) => {
@@ -38,12 +47,13 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => {};
+const editProjectInfo = async (id) => { };
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
+  const [AI_response, setAI_Response] = useState(null);
   const [project, setProject] = useState(null); // State to store project details
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
@@ -95,6 +105,7 @@ const ProjectDetailPage = () => {
     loadProjectInfo();
   }, [id]);
 
+
   const handleFollow = async () => {
     setFollowing(!following);
     console.log("current following status:", following);
@@ -115,6 +126,24 @@ const ProjectDetailPage = () => {
       console.error("Error updating follows: ", error);
     }
   };
+
+  const ai_feedback = async () => {
+    const response = await AI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: "Can you provide brief feedback on the following project: " + project.description + project.full_description
+    });
+    console.log(response.text);
+    setAI_Response(response.text);
+  }
+
+  const ai_suggest = async () => {
+    const response = await AI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: "How good of a fit would I be for this project: " + project.description + project.full_description
+    });
+    console.log(response.text);
+    setAI_Response(response.text);
+  }
 
   const handleLike = async () => {
     setLiked(!likeStatus);
@@ -413,9 +442,8 @@ const ProjectDetailPage = () => {
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
-                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                    }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                      }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -440,7 +468,8 @@ const ProjectDetailPage = () => {
               "wanted",
               "discussions",
               "contact",
-              "edit",
+              project.owner === userUuid ? "ai_rate" : "ai_suggest",
+              project.owner === userUuid ? "edit" : null
             ].indexOf(activeTab)}
             onSelect={(index) => {
               const tabNames = [
@@ -450,7 +479,8 @@ const ProjectDetailPage = () => {
                 "wanted",
                 "discussions",
                 "contact",
-                "edit",
+                project.owner === userUuid ? "ai_rate" : "ai_suggest",
+                project.owner === userUuid ? "edit" : null,
               ];
               const selectedTab = tabNames[index];
 
@@ -463,9 +493,8 @@ const ProjectDetailPage = () => {
             }}
           >
             <TabList
-              className={`grid ${
-                project.owner === userUuid ? "grid-cols-7" : "grid-cols-6"
-              } w-full bg-gray-100 mb-8`}
+              className={`grid ${project.owner === userUuid ? "grid-cols-8" : "grid-cols-7"
+                } w-full bg-gray-100 mb-8`}
             >
               <Tab
                 value="overview"
@@ -510,6 +539,24 @@ const ProjectDetailPage = () => {
                 Contact
               </Tab>
 
+              {project.owner === userUuid ? (
+                <Tab
+                  value="ai_rate"
+                  className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                  selectedClassName="bg-blue-200 text-black"
+                >
+                  Rate
+                </Tab>
+              ) :
+                (
+                  <Tab
+                    value="ai_suggest"
+                    className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                    selectedClassName="bg-blue-200 text-black"
+                  >
+                    Suggest
+                  </Tab>
+                )}
               {project.owner === userUuid && (
                 <Tab
                   value="edit"
@@ -523,6 +570,7 @@ const ProjectDetailPage = () => {
                   Edit Project
                 </Tab>
               )}
+
             </TabList>
 
             <EditProjectDialog
@@ -914,7 +962,109 @@ const ProjectDetailPage = () => {
                 </div>
               </div>
             </TabPanel>
-            <TabPanel value="edit"></TabPanel>
+
+            {project.owner === userUuid ? (
+              <TabPanel value="ai_rate">
+                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
+                  <CardHeader className="flex items-center justify-between p-6">
+                    <CardTitle className="text-2xl font-bold">AI Rate My Project</CardTitle>
+                    <Button
+                      onClick={ai_feedback}
+                      disabled={loading}
+                      className="flex items-center"
+                    >
+                      {loading
+                        ? <Spinner className="mr-2 h-4 w-4" />
+                        : <Star className="mr-2 h-4 w-4" />
+                      }
+                      Rate Project
+                    </Button>
+                  </CardHeader>
+
+                  <CardContent className="p-6">
+                    <h2 className="text-lg">Let AI rate your project and give feedback.</h2>
+                    <AnimatePresence>
+                      {loading && (
+                        <motion.div
+                          key="loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center text-gray-500 py-8"
+                        >
+                          Thinking…
+                        </motion.div>
+                      )}
+
+                      {!loading && AI_response && (
+                        <motion.div
+                          key="response"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="prose prose-lg"
+                        >
+                          {AI_response.split("\n").map((line, i) => (
+                            <p key={i}>{line}</p>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+            ) : (
+              <TabPanel value="ai_suggest">
+                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
+                  <CardHeader className="flex items-center justify-between p-6">
+                    <CardTitle className="text-2xl font-bold">AI Suggestion</CardTitle>
+                    <Button
+                      onClick={ai_feedback}
+                      disabled={loading}
+                      className="flex items-center"
+                    >
+                      {loading
+                        ? <Spinner className="mr-2 h-4 w-4" />
+                        : <Star className="mr-2 h-4 w-4" />
+                      }
+                      Rate Project
+                    </Button>
+                  </CardHeader>
+
+                  <CardContent className="p-6">
+                    <AnimatePresence>
+                      {loading && (
+                        <motion.div
+                          key="loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center text-gray-500 py-8"
+                        >
+                          Thinking…
+                        </motion.div>
+                      )}
+
+                      {!loading && AI_response && (
+                        <motion.div
+                          key="response"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="prose prose-lg"
+                        >
+                          {AI_response.split("\n").map((line, i) => (
+                            <p key={i}>{line}</p>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </TabPanel>)}
+            {project.owner === userUuid && (<TabPanel value="edit"></TabPanel>)}
           </Tabs>
         </main>
 
