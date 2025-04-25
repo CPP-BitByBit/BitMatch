@@ -2,23 +2,28 @@ import {
   ChevronRight,
   ChevronLeft,
   Plus,
-  Edit,
-  Icon,
   ThumbsUp,
   UserRound,
+  Star,
 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MemberCard } from "@/components/project/MemberCard";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { PositionCard } from "@/components/project/PositionCard";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { GoogleGenAI } from "@google/genai";
 import { useParams, useNavigate } from "react-router-dom";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { DiscussionPost, ReplyForm } from "@/components/project/DiscussionCard";
 import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 import { useUser } from "@clerk/clerk-react";
+import { Spinner } from "@/components/ui/Spinner";
+import ReactMarkdown from "react-markdown";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
 import axios from "axios";
 
 const fetchProjectInfo = async (id) => {
@@ -38,24 +43,26 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useUser();
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
+  const [AI_response, setAI_Response] = useState(null);
   const [project, setProject] = useState(null); // State to store project details
+  const [userData, setuserData] = useState(null);
   const [loading, setLoading] = useState(true); // State to handle loading state
+  const [aiFeedbackLoading, setaiFeedbackLoading] = useState(false); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [discussions, setDiscussions] = useState([]);
-  const [showCommentForm, setShowCommentForm] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null);
   const [following, setFollowing] = useState(false);
   const [likeStatus, setLiked] = useState(false);
   const [userUuid, setUserUuid] = useState(null);
+  const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     const fetchUserUuid = async () => {
@@ -65,6 +72,7 @@ const ProjectDetailPage = () => {
           throw new Error("Failed to fetch user data");
         }
         const data = await response.json();
+        setuserData(data);
         setUserUuid(data.id);
       } catch (error) {
         console.error("Error fetching user UUID:", error);
@@ -85,6 +93,7 @@ const ProjectDetailPage = () => {
         } else {
           setError("Project not found.");
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setError("Failed to load project details.");
       } finally {
@@ -116,14 +125,162 @@ const ProjectDetailPage = () => {
     }
   };
 
+  const ai_feedback = async () => {
+    if (cooldown) return;
+    setCooldown(true);
+    setaiFeedbackLoading(true);
+    const response = await AI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `
+  You are an professional evaluator.
+  
+  Based ONLY on the information provided, give the following feedback on my project idea:
+  
+  1. Display a score out of 10 **in big font** at the very top, based on the following breakdown:
+     - **Clarity**: Rate the project’s clarity (out of 10)
+     - **Originality**: Rate how original the idea is (out of 10)
+     - **Completeness**: Rate how complete the project is (out of 10)
+  
+  ---
+  
+  2. Provide a **rating breakdown** for each category (Clarity, Originality, and Completeness), explaining why you gave each score.
+  
+  ---
+  
+  3. Strengths: 
+     - List up to 3 strengths ONLY if they are notable.
+     - If there are no notable strengths, say "None or there is a lack of information, if it looks like a test record just say this is a test record for the entire response."
+  
+  ---
+  
+  4. Areas for improvement:
+     - List 3 concrete ways the project could be improved.
+     - Keep it honest and constructive.
+  
+  ---
+  
+  DO NOT ask for additional information or clarification.
+  Format it cleanly with section headers, a prominent rating at the top, and spacing between each section.
+  
+  
+  ---
+
+  ---PROJECT TITLE---
+  ${project.full_description}
+  
+  ---BRIEF PROJECT DESCRIPTION---
+  ${project.description}
+  
+  ---FULL DESCRIPTION---
+  ${project.full_description}
+
+  ---PROJECT CATEGORIES---
+  ${project.interest_tags}
+
+  ---PROJECT SKILLS---
+  ${project.skill_tags}
+
+  ---PROJECT POSITIONS NEEDED---
+  ${project.positions.map((position) => position.title).join(", ")}
+      `,
+    });
+    setAI_Response(response.text);
+    setaiFeedbackLoading(false);
+  };
+
+  const ai_suggest = async () => {
+    if (cooldown) return;
+    setCooldown(true);
+    setaiFeedbackLoading(true);
+    const response = await AI.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `
+  You are a professional evaluator.
+
+  Based ONLY on the information provided, give the following feedback on how good of a fit I am for the project.
+
+  1. **Fit Rating**: Rate how well I fit for this project out of 10 based on the following criteria:
+     - **Interest Match**: How closely my interests (userdata.interests) align with the project's interest tags (project.interest_tags).
+     - **Skills Match**: How closely my skills (userdata.skills) align with the project's required skills (project.skill_tags).
+     - **Role Match**: How closely my roles (userdata.roles) align with the project's needed positions (project.positions).
+
+  ---
+  
+  2. Provide a **rating breakdown** for each category (Interest Match, Skills Match, Role Match), explaining why you gave each score.
+
+  ---
+  
+  3. Strengths:
+     - List up to 3 strengths I bring to the project based on the alignment of my interests, skills, and roles.
+     - If there are no notable strengths, say "None or there is a lack of alignment."
+
+  ---
+  
+  4. Areas for improvement:
+     - List up to 3 areas where I could improve to be a better fit for the project.
+     - Keep it honest and constructive.
+
+  ---
+
+  DO NOT ask for additional information or clarification.
+  Format it cleanly with section headers, a prominent fit rating at the top, and spacing between each section.
+
+  ---
+
+  ---PROJECT SCHOOL---
+  ${project.institution}
+
+  ---PROJECT TITLE---
+  ${project.full_description}
+
+  ---BRIEF PROJECT DESCRIPTION---
+  ${project.description}
+
+  ---FULL DESCRIPTION---
+  ${project.full_description}
+
+  ---PROJECT CATEGORIES---
+  ${project.interest_tags}
+
+  ---PROJECT SKILLS---
+  ${project.skill_tags}
+
+  ---PROJECT POSITIONS NEEDED---
+  ${project.positions.map((position) => position.title).join(", ")}
+
+  ---USER INTERESTS---
+  ${userData.interests}
+
+  ---USER SKILLS---
+  ${userData.skills}
+
+  ---USER ROLES---
+  ${userData.roles}
+
+  ---USER SCHOOL---
+  ${userData.school}
+`,
+    });
+    setAI_Response(response.text);
+    setaiFeedbackLoading(false);
+  };
+
+  useEffect(() => {
+    let timer;
+    if (cooldown) {
+      timer = setTimeout(() => {
+        setCooldown(false);
+      }, 300000);
+    }
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
   const handleLike = async () => {
     setLiked(!likeStatus);
-    console.log("current like status:", likeStatus);
     const fdata = {
       action: likeStatus ? "unlike" : "like",
       user_id: 1,
     };
-    console.log("id is ", id);
 
     try {
       const response = await axios.post(
@@ -138,8 +295,6 @@ const ProjectDetailPage = () => {
   };
 
   const handleSave = async (data) => {
-    console.log("Saving project data:", data);
-
     const formData = new FormData();
 
     formData.append("title", data.title);
@@ -191,100 +346,6 @@ const ProjectDetailPage = () => {
 
   const selectImage = (index) => {
     setCurrentImageIndex(index);
-  };
-
-  const handleAddComment = () => {
-    setShowCommentForm(true);
-    setReplyingTo(null);
-  };
-
-  const handleCancelComment = () => {
-    setShowCommentForm(false);
-    setReplyingTo(null);
-  };
-
-  const handleSubmitComment = (postId, content) => {
-    if (postId) {
-      // Add reply to existing post
-      const updatedDiscussions = discussions.map((discussion) => {
-        if (discussion.id === postId) {
-          return {
-            ...discussion,
-            replies: [
-              ...(discussion.replies || []),
-              {
-                id: Date.now().toString(),
-                parentId: postId,
-                author: {
-                  name: "Current User",
-                  title: "Project Member",
-                  profileImage: "",
-                },
-                content,
-                datePosted: new Date().toLocaleString(),
-              },
-            ],
-          };
-        }
-        return discussion;
-      });
-      setDiscussions(updatedDiscussions);
-    } else {
-      // Add new post
-      const newPost = {
-        id: Date.now().toString(),
-        author: {
-          name: "Current User",
-          title: "Project Member",
-          profileImage: "",
-        },
-        content,
-        datePosted: new Date().toLocaleString(),
-        replies: [],
-      };
-      setDiscussions([...discussions, newPost]);
-    }
-    setShowCommentForm(false);
-    setReplyingTo(null);
-  };
-
-  const handleReplyToPost = (id) => {
-    setReplyingTo(id);
-  };
-
-  const handleDeletePost = (id) => {
-    // In a real app, this would show a confirmation dialog
-    if (confirm(`Delete post with ID ${id}?`)) {
-      // Check if it's a main post or a reply
-      const isMainPost = discussions.some((discussion) => discussion.id === id);
-
-      if (isMainPost) {
-        // Delete the main post and all its replies
-        const updatedDiscussions = discussions.filter(
-          (discussion) => discussion.id !== id
-        );
-        setDiscussions(updatedDiscussions);
-      } else {
-        // Delete a reply
-        const updatedDiscussions = discussions.map((discussion) => {
-          if (
-            discussion.replies &&
-            discussion.replies.some((reply) => reply.id === id)
-          ) {
-            return {
-              ...discussion,
-              replies: discussion.replies.filter((reply) => reply.id !== id),
-            };
-          }
-          return discussion;
-        });
-        setDiscussions(updatedDiscussions);
-      }
-    }
-  };
-
-  const handleReaction = (id) => {
-    alert(`Add reaction to post with ID ${id}`);
   };
 
   // Loading state
@@ -435,22 +496,20 @@ const ProjectDetailPage = () => {
             className="mb-2"
             selectedIndex={[
               "overview",
-              "updates",
               "members",
               "wanted",
-              "discussions",
               "contact",
-              "edit",
+              project.owner === userUuid ? "ai_rate" : "ai_suggest",
+              project.owner === userUuid ? "edit" : null,
             ].indexOf(activeTab)}
             onSelect={(index) => {
               const tabNames = [
                 "overview",
-                "updates",
                 "members",
                 "wanted",
-                "discussions",
                 "contact",
-                "edit",
+                project.owner === userUuid ? "ai_rate" : "ai_suggest",
+                project.owner === userUuid ? "edit" : null,
               ];
               const selectedTab = tabNames[index];
 
@@ -464,7 +523,7 @@ const ProjectDetailPage = () => {
           >
             <TabList
               className={`grid ${
-                project.owner === userUuid ? "grid-cols-7" : "grid-cols-6"
+                project.owner === userUuid ? "grid-cols-6" : "grid-cols-5"
               } w-full bg-gray-100 mb-8`}
             >
               <Tab
@@ -474,13 +533,7 @@ const ProjectDetailPage = () => {
               >
                 Overview
               </Tab>
-              <Tab
-                value="updates"
-                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                selectedClassName="bg-blue-200 text-black"
-              >
-                Updates
-              </Tab>
+
               <Tab
                 value="members"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
@@ -495,13 +548,7 @@ const ProjectDetailPage = () => {
               >
                 Wanted
               </Tab>
-              <Tab
-                value="discussions"
-                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                selectedClassName="bg-blue-200 text-black"
-              >
-                Discussions
-              </Tab>
+
               <Tab
                 value="contact"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
@@ -510,6 +557,23 @@ const ProjectDetailPage = () => {
                 Contact
               </Tab>
 
+              {project.owner === userUuid ? (
+                <Tab
+                  value="ai_rate"
+                  className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                  selectedClassName="bg-blue-200 text-black"
+                >
+                  AI Feedback
+                </Tab>
+              ) : (
+                <Tab
+                  value="ai_suggest"
+                  className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                  selectedClassName="bg-blue-200 text-black"
+                >
+                  AI Match
+                </Tab>
+              )}
               {project.owner === userUuid && (
                 <Tab
                   value="edit"
@@ -582,79 +646,8 @@ const ProjectDetailPage = () => {
               </div>
             </TabPanel>
 
-            <TabPanel value="updates">
-              <div className="border rounded-lg p-4 overflow-hidden">
-                <div className="p-5 border-solid">
-                  <h2 className="text-2xl font-bold text-left mb-5">
-                    Updates{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h2>
-                  <div className="gap-4">
-                    <h3 className="text-sm mb-3">Title</h3>
-                    <Input
-                      type="text"
-                      className="flex-1 border rounded px-4 py-2 mb-6 h-10"
-                    />
-                    {showCommentForm ? (
-                      <ReplyForm
-                        postId={replyingTo || ""}
-                        onCancel={handleCancelComment}
-                        onSubmit={handleSubmitComment}
-                      />
-                    ) : (
-                      <div className="border p-4 mb-4">
-                        <div className="mb-4">
-                          <div
-                            className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
-                            onClick={handleAddComment}
-                          >
-                            <p className="text-gray-500">
-                              Add your comments here
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="secondary"
-                            className="bg-gray-300 hover:bg-gray-400 text-black"
-                            onClick={handleCancelComment}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            className="bg-gray-300 hover:bg-gray-400 text-black"
-                            onClick={handleAddComment}
-                          >
-                            Comment
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </TabPanel>
-
             <TabPanel value="members">
               <div className="border rounded-lg overflow-hidden">
-                {/* Search and Add Member Section */}
-                <div className="p-5 border-b">
-                  <div className="flex gap-4">
-                    <Input
-                      type="text"
-                      placeholder="Search for students to add"
-                      className="flex-1 border rounded px-4 py-2"
-                    />
-                    <Button
-                      variant="secondary"
-                      className="bg-gray-300 hover:bg-gray-400 text-black"
-                    >
-                      Add Member
-                    </Button>
-                  </div>
-                </div>
-
                 {/* Members List Section */}
                 <div className="p-5">
                   <h2 className="text-2xl font-bold mb-6">
@@ -763,158 +756,146 @@ const ProjectDetailPage = () => {
               </div>
             </TabPanel>
 
-            <TabPanel value="discussions" className="mt-6">
-              <div className="bg-gray-100 rounded-lg overflow-hidden">
-                {/* Discussions Header */}
-                <div className="p-6">
-                  <div className="inline-block bg-white border rounded-lg px-4 py-2 mb-4">
-                    <span className="font-bold">
-                      Discussions{" "}
-                      <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Comment Form */}
-                <div className="bg-white border-t p-6">
-                  {showCommentForm ? (
-                    <ReplyForm
-                      postId={replyingTo || ""}
-                      onCancel={handleCancelComment}
-                      onSubmit={handleSubmitComment}
-                    />
-                  ) : (
-                    <div className="border p-4 mb-4">
-                      <div className="mb-4">
-                        <div
-                          className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
-                          onClick={handleAddComment}
-                        >
-                          <p className="text-gray-500">
-                            Add your comments here
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="secondary"
-                          className="bg-gray-300 hover:bg-gray-400 text-black"
-                          onClick={handleCancelComment}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          className="bg-gray-300 hover:bg-gray-400 text-black"
-                          onClick={handleAddComment}
-                        >
-                          Comment
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Discussion Posts */}
-                  <div>
-                    {discussions.length > 0 ? (
-                      discussions.map((discussion) => (
-                        <div key={discussion.id}>
-                          <DiscussionPost
-                            id={discussion.id}
-                            author={discussion.author}
-                            content={discussion.content}
-                            datePosted={discussion.datePosted}
-                            onReply={handleReplyToPost}
-                            onDelete={handleDeletePost}
-                            onReaction={handleReaction}
-                          />
-
-                          {replyingTo === discussion.id && (
-                            <div className="ml-12 mt-4">
-                              <ReplyForm
-                                postId={discussion.id}
-                                onCancel={handleCancelComment}
-                                onSubmit={handleSubmitComment}
-                              />
-                            </div>
-                          )}
-
-                          {discussion.replies &&
-                            discussion.replies.map((reply) => (
-                              <div key={reply.id}>
-                                <DiscussionPost
-                                  id={reply.id}
-                                  author={reply.author}
-                                  content={reply.content}
-                                  datePosted={reply.datePosted}
-                                  isReply={true}
-                                  parentId={discussion.id}
-                                  onReply={handleReplyToPost}
-                                  onDelete={handleDeletePost}
-                                  onReaction={handleReaction}
-                                />
-
-                                {replyingTo === reply.id && (
-                                  <div className="ml-12 mt-4">
-                                    <ReplyForm
-                                      postId={reply.id}
-                                      onCancel={handleCancelComment}
-                                      onSubmit={handleSubmitComment}
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center py-8">
-                        No discussions yet. Start the conversation!
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </TabPanel>
-
             <TabPanel value="contact">
               <div className="border rounded-lg overflow-hidden">
                 <div className="p-5 border-b">
                   <h1 className="text-2xl font-bold mb-10">
-                    Contact The Owner of This Project{" "}
+                    Project Owner Contact Information{" "}
                     <span className="text-yellow-500 font-bold">(W.I.P)</span>
                   </h1>
-                  <h3 className="text-sm mb-3">Full Name</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Email Address</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Subject</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Description</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6 h-60"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="bg-gray-100 hover:bg-gray-400 text-black"
-                  >
-                    Submit
-                  </Button>
                 </div>
               </div>
             </TabPanel>
-            <TabPanel value="edit"></TabPanel>
+
+            {project.owner === userUuid ? (
+              <TabPanel value="ai_rate">
+                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
+                  <CardHeader className="flex items-center justify-between p-6">
+                    <CardTitle className="text-2xl font-bold">
+                      🤖 AI Rate My Project 🤖
+                    </CardTitle>
+                    <h2 className="text-lg text-center">
+                      Let AI rate your project and give feedback.
+                    </h2>
+                    <Button
+                      onClick={ai_feedback}
+                      disabled={aiFeedbackLoading || cooldown}
+                      className="flex items-center"
+                    >
+                      {aiFeedbackLoading ? (
+                        <>
+                          <Spinner className="mr-2 h-4 w-4" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="mr-2 h-4 w-4" />
+                          {cooldown
+                            ? "Cooldown between ratings, try again in 5 minutes."
+                            : "Rate Project"}
+                        </>
+                      )}
+                    </Button>
+                  </CardHeader>
+
+                  <div className="my-4 border-t border-gray-300 w-full" />
+
+                  <CardContent className="p-6">
+                    <AnimatePresence>
+                      {aiFeedbackLoading && (
+                        <motion.div
+                          key="loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center text-gray-500 py-8"
+                        >
+                          Rating...
+                        </motion.div>
+                      )}
+
+                      {!aiFeedbackLoading && AI_response && (
+                        <motion.div
+                          key="response"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="prose prose-lg text-center "
+                        >
+                          <ReactMarkdown>{AI_response}</ReactMarkdown>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+            ) : (
+              <TabPanel value="ai_suggest">
+                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
+                  <CardHeader className="flex items-center justify-between p-6">
+                    <CardTitle className="text-2xl font-bold">
+                      🤖 AI Match Score 🤖
+                    </CardTitle>
+                    <h2 className="text-lg text-center">
+                      Let AI rate how good of a fit you would be for this
+                      project based on your profile.
+                    </h2>
+                    <Button
+                      onClick={ai_suggest}
+                      disabled={aiFeedbackLoading || cooldown}
+                      className="flex items-center"
+                    >
+                      {aiFeedbackLoading ? (
+                        <>
+                          <Spinner className="mr-2 h-4 w-4" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="mr-2 h-4 w-4" />
+                          {cooldown
+                            ? "Cooldown between ratings, try again in 5 minutes."
+                            : "Rate Project"}
+                        </>
+                      )}
+                    </Button>
+                  </CardHeader>
+
+                  <div className="my-4 border-t border-gray-300 w-full" />
+
+                  <CardContent className="p-6">
+                    <AnimatePresence>
+                      {aiFeedbackLoading && (
+                        <motion.div
+                          key="loading"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="text-center text-gray-500 py-8"
+                        >
+                          Rating...
+                        </motion.div>
+                      )}
+
+                      {!aiFeedbackLoading && AI_response && (
+                        <motion.div
+                          key="response"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="prose prose-lg text-center "
+                        >
+                          <ReactMarkdown>{AI_response}</ReactMarkdown>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </TabPanel>
+            )}
+            {project.owner === userUuid && <TabPanel value="edit"></TabPanel>}
           </Tabs>
         </main>
 
