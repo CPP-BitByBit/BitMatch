@@ -52,6 +52,7 @@ const ProjectDetailPage = () => {
   const { id } = useParams(); // Access the dynamic `id` parameter from the URL
   const [AI_response, setAI_Response] = useState(null);
   const [project, setProject] = useState(null); // State to store project details
+  const [userData, setuserData] = useState(null);
   const [loading, setLoading] = useState(true); // State to handle loading state
   const [aiFeedbackLoading, setaiFeedbackLoading] = useState(false); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
@@ -71,6 +72,7 @@ const ProjectDetailPage = () => {
           throw new Error("Failed to fetch user data");
         }
         const data = await response.json();
+        setuserData(data);
         setUserUuid(data.id);
       } catch (error) {
         console.error("Error fetching user UUID:", error);
@@ -88,7 +90,6 @@ const ProjectDetailPage = () => {
         const data = await fetchProjectInfo(id);
         if (data) {
           setProject(data);
-          console.log(data);
         } else {
           setError("Project not found.");
         }
@@ -133,7 +134,7 @@ const ProjectDetailPage = () => {
       contents: `
   You are an professional evaluator.
   
-  Based ONLY on the information provided, give the following feedback:
+  Based ONLY on the information provided, give the following feedback on my project idea:
   
   1. Display a score out of 10 **in big font** at the very top, based on the following breakdown:
      - **Clarity**: Rate the project’s clarity (out of 10)
@@ -161,6 +162,7 @@ const ProjectDetailPage = () => {
   DO NOT ask for additional information or clarification.
   Format it cleanly with section headers, a prominent rating at the top, and spacing between each section.
   
+  
   ---
 
   ---PROJECT TITLE---
@@ -179,7 +181,7 @@ const ProjectDetailPage = () => {
   ${project.skill_tags}
 
   ---PROJECT POSITIONS NEEDED---
-  ${project.positions}
+  ${project.positions.map((position) => position.title).join(", ")}
       `,
     });
     setAI_Response(response.text);
@@ -187,14 +189,80 @@ const ProjectDetailPage = () => {
   };
 
   const ai_suggest = async () => {
+    if (cooldown) return;
+    setCooldown(true);
+    setaiFeedbackLoading(true);
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
-      contents:
-        "How good of a fit would I be for this project: " +
-        project.description +
-        project.full_description,
+      contents: `
+  You are a professional evaluator.
+
+  Based ONLY on the information provided, give the following feedback on how good of a fit I am for the project.
+
+  1. **Fit Rating**: Rate how well I fit for this project out of 10 based on the following criteria:
+     - **Interest Match**: How closely my interests (userdata.interests) align with the project's interest tags (project.interest_tags).
+     - **Skills Match**: How closely my skills (userdata.skills) align with the project's required skills (project.skill_tags).
+     - **Role Match**: How closely my roles (userdata.roles) align with the project's needed positions (project.positions).
+
+  ---
+  
+  2. Provide a **rating breakdown** for each category (Interest Match, Skills Match, Role Match), explaining why you gave each score.
+
+  ---
+  
+  3. Strengths:
+     - List up to 3 strengths I bring to the project based on the alignment of my interests, skills, and roles.
+     - If there are no notable strengths, say "None or there is a lack of alignment."
+
+  ---
+  
+  4. Areas for improvement:
+     - List up to 3 areas where I could improve to be a better fit for the project.
+     - Keep it honest and constructive.
+
+  ---
+
+  DO NOT ask for additional information or clarification.
+  Format it cleanly with section headers, a prominent fit rating at the top, and spacing between each section.
+
+  ---
+
+  ---PROJECT SCHOOL---
+  ${project.institution}
+
+  ---PROJECT TITLE---
+  ${project.full_description}
+
+  ---BRIEF PROJECT DESCRIPTION---
+  ${project.description}
+
+  ---FULL DESCRIPTION---
+  ${project.full_description}
+
+  ---PROJECT CATEGORIES---
+  ${project.interest_tags}
+
+  ---PROJECT SKILLS---
+  ${project.skill_tags}
+
+  ---PROJECT POSITIONS NEEDED---
+  ${project.positions.map((position) => position.title).join(", ")}
+
+  ---USER INTERESTS---
+  ${userData.interests}
+
+  ---USER SKILLS---
+  ${userData.skills}
+
+  ---USER ROLES---
+  ${userData.roles}
+
+  ---USER SCHOOL---
+  ${userData.school}
+`,
     });
     setAI_Response(response.text);
+    setaiFeedbackLoading(false);
   };
 
   useEffect(() => {
@@ -769,19 +837,32 @@ const ProjectDetailPage = () => {
                     <CardTitle className="text-2xl font-bold">
                       🤖 AI Match Score 🤖
                     </CardTitle>
+                    <h2 className="text-lg text-center">
+                      Let AI rate how good of a fit you would be for this
+                      project based on your profile.
+                    </h2>
                     <Button
                       onClick={ai_suggest}
-                      disabled={aiFeedbackLoading}
+                      disabled={aiFeedbackLoading || cooldown}
                       className="flex items-center"
                     >
                       {aiFeedbackLoading ? (
-                        <Spinner className="mr-2 h-4 w-4" />
+                        <>
+                          <Spinner className="mr-2 h-4 w-4" />
+                          Generating...
+                        </>
                       ) : (
-                        <Star className="mr-2 h-4 w-4" />
+                        <>
+                          <Star className="mr-2 h-4 w-4" />
+                          {cooldown
+                            ? "Cooldown between ratings, try again in 5 minutes."
+                            : "Rate Project"}
+                        </>
                       )}
-                      Rate Project
                     </Button>
                   </CardHeader>
+
+                  <div className="my-4 border-t border-gray-300 w-full" />
 
                   <CardContent className="p-6">
                     <AnimatePresence>
@@ -793,7 +874,7 @@ const ProjectDetailPage = () => {
                           exit={{ opacity: 0 }}
                           className="text-center text-gray-500 py-8"
                         >
-                          Thinking…
+                          Rating...
                         </motion.div>
                       )}
 
@@ -804,11 +885,9 @@ const ProjectDetailPage = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.3 }}
-                          className="prose prose-lg"
+                          className="prose prose-lg text-center "
                         >
-                          {AI_response.split("\n").map((line, i) => (
-                            <p key={i}>{line}</p>
-                          ))}
+                          <ReactMarkdown>{AI_response}</ReactMarkdown>
                         </motion.div>
                       )}
                     </AnimatePresence>
