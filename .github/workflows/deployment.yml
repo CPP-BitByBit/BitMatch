@@ -110,6 +110,7 @@ jobs:
         env:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           VITE_SERVER_HOST: ${{ secrets.VITE_SERVER_HOST }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
         working-directory: frontend/bitmatch
 
       - name: Sync build to S3

@@ -7,7 +7,7 @@ import {
   ThumbsUp,
   UserRound,
   Star,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ const fetchProjectInfo = async (id) => {
   }
 };
 
-const editProjectInfo = async (id) => { };
+const editProjectInfo = async (id) => {};
 
 const ProjectDetailPage = () => {
   const navigate = useNavigate();
@@ -56,6 +56,7 @@ const ProjectDetailPage = () => {
   const [AI_response, setAI_Response] = useState(null);
   const [project, setProject] = useState(null); // State to store project details
   const [loading, setLoading] = useState(true); // State to handle loading state
+  const [aiFeedbackLoading, setaiFeedbackLoading] = useState(false); // State to handle loading state
   const [error, setError] = useState(null); // State to handle errors
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -105,7 +106,6 @@ const ProjectDetailPage = () => {
     loadProjectInfo();
   }, [id]);
 
-
   const handleFollow = async () => {
     setFollowing(!following);
     console.log("current following status:", following);
@@ -128,22 +128,30 @@ const ProjectDetailPage = () => {
   };
 
   const ai_feedback = async () => {
+    setaiFeedbackLoading(true);
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: "Can you provide brief feedback on the following project: " + project.description + project.full_description
+      contents:
+        "Can you provide brief feedback on the following project: " +
+        project.description +
+        project.full_description,
     });
     console.log(response.text);
     setAI_Response(response.text);
-  }
+    setaiFeedbackLoading(false);
+  };
 
   const ai_suggest = async () => {
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: "How good of a fit would I be for this project: " + project.description + project.full_description
+      contents:
+        "How good of a fit would I be for this project: " +
+        project.description +
+        project.full_description,
     });
     console.log(response.text);
     setAI_Response(response.text);
-  }
+  };
 
   const handleLike = async () => {
     setLiked(!likeStatus);
@@ -442,8 +450,9 @@ const ProjectDetailPage = () => {
                 project.images.map((image, index) => (
                   <div
                     key={index}
-                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-                      }`}
+                    className={`w-16 h-16 flex-shrink-0 cursor-pointer ${
+                      currentImageIndex === index ? "ring-2 ring-blue-500" : ""
+                    }`}
                     onClick={() => selectImage(index)}
                   >
                     <img
@@ -463,21 +472,17 @@ const ProjectDetailPage = () => {
             className="mb-2"
             selectedIndex={[
               "overview",
-              "updates",
               "members",
               "wanted",
-              "discussions",
               "contact",
               project.owner === userUuid ? "ai_rate" : "ai_suggest",
-              project.owner === userUuid ? "edit" : null
+              project.owner === userUuid ? "edit" : null,
             ].indexOf(activeTab)}
             onSelect={(index) => {
               const tabNames = [
                 "overview",
-                "updates",
                 "members",
                 "wanted",
-                "discussions",
                 "contact",
                 project.owner === userUuid ? "ai_rate" : "ai_suggest",
                 project.owner === userUuid ? "edit" : null,
@@ -493,8 +498,9 @@ const ProjectDetailPage = () => {
             }}
           >
             <TabList
-              className={`grid ${project.owner === userUuid ? "grid-cols-8" : "grid-cols-7"
-                } w-full bg-gray-100 mb-8`}
+              className={`grid ${
+                project.owner === userUuid ? "grid-cols-6" : "grid-cols-5"
+              } w-full bg-gray-100 mb-8`}
             >
               <Tab
                 value="overview"
@@ -503,13 +509,7 @@ const ProjectDetailPage = () => {
               >
                 Overview
               </Tab>
-              <Tab
-                value="updates"
-                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                selectedClassName="bg-blue-200 text-black"
-              >
-                Updates
-              </Tab>
+
               <Tab
                 value="members"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
@@ -524,13 +524,7 @@ const ProjectDetailPage = () => {
               >
                 Wanted
               </Tab>
-              <Tab
-                value="discussions"
-                className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                selectedClassName="bg-blue-200 text-black"
-              >
-                Discussions
-              </Tab>
+
               <Tab
                 value="contact"
                 className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
@@ -545,18 +539,17 @@ const ProjectDetailPage = () => {
                   className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
                   selectedClassName="bg-blue-200 text-black"
                 >
-                  Rate
+                  AI Feedback
                 </Tab>
-              ) :
-                (
-                  <Tab
-                    value="ai_suggest"
-                    className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
-                    selectedClassName="bg-blue-200 text-black"
-                  >
-                    Suggest
-                  </Tab>
-                )}
+              ) : (
+                <Tab
+                  value="ai_suggest"
+                  className="font-medium px-4 py-2 transition-all text-center cursor-pointer hover:bg-blue-100 hover:text-blue-600 rounded-md"
+                  selectedClassName="bg-blue-200 text-black"
+                >
+                  AI Match
+                </Tab>
+              )}
               {project.owner === userUuid && (
                 <Tab
                   value="edit"
@@ -570,7 +563,6 @@ const ProjectDetailPage = () => {
                   Edit Project
                 </Tab>
               )}
-
             </TabList>
 
             <EditProjectDialog
@@ -630,79 +622,8 @@ const ProjectDetailPage = () => {
               </div>
             </TabPanel>
 
-            <TabPanel value="updates">
-              <div className="border rounded-lg p-4 overflow-hidden">
-                <div className="p-5 border-solid">
-                  <h2 className="text-2xl font-bold text-left mb-5">
-                    Updates{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h2>
-                  <div className="gap-4">
-                    <h3 className="text-sm mb-3">Title</h3>
-                    <Input
-                      type="text"
-                      className="flex-1 border rounded px-4 py-2 mb-6 h-10"
-                    />
-                    {showCommentForm ? (
-                      <ReplyForm
-                        postId={replyingTo || ""}
-                        onCancel={handleCancelComment}
-                        onSubmit={handleSubmitComment}
-                      />
-                    ) : (
-                      <div className="border p-4 mb-4">
-                        <div className="mb-4">
-                          <div
-                            className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
-                            onClick={handleAddComment}
-                          >
-                            <p className="text-gray-500">
-                              Add your comments here
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="secondary"
-                            className="bg-gray-300 hover:bg-gray-400 text-black"
-                            onClick={handleCancelComment}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            className="bg-gray-300 hover:bg-gray-400 text-black"
-                            onClick={handleAddComment}
-                          >
-                            Comment
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </TabPanel>
-
             <TabPanel value="members">
               <div className="border rounded-lg overflow-hidden">
-                {/* Search and Add Member Section */}
-                <div className="p-5 border-b">
-                  <div className="flex gap-4">
-                    <Input
-                      type="text"
-                      placeholder="Search for students to add"
-                      className="flex-1 border rounded px-4 py-2"
-                    />
-                    <Button
-                      variant="secondary"
-                      className="bg-gray-300 hover:bg-gray-400 text-black"
-                    >
-                      Add Member
-                    </Button>
-                  </div>
-                </div>
-
                 {/* Members List Section */}
                 <div className="p-5">
                   <h2 className="text-2xl font-bold mb-6">
@@ -811,154 +732,13 @@ const ProjectDetailPage = () => {
               </div>
             </TabPanel>
 
-            <TabPanel value="discussions" className="mt-6">
-              <div className="bg-gray-100 rounded-lg overflow-hidden">
-                {/* Discussions Header */}
-                <div className="p-6">
-                  <div className="inline-block bg-white border rounded-lg px-4 py-2 mb-4">
-                    <span className="font-bold">
-                      Discussions{" "}
-                      <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Comment Form */}
-                <div className="bg-white border-t p-6">
-                  {showCommentForm ? (
-                    <ReplyForm
-                      postId={replyingTo || ""}
-                      onCancel={handleCancelComment}
-                      onSubmit={handleSubmitComment}
-                    />
-                  ) : (
-                    <div className="border p-4 mb-4">
-                      <div className="mb-4">
-                        <div
-                          className="w-full p-4 min-h-[100px] border rounded cursor-pointer bg-gray-50 hover:bg-gray-100"
-                          onClick={handleAddComment}
-                        >
-                          <p className="text-gray-500">
-                            Add your comments here
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="secondary"
-                          className="bg-gray-300 hover:bg-gray-400 text-black"
-                          onClick={handleCancelComment}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          className="bg-gray-300 hover:bg-gray-400 text-black"
-                          onClick={handleAddComment}
-                        >
-                          Comment
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Discussion Posts */}
-                  <div>
-                    {discussions.length > 0 ? (
-                      discussions.map((discussion) => (
-                        <div key={discussion.id}>
-                          <DiscussionPost
-                            id={discussion.id}
-                            author={discussion.author}
-                            content={discussion.content}
-                            datePosted={discussion.datePosted}
-                            onReply={handleReplyToPost}
-                            onDelete={handleDeletePost}
-                            onReaction={handleReaction}
-                          />
-
-                          {replyingTo === discussion.id && (
-                            <div className="ml-12 mt-4">
-                              <ReplyForm
-                                postId={discussion.id}
-                                onCancel={handleCancelComment}
-                                onSubmit={handleSubmitComment}
-                              />
-                            </div>
-                          )}
-
-                          {discussion.replies &&
-                            discussion.replies.map((reply) => (
-                              <div key={reply.id}>
-                                <DiscussionPost
-                                  id={reply.id}
-                                  author={reply.author}
-                                  content={reply.content}
-                                  datePosted={reply.datePosted}
-                                  isReply={true}
-                                  parentId={discussion.id}
-                                  onReply={handleReplyToPost}
-                                  onDelete={handleDeletePost}
-                                  onReaction={handleReaction}
-                                />
-
-                                {replyingTo === reply.id && (
-                                  <div className="ml-12 mt-4">
-                                    <ReplyForm
-                                      postId={reply.id}
-                                      onCancel={handleCancelComment}
-                                      onSubmit={handleSubmitComment}
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center py-8">
-                        No discussions yet. Start the conversation!
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </TabPanel>
-
             <TabPanel value="contact">
               <div className="border rounded-lg overflow-hidden">
                 <div className="p-5 border-b">
                   <h1 className="text-2xl font-bold mb-10">
-                    Contact The Owner of This Project{" "}
+                    Project Owner Contact Information{" "}
                     <span className="text-yellow-500 font-bold">(W.I.P)</span>
                   </h1>
-                  <h3 className="text-sm mb-3">Full Name</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Email Address</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Subject</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6"
-                  />
-                  <h3 className="text-sm mb-3">Description</h3>
-                  <Input
-                    type="text"
-                    className="flex-1 border rounded px-4 py-2 mb-6 h-60"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="bg-gray-100 hover:bg-gray-400 text-black"
-                  >
-                    Submit
-                  </Button>
                 </div>
               </div>
             </TabPanel>
@@ -967,24 +747,29 @@ const ProjectDetailPage = () => {
               <TabPanel value="ai_rate">
                 <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
                   <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">AI Rate My Project</CardTitle>
+                    <CardTitle className="text-2xl font-bold">
+                      🤖 AI Rate My Project 🤖
+                    </CardTitle>
+                    <h2 className="text-lg text-center">
+                      Let AI rate your project and give feedback.
+                    </h2>
                     <Button
                       onClick={ai_feedback}
-                      disabled={loading}
+                      disabled={aiFeedbackLoading}
                       className="flex items-center"
                     >
-                      {loading
-                        ? <Spinner className="mr-2 h-4 w-4" />
-                        : <Star className="mr-2 h-4 w-4" />
-                      }
+                      {aiFeedbackLoading ? (
+                        <Spinner className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Star className="mr-2 h-4 w-4" />
+                      )}
                       Rate Project
                     </Button>
                   </CardHeader>
 
                   <CardContent className="p-6">
-                    <h2 className="text-lg">Let AI rate your project and give feedback.</h2>
                     <AnimatePresence>
-                      {loading && (
+                      {aiFeedbackLoading && (
                         <motion.div
                           key="loading"
                           initial={{ opacity: 0 }}
@@ -996,7 +781,7 @@ const ProjectDetailPage = () => {
                         </motion.div>
                       )}
 
-                      {!loading && AI_response && (
+                      {!aiFeedbackLoading && AI_response && (
                         <motion.div
                           key="response"
                           initial={{ opacity: 0, y: 10 }}
@@ -1018,23 +803,26 @@ const ProjectDetailPage = () => {
               <TabPanel value="ai_suggest">
                 <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
                   <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">AI Suggestion</CardTitle>
+                    <CardTitle className="text-2xl font-bold">
+                      🤖 AI Match Score 🤖
+                    </CardTitle>
                     <Button
                       onClick={ai_feedback}
-                      disabled={loading}
+                      disabled={aiFeedbackLoading}
                       className="flex items-center"
                     >
-                      {loading
-                        ? <Spinner className="mr-2 h-4 w-4" />
-                        : <Star className="mr-2 h-4 w-4" />
-                      }
+                      {aiFeedbackLoading ? (
+                        <Spinner className="mr-2 h-4 w-4" />
+                      ) : (
+                        <Star className="mr-2 h-4 w-4" />
+                      )}
                       Rate Project
                     </Button>
                   </CardHeader>
 
                   <CardContent className="p-6">
                     <AnimatePresence>
-                      {loading && (
+                      {aiFeedbackLoading && (
                         <motion.div
                           key="loading"
                           initial={{ opacity: 0 }}
@@ -1046,7 +834,7 @@ const ProjectDetailPage = () => {
                         </motion.div>
                       )}
 
-                      {!loading && AI_response && (
+                      {!aiFeedbackLoading && AI_response && (
                         <motion.div
                           key="response"
                           initial={{ opacity: 0, y: 10 }}
@@ -1063,8 +851,9 @@ const ProjectDetailPage = () => {
                     </AnimatePresence>
                   </CardContent>
                 </Card>
-              </TabPanel>)}
-            {project.owner === userUuid && (<TabPanel value="edit"></TabPanel>)}
+              </TabPanel>
+            )}
+            {project.owner === userUuid && <TabPanel value="edit"></TabPanel>}
           </Tabs>
         </main>
 
