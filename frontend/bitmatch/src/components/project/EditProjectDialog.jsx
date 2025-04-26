@@ -152,6 +152,45 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="location" className="text-sm font-medium">
+              Location
+            </Label>
+            <Input
+              id="location"
+              value={formData.location || ""}
+              onChange={(e) => handleChange("location", e.target.value)}
+              className="w-full"
+              placeholder="Enter project location"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium">
+              Project Email
+            </Label>
+            <Input
+              id="email"
+              value={formData.email || ""}
+              onChange={(e) => handleChange("email", e.target.value)}
+              className="w-full"
+              placeholder="Enter project email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="other_contact" className="text-sm font-medium">
+              Project Social
+            </Label>
+            <Input
+              id="other_contact"
+              value={formData.other_contact || ""}
+              onChange={(e) => handleChange("other_contact", e.target.value)}
+              className="w-full"
+              placeholder="Enter project social"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
               Description
             </Label>

@@ -5,6 +5,7 @@ import {
   UserRound,
   CirclePlus,
   LogOut,
+  MapPin,
   Star,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -416,6 +417,9 @@ const ProjectDetailPage = () => {
 
     formData.append("title", data.title);
     formData.append("group", data.group);
+    formData.append("location", data.location);
+    formData.append("email", data.email);
+    formData.append("other_contact", data.other_contact);
     formData.append("institution", data.institution);
     formData.append("description", data.description);
     formData.append("full_description", data.full_description);
@@ -749,11 +753,11 @@ const ProjectDetailPage = () => {
             <TabPanel value="overview" className="mt-6">
               <h2 className="text-4xl font-bold mb-6">Overview</h2>
 
-              <h2 className="text-xl font-bold mb-4">
-                Background & More Details About the Project
-              </h2>
               <div className="mb-6">
                 <p className="text-sm mb-8 markdown">
+                  <h2 className="text-xl font-bold mb-4">
+                    Background & More Details About the Project
+                  </h2>
                   <ReactMarkdown>{project.full_description}</ReactMarkdown>
                 </p>
                 <div className="mb-4">
@@ -776,6 +780,12 @@ const ProjectDetailPage = () => {
                     </>
                   )}
                 </div>
+                <br></br>
+                <h3 className="text-xl font-bold mb-4">Based In</h3>
+                <p className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {project.location}
+                </p>
               </div>
             </TabPanel>
 
