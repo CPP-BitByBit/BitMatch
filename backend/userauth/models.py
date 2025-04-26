@@ -26,11 +26,6 @@ class User(models.Model):
         related_name='contributors',  
         blank=True
     )
-    owned = models.ManyToManyField(
-        'projects.Project',
-        related_name='owners',
-        blank=True
-    )
 
     def __str__(self):
         return self.username or f"User-{self.id}"

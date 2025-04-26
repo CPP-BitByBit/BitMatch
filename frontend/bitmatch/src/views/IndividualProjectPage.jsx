@@ -4,6 +4,8 @@ import {
   Plus,
   ThumbsUp,
   UserRound,
+  CirclePlus,
+  LogOut,
   Star,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -63,6 +65,8 @@ const ProjectDetailPage = () => {
   const [likeStatus, setLiked] = useState(false);
   const [userUuid, setUserUuid] = useState(null);
   const [cooldown, setCooldown] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const fetchUserUuid = async () => {
@@ -102,7 +106,14 @@ const ProjectDetailPage = () => {
     };
 
     loadProjectInfo();
-  }, [id]);
+  }, [id, userUuid]);
+
+  useEffect(() => {
+    if (userData && project) {
+      setIsMember(project.members.includes(userData.id));
+      setIsReady(true);
+    }
+  }, [userData, project]);
 
   const handleFollow = async () => {
     setFollowing(!following);
@@ -122,6 +133,62 @@ const ProjectDetailPage = () => {
       window.location.reload();
     } catch (error) {
       console.error("Error updating follows: ", error);
+    }
+  };
+
+  const handleJoin = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to join this project?"
+    );
+    if (!confirmed) return;
+    try {
+      const response = await fetch(
+        `${SERVER_HOST}/projects/member/manage/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userData.id,
+            action: "join",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setIsMember(true);
+      }
+    } catch (error) {
+      console.error("Error joining project:", error);
+    }
+  };
+
+  const handleLeave = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to leave this project?"
+    );
+    if (!confirmed) return;
+    try {
+      const response = await fetch(
+        `${SERVER_HOST}/projects/member/manage/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userData.id,
+            action: "leave",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setIsMember(false);
+      }
+    } catch (error) {
+      console.error("Error leaving project:", error);
     }
   };
 
@@ -462,6 +529,38 @@ const ProjectDetailPage = () => {
                     <UserRound className="h-6 w-6"></UserRound>
                   </Button>
                   <span>{project.followers_count} Followers</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {isReady && userUuid !== project.owner && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={isMember ? handleLeave : handleJoin}
+                        className={
+                          isMember
+                            ? "bg-red-500 hover:bg-red-100"
+                            : "bg-green-500 hover:bg-green-600"
+                        }
+                      >
+                        {isMember ? (
+                          <LogOut className="h-6 w-6" />
+                        ) : (
+                          <CirclePlus className="h-6 w-6" />
+                        )}
+                      </Button>
+                      <span
+                        className={
+                          isMember
+                            ? "text-red-600 font-bold"
+                            : "text-green-500 font-bold"
+                        }
+                      >
+                        {isMember ? "Leave" : "Join"}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
