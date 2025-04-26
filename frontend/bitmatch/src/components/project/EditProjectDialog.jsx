@@ -25,6 +25,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
   const [formData, setFormData] = useState(projectData);
   const [newPosition, setNewPosition] = useState({ title: "" });
   const [editingIndex, setEditingIndex] = useState(-1);
+  const [sliderImages, setSliderImages] = useState(projectData.images || []);
+
+  const handleImageUrlChange = (index, e) => {
+    const newSliderImages = [...sliderImages];
+    newSliderImages[index] = e.target.value;
+
+    const filteredImages = newSliderImages.filter((url) => url.trim() !== "");
+
+    setSliderImages(newSliderImages);
+    handleChange("images", filteredImages);
+  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -251,6 +262,32 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Slider Image Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium">Slider Images</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Enter up to 4 image URLs for populating the image carousel on your
+              project page. (Ex: screenshots of app, mockups, etc)
+            </p>
+
+            {[...Array(4)].map((_, index) => (
+              <div key={index}>
+                <input
+                  type="text"
+                  id={`image-url-${index + 1}`}
+                  placeholder={`Enter image URL ${index + 1}`}
+                  value={sliderImages[index] || ""}
+                  onChange={(e) => handleImageUrlChange(index, e)}
+                  className="w-full h-10 border border-gray-300 p-2 rounded-md"
+                />
+              </div>
+            ))}
+
+            <p className="text-sm text-gray-600 mt-2">
+              Example: https://example.com/image1.jpg
+            </p>
           </div>
 
           {/* Open Positions Section */}

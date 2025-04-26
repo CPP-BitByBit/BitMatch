@@ -289,8 +289,8 @@ export default function CreateProjectForm() {
                     type="text"
                     id={`image-url-${index + 1}`}
                     placeholder={`Enter image URL ${index + 1}`}
-                    value={sliderImages[index] || ""} // Bind the value of the input to the state
-                    onChange={(e) => handleImageUrlChange(index, e)} // Update the state on change
+                    value={sliderImages[index] || ""}
+                    onChange={(e) => handleImageUrlChange(index, e)}
                     className="w-full h-10 border border-gray-300 p-2 rounded-md"
                   />
                 </div>

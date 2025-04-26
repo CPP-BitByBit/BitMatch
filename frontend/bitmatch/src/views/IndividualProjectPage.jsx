@@ -415,6 +415,7 @@ const ProjectDetailPage = () => {
   const handleSave = async (data) => {
     const formData = new FormData();
 
+    console.log(data);
     formData.append("title", data.title);
     formData.append("group", data.group);
     formData.append("location", data.location);
@@ -424,6 +425,7 @@ const ProjectDetailPage = () => {
     formData.append("description", data.description);
     formData.append("full_description", data.full_description);
     formData.append("positions", JSON.stringify(data.positions));
+    formData.append("images", JSON.stringify(data.images));
     formData.append("wanted_description", data.wanted_description);
 
     if (data.new_image) {
@@ -784,7 +786,9 @@ const ProjectDetailPage = () => {
                 <h3 className="text-xl font-bold mb-4">Based In</h3>
                 <p className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  {project.location}
+                  {project.location ||
+                    project.institution ||
+                    "Location not available"}
                 </p>
               </div>
             </TabPanel>
