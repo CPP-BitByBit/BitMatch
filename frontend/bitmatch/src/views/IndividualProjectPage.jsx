@@ -27,6 +27,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 import axios from "axios";
+import Markdown from "react-markdown";
 
 const fetchProjectInfo = async (id) => {
   try {
@@ -370,6 +371,7 @@ const ProjectDetailPage = () => {
     formData.append("description", data.description);
     formData.append("full_description", data.full_description);
     formData.append("positions", JSON.stringify(data.positions));
+    formData.append("wanted_description", data.wanted_description);
 
     if (data.new_image) {
       formData.append("image_url", data.new_image);
@@ -697,19 +699,20 @@ const ProjectDetailPage = () => {
 
             <TabPanel value="overview" className="mt-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-3xl font-bold">Overview</h2>
+                <h2 className="text-4xl font-bold mb-6">Overview</h2>
               </div>
               <h2 className="text-xl font-bold mb-4">
                 Background & More Details About the Project
               </h2>
               <div className="mb-6">
-                <p className="text-sm mb-8">{project.full_description}</p>
-
+                <p className="text-sm mb-8 markdown">
+                  <ReactMarkdown>{project.full_description}</ReactMarkdown>
+                </p>
                 <div className="mb-4">
                   {project.interest_tags?.length > 0 && (
                     <>
                       <h3 className="text-xl font-bold mb-4">
-                        Project Categories
+                        Project Categories/Tags
                       </h3>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {project.interest_tags.map((interest, index) => (
@@ -719,23 +722,6 @@ const ProjectDetailPage = () => {
                             className="bg-gray-400 hover:bg-black"
                           >
                             {interest}
-                          </Badge>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {project.skill_tags?.length > 0 && (
-                    <>
-                      <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {project.skill_tags.map((skill, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="bg-gray-400 hover:bg-black"
-                          >
-                            {skill}
                           </Badge>
                         ))}
                       </div>
@@ -784,81 +770,55 @@ const ProjectDetailPage = () => {
             <TabPanel value="wanted">
               <div className="rounded-lg overflow-hidden">
                 {/* Wanted Header */}
-                <h2 className="text-4xl font-bold mb-6">
-                  Wanted{" "}
-                  <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                </h2>
+                <h2 className="text-4xl font-bold mb-6">Wanted</h2>
+
                 {/* Positions Section */}
                 <div>
-                  <div className="p-6 flex justify-between items-center border-b">
-                    <h2 className="text-2xl font-bold">
-                      Positions Needed for This Project
-                    </h2>
-                    <Button
-                      variant="secondary"
-                      className="hover:bg-gray-400 text-black"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Position
-                    </Button>
-                  </div>
-
-                  <div>
-                    <PositionCard
-                      id="1"
-                      title="Backend Developer"
-                      datePosted="02-02-2024"
-                      description="Work with Java Spring to implement the backend for a web app"
-                      responsibilities={[
-                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
-                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
-                      ]}
-                      skillSets={{
-                        technical: ["Python", "SQL", "C++", "Java"],
-                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: [
-                          "Communication",
-                          "Analytical",
-                          "Problem Solver",
-                          "Detail Oriented",
-                        ],
-                      }}
-                      qualification="Pursuing a BA in Computer Science"
-                      skillMatch="35"
-                    />
-                    <PositionCard
-                      id="2"
-                      title="Backend Developer"
-                      datePosted="02-02-2024"
-                      description="Work with Java Spring to implement the backend for a web app"
-                      responsibilities={[
-                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
-                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
-                      ]}
-                      skillSets={{
-                        technical: ["Python", "SQL", "C++", "Java"],
-                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: [
-                          "Communication",
-                          "Analytical",
-                          "Problem Solver",
-                          "Detail Oriented",
-                        ],
-                      }}
-                      qualification="Pursuing a BA in Computer Science"
-                      skillMatch="35"
-                    />
+                  <div className="markdown">
+                    <ReactMarkdown>{project.wanted_description}</ReactMarkdown>
                   </div>
                 </div>
               </div>
+
+              {project.positions?.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold mb-4">Open Positions</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.positions.map((position, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-gray-400 hover:bg-black"
+                      >
+                        {position.title}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {project.skill_tags?.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {project.skill_tags.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-gray-400 hover:bg-black"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
             </TabPanel>
 
             <TabPanel value="contact">
               <div className="border rounded-lg overflow-hidden">
                 <div className="p-5 border-b">
-                  <h1 className="text-2xl font-bold mb-10">
+                  <h1 className="text-4xl font-bold mb-6">
                     Project Owner Contact Information{" "}
                     <span className="text-yellow-500 font-bold">(W.I.P)</span>
                   </h1>

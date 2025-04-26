@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
 import { useNavigate } from "react-router-dom";
+import MDEditor from "@uiw/react-md-editor";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
@@ -167,13 +168,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
             <Label htmlFor="full_description" className="text-sm font-medium">
               Project Background/More Details
             </Label>
-            <Textarea
-              id="full_description"
-              value={formData.full_description}
-              onChange={(e) => handleChange("full_description", e.target.value)}
-              className="min-h-[120px] w-full"
-              placeholder="Enter project background/more details"
-            />
+            <div className="min-h-[120px] w-full border rounded-md p-2">
+              <MDEditor
+                id="full_description"
+                value={formData.full_description}
+                onChange={(value) =>
+                  handleChange("full_description", value || "")
+                }
+                preview="edit"
+                height={200}
+              />
+            </div>
           </div>
 
           {/* Image Upload Section */}
@@ -283,6 +288,23 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 )}
               </div>
             </Card>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="wanted_description" className="text-sm font-medium">
+              Wanted Description
+            </Label>
+            <div className="min-h-[120px] w-full border rounded-md p-2">
+              <MDEditor
+                id="full_description"
+                value={formData.wanted_description}
+                onChange={(value) =>
+                  handleChange("wanted_description", value || "")
+                }
+                preview="edit"
+                height={200}
+              />
+            </div>
           </div>
 
           <DialogFooter className="pt-2">

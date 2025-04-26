@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
+import MDEditor from "@uiw/react-md-editor";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const CREATE_PROJECT_ENDPOINT = `${SERVER_HOST}/projects/create/`;
@@ -23,6 +24,7 @@ export default function CreateProjectForm() {
   const [group, setGroup] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [fullDescription, setFullDescription] = useState("");
+  const [wantedDescription, setWantedDescription] = useState("");
   const [roles, setRoles] = useState([]);
   const [newRole, setNewRole] = useState("");
   const [coverImagePreview, setCoverImagePreview] = useState(null);
@@ -90,7 +92,7 @@ export default function CreateProjectForm() {
   };
 
   const handleFullDescriptionChange = (e) => {
-    if (e.target.value.length <= 540) {
+    if (e.target.value.length <= 2500) {
       setFullDescription(e.target.value);
     }
   };
@@ -141,6 +143,7 @@ export default function CreateProjectForm() {
     formData.append("institution", university);
     formData.append("group", group);
     formData.append("description", shortDescription);
+    formData.append("wanted_description", wantedDescription);
     formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
@@ -349,17 +352,17 @@ export default function CreateProjectForm() {
             <label htmlFor="full-desc" className="block font-medium mb-1">
               Project Background/More Details (Optional)
             </label>
-            <textarea
-              id="full-desc"
-              className="w-full border rounded-md p-2 resize-none focus:ring-blue-500 focus:border-blue-500"
-              rows={4}
-              value={fullDescription}
-              onChange={handleFullDescriptionChange}
-              placeholder="Enter your project's background information, or any additional details."
-              maxLength={1000}
-            ></textarea>
+            <div className="w-full border rounded-md p-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+              <MDEditor
+                id="full-desc"
+                value={fullDescription}
+                onChange={(value) => setFullDescription(value || "")}
+                preview="edit"
+                height={200}
+              />
+            </div>
             <div className="flex justify-between text-sm text-gray-600 mt-1">
-              <span>Max Characters: 1000</span>
+              <span>Max Characters: 2500</span>
               <span>Character Count: {fullDescription.length}</span>
             </div>
           </div>
@@ -417,9 +420,33 @@ export default function CreateProjectForm() {
               )}
             </div>
           </div>
+
+          <div>
+            <label htmlFor="wanted-desc" className="block font-medium mb-1">
+              Wanted Description (Optional)
+            </label>
+            <div className="w-full border rounded-md p-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+              <p>
+                Tell us more about the positions you need to fill. (overview,
+                responsiblities, skills required, other requirements, etc.)
+              </p>
+              <MDEditor
+                id="wanted-desc"
+                value={wantedDescription}
+                onChange={(value) => setWantedDescription(value || "")}
+                preview="edit"
+                height={200}
+              />
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <span>Max Characters: 2500</span>
+              <span>Character Count: {wantedDescription.length}</span>
+            </div>
+          </div>
+
           <div className="mt-6">
             <label className="block font-medium mb-2">
-              Categories (Optional)
+              Categories/Interests (Optional)
             </label>
             <div className="flex items-center space-x-2 mb-2">
               <input
