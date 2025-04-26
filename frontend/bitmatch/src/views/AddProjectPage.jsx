@@ -22,6 +22,9 @@ export default function CreateProjectForm() {
   const [projectName, setProjectName] = useState("");
   const [university, setUniversity] = useState("");
   const [group, setGroup] = useState("");
+  const [projectMail, setProjectMail] = useState("");
+  const [projectSocial, setProjectSocial] = useState("");
+  const [projectLocation, setProjectLocation] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [fullDescription, setFullDescription] = useState("");
   const [wantedDescription, setWantedDescription] = useState("");
@@ -29,17 +32,7 @@ export default function CreateProjectForm() {
   const [newRole, setNewRole] = useState("");
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [coverImageFile, setCoverImageFile] = useState(null);
-  const [sliderImages, setSliderImages] = useState([
-    "slideshow_img1.jpg",
-    "slideshow_img2.jpg",
-    "slideshow_img3.jpg",
-    "slideshow_img4.jpg",
-    "slideshow_img5.jpg",
-  ]);
-  const [selectedCategories, setSelectedCategories] = useState([
-    "Technology",
-    "Health & Fitness",
-  ]);
+  const [sliderImages, setSliderImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [roleError, setRoleError] = useState("");
@@ -91,10 +84,10 @@ export default function CreateProjectForm() {
     }
   };
 
-  const handleFullDescriptionChange = (e) => {
-    if (e.target.value.length <= 2500) {
-      setFullDescription(e.target.value);
-    }
+  const handleImageUrlChange = (index, event) => {
+    const newUrls = [...sliderImages];
+    newUrls[index] = event.target.value;
+    setSliderImages(newUrls);
   };
 
   const handleAddRole = () => {
@@ -142,11 +135,15 @@ export default function CreateProjectForm() {
     formData.append("title", projectName);
     formData.append("institution", university);
     formData.append("group", group);
+    formData.append("email", projectMail);
+    formData.append("other_contact", projectSocial);
+    formData.append("location", projectLocation);
     formData.append("description", shortDescription);
     formData.append("wanted_description", wantedDescription);
     formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
+    formData.append("images", JSON.stringify(sliderImages));
     formData.append("owner", userUuid);
     skills.forEach((skill) => {
       formData.append("skill_tags", skill);
@@ -277,6 +274,33 @@ export default function CreateProjectForm() {
               />
             </div>
           </div>
+
+          <div>
+            <h2 className="font-lg mb-1">Slider Images (Optional)</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Enter up to 4 image URLs for populating the image carousel on your
+              project page. (Ex: screenshots of app, mockups, etc)
+            </p>
+
+            <div className="space-y-4">
+              {[...Array(4)].map((_, index) => (
+                <div key={index}>
+                  <input
+                    type="text"
+                    id={`image-url-${index + 1}`}
+                    placeholder={`Enter image URL ${index + 1}`}
+                    value={sliderImages[index] || ""} // Bind the value of the input to the state
+                    onChange={(e) => handleImageUrlChange(index, e)} // Update the state on change
+                    className="w-full h-10 border border-gray-300 p-2 rounded-md"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm text-gray-600 mt-2">
+              Example: https://example.com/image1.jpg
+            </p>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -308,6 +332,57 @@ export default function CreateProjectForm() {
               onChange={(e) => setUniversity(e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <label htmlFor="projectLocation" className="block font-medium mb-1">
+              Project Location <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="projectLocation"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="City, State or Remote"
+              value={projectLocation}
+              onChange={(e) => setProjectLocation(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="projectMail" className="block font-medium mb-1">
+              Project Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="projectMail"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="projectowner@gmail.com or project@gmail.com"
+              value={projectMail}
+              onChange={(e) => setProjectMail(e.target.value)}
+              required
+            />
+            <p className="text-sm text-gray-600 mt-1">
+              At what email can the project owner/management be reached at?
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="projectSocial" className="block font-medium mb-1">
+              Social Media Contact (Optional)
+            </label>
+            <input
+              type="text"
+              id="projectSocial"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Discord - Example#1123 (Please indicate platform)"
+              value={projectSocial}
+              onChange={(e) => setProjectSocial(e.target.value)}
+            />
+            <p className="text-sm text-gray-600 mt-1">
+              What social medias can the project owner/managment be reached at?
+              (Discord, X, Facebook, Etc.)
+            </p>
           </div>
 
           <div>

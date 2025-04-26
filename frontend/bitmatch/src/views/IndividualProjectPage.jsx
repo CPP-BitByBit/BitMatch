@@ -1,7 +1,6 @@
 import {
   ChevronRight,
   ChevronLeft,
-  Plus,
   ThumbsUp,
   UserRound,
   CirclePlus,
@@ -12,8 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MemberCard } from "@/components/project/MemberCard";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { PositionCard } from "@/components/project/PositionCard";
+import { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useEffect, useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { useParams, useNavigate } from "react-router-dom";
@@ -22,12 +20,12 @@ import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 import { useUser } from "@clerk/clerk-react";
 import { Spinner } from "@/components/ui/Spinner";
 import ReactMarkdown from "react-markdown";
+import placeholderProfileImg from "../assets/profilepic.jpg";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 import axios from "axios";
-import Markdown from "react-markdown";
 
 const fetchProjectInfo = async (id) => {
   try {
@@ -68,6 +66,8 @@ const ProjectDetailPage = () => {
   const [cooldown, setCooldown] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
+  const [memberData, setMemberData] = useState([]);
 
   useEffect(() => {
     const fetchUserUuid = async () => {
@@ -115,6 +115,54 @@ const ProjectDetailPage = () => {
       setIsReady(true);
     }
   }, [userData, project]);
+
+  useEffect(() => {
+    const fetchAllMembers = async () => {
+      if (!project || !project.members || project.members.length === 0) return;
+
+      try {
+        const promises = project.members.map((uuid) =>
+          fetch(`${SERVER_HOST}/userauth/fetch/${uuid}/`).then((res) =>
+            res.ok ? res.json() : null
+          )
+        );
+
+        const results = await Promise.all(promises);
+
+        const validMembers = results.filter((member) => member !== null);
+
+        setMemberData(validMembers);
+      } catch (error) {
+        console.error("Failed to fetch member data:", error);
+      }
+    };
+
+    fetchAllMembers();
+  }, [project]);
+
+  useEffect(() => {
+    const fetchOwnerData = async () => {
+      const data = await fetchUserByUUID(project.owner);
+      if (data) {
+        setOwnerData(data);
+      }
+    };
+    fetchOwnerData();
+  }, [project]);
+
+  const fetchUserByUUID = async (userId) => {
+    try {
+      const response = await fetch(`${SERVER_HOST}/userauth/fetch/${userId}/`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
+    }
+  };
 
   const handleFollow = async () => {
     setFollowing(!following);
@@ -203,6 +251,8 @@ const ProjectDetailPage = () => {
   You are an professional evaluator.
   
   Based ONLY on the information provided, give the following feedback on my project idea:
+
+  NOTE: If the input data looks like a test record just respond "Can't rate, this is a test record!"
   
   1. Display a score out of 10 **in big font** at the very top, based on the following breakdown:
      - **Clarity**: Rate the project’s clarity (out of 10)
@@ -217,7 +267,6 @@ const ProjectDetailPage = () => {
   
   3. Strengths: 
      - List up to 3 strengths ONLY if they are notable.
-     - If there are no notable strengths, say "None or there is a lack of information, if it looks like a test record just say this is a test record for the entire response."
   
   ---
   
@@ -266,6 +315,7 @@ const ProjectDetailPage = () => {
   You are a professional evaluator.
 
   Based ONLY on the information provided, give the following feedback on how good of a fit I am for the project.
+  NOTE: If the input data looks like a test record just respond "Can't rate, this is a test record!"
 
   1. **Fit Rating**: Rate how well I fit for this project out of 10 based on the following criteria:
      - **Interest Match**: How closely my interests (userdata.interests) align with the project's interest tags (project.interest_tags).
@@ -280,7 +330,6 @@ const ProjectDetailPage = () => {
   
   3. Strengths:
      - List up to 3 strengths I bring to the project based on the alignment of my interests, skills, and roles.
-     - If there are no notable strengths, say "None or there is a lack of alignment."
 
   ---
   
@@ -473,7 +522,7 @@ const ProjectDetailPage = () => {
                         project.images[currentImageIndex] || "/placeholder.svg"
                       }
                       alt="Project image"
-                      className="object-cover"
+                      className="object-cover w-full h-full"
                     />
                     <div className="relative inset-0 flex items-center justify-between px-4">
                       <Button
@@ -507,7 +556,7 @@ const ProjectDetailPage = () => {
                   <img
                     src={project.image_url}
                     alt={`${project.title} Cover`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-48 object-cover"
                   />
                 ) : (
                   <span>Cover Image goes here</span>
@@ -698,9 +747,8 @@ const ProjectDetailPage = () => {
             />
 
             <TabPanel value="overview" className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-4xl font-bold mb-6">Overview</h2>
-              </div>
+              <h2 className="text-4xl font-bold mb-6">Overview</h2>
+
               <h2 className="text-xl font-bold mb-4">
                 Background & More Details About the Project
               </h2>
@@ -732,51 +780,35 @@ const ProjectDetailPage = () => {
             </TabPanel>
 
             <TabPanel value="members">
-              <div className="border rounded-lg overflow-hidden">
-                {/* Members List Section */}
-                <div className="p-5">
-                  <h2 className="text-2xl font-bold mb-6">
-                    Students Working on This Project{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h2>
+              <div className="p-5">
+                <h2 className="text-4xl font-bold mb-6">Project Members</h2>
 
-                  <div className="space-y-4">
-                    {/* Member 1 */}
-                    <MemberCard
-                      name="John Doe"
-                      position="Backend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                    {/* Member 2 */}
-                    <MemberCard
-                      name="Jane Done"
-                      position="Frontend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                    {/* Member 3 */}
-                    <MemberCard
-                      name="Jim Dope"
-                      position="Backend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                  </div>
+                <div className="space-y-4">
+                  {memberData.length > 0 ? (
+                    memberData.map((member, idx) => (
+                      <MemberCard
+                        key={idx}
+                        name={`${member.first_name} ${member.last_name}`}
+                        position={"Contributor"}
+                        authId={member.auth_id}
+                        profileImage={placeholderProfileImg}
+                      />
+                    ))
+                  ) : (
+                    <p>No members found.</p>
+                  )}
                 </div>
               </div>
             </TabPanel>
 
             <TabPanel value="wanted">
-              <div className="rounded-lg overflow-hidden">
-                {/* Wanted Header */}
-                <h2 className="text-4xl font-bold mb-6">Wanted</h2>
+              {/* Wanted Header */}
+              <h2 className="text-4xl font-bold mb-6">Wanted</h2>
 
-                {/* Positions Section */}
-                <div>
-                  <div className="markdown">
-                    <ReactMarkdown>{project.wanted_description}</ReactMarkdown>
-                  </div>
+              {/* Positions Section */}
+              <div>
+                <div className="markdown">
+                  <ReactMarkdown>{project.wanted_description}</ReactMarkdown>
                 </div>
               </div>
 
@@ -816,142 +848,153 @@ const ProjectDetailPage = () => {
             </TabPanel>
 
             <TabPanel value="contact">
-              <div className="border rounded-lg overflow-hidden">
-                <div className="p-5 border-b">
-                  <h1 className="text-4xl font-bold mb-6">
-                    Project Owner Contact Information{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h1>
-                </div>
+              <div className="p-5 border-b">
+                <h1 className="text-4xl font-bold mb-6">
+                  Project Owner Contact Information
+                </h1>
+
+                {/* Render Owner's name if data is available */}
+                <span className="font-bold">Owner: </span>
+                {ownerData ? (
+                  <a
+                    href={`/profile/${ownerData.auth_id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    {ownerData.first_name + " " + ownerData.last_name}
+                  </a>
+                ) : (
+                  "Loading..."
+                )}
+                <br></br>
+
+                <span className="font-bold">Project Email: </span>
+                {project.email ? project.email : "N/A"}
+                <br></br>
+
+                <span className="font-bold">Social Contact: </span>
+                {project.other_contact ? project.other_contact : "N/A"}
+                <br></br>
               </div>
             </TabPanel>
 
             {project.owner === userUuid ? (
               <TabPanel value="ai_rate">
-                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
-                  <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">
-                      🤖 AI Rate My Project 🤖
-                    </CardTitle>
-                    <h2 className="text-lg text-center">
-                      Let AI rate your project and give feedback.
-                    </h2>
-                    <Button
-                      onClick={ai_feedback}
-                      disabled={aiFeedbackLoading || cooldown}
-                      className="flex items-center"
-                    >
-                      {aiFeedbackLoading ? (
-                        <>
-                          <Spinner className="mr-2 h-4 w-4" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Star className="mr-2 h-4 w-4" />
-                          {cooldown
-                            ? "Cooldown between ratings, try again in 5 minutes."
-                            : "Rate Project"}
-                        </>
-                      )}
-                    </Button>
-                  </CardHeader>
+                <CardHeader className="flex items-center justify-between p-6">
+                  <CardTitle className="text-2xl font-bold">
+                    🤖 AI Rate My Project 🤖
+                  </CardTitle>
+                  <h2 className="text-lg text-center">
+                    Let AI rate your project and give feedback.
+                  </h2>
+                  <Button
+                    onClick={ai_feedback}
+                    disabled={aiFeedbackLoading || cooldown}
+                    className="flex items-center"
+                  >
+                    {aiFeedbackLoading ? (
+                      <>
+                        <Spinner className="mr-2 h-4 w-4" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="mr-2 h-4 w-4" />
+                        {cooldown
+                          ? "Cooldown between ratings, try again in 5 minutes."
+                          : "Rate Project"}
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
 
-                  <div className="my-4 border-t border-gray-300 w-full" />
+                <CardContent className="p-6">
+                  <AnimatePresence>
+                    {aiFeedbackLoading && (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center text-gray-500 py-8"
+                      >
+                        Rating...
+                      </motion.div>
+                    )}
 
-                  <CardContent className="p-6">
-                    <AnimatePresence>
-                      {aiFeedbackLoading && (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-center text-gray-500 py-8"
-                        >
-                          Rating...
-                        </motion.div>
-                      )}
-
-                      {!aiFeedbackLoading && AI_response && (
-                        <motion.div
-                          key="response"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3 }}
-                          className="prose prose-lg text-center "
-                        >
-                          <ReactMarkdown>{AI_response}</ReactMarkdown>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
+                    {!aiFeedbackLoading && AI_response && (
+                      <motion.div
+                        key="response"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="prose prose-lg text-center markdown"
+                      >
+                        <ReactMarkdown>{AI_response}</ReactMarkdown>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
               </TabPanel>
             ) : (
               <TabPanel value="ai_suggest">
-                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
-                  <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">
-                      🤖 AI Match Score 🤖
-                    </CardTitle>
-                    <h2 className="text-lg text-center">
-                      Let AI rate how good of a fit you would be for this
-                      project based on your profile.
-                    </h2>
-                    <Button
-                      onClick={ai_suggest}
-                      disabled={aiFeedbackLoading || cooldown}
-                      className="flex items-center"
-                    >
-                      {aiFeedbackLoading ? (
-                        <>
-                          <Spinner className="mr-2 h-4 w-4" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Star className="mr-2 h-4 w-4" />
-                          {cooldown
-                            ? "Cooldown between ratings, try again in 5 minutes."
-                            : "Rate Project"}
-                        </>
-                      )}
-                    </Button>
-                  </CardHeader>
+                <CardHeader className="flex items-center justify-between p-6">
+                  <CardTitle className="text-2xl font-bold">
+                    🤖 AI Match Score 🤖
+                  </CardTitle>
+                  <h2 className="text-lg text-center">
+                    Let AI rate how good of a fit you would be for this project
+                    based on your profile.
+                  </h2>
+                  <Button
+                    onClick={ai_suggest}
+                    disabled={aiFeedbackLoading || cooldown}
+                    className="flex items-center"
+                  >
+                    {aiFeedbackLoading ? (
+                      <>
+                        <Spinner className="mr-2 h-4 w-4" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="mr-2 h-4 w-4" />
+                        {cooldown
+                          ? "Cooldown between ratings, try again in 5 minutes."
+                          : "Rate Project"}
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
 
-                  <div className="my-4 border-t border-gray-300 w-full" />
+                <CardContent className="p-6">
+                  <AnimatePresence>
+                    {aiFeedbackLoading && (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center text-gray-500 py-8"
+                      >
+                        Rating...
+                      </motion.div>
+                    )}
 
-                  <CardContent className="p-6">
-                    <AnimatePresence>
-                      {aiFeedbackLoading && (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-center text-gray-500 py-8"
-                        >
-                          Rating...
-                        </motion.div>
-                      )}
-
-                      {!aiFeedbackLoading && AI_response && (
-                        <motion.div
-                          key="response"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3 }}
-                          className="prose prose-lg text-center "
-                        >
-                          <ReactMarkdown>{AI_response}</ReactMarkdown>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
+                    {!aiFeedbackLoading && AI_response && (
+                      <motion.div
+                        key="response"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="prose prose-lg text-center markdown"
+                      >
+                        <ReactMarkdown>{AI_response}</ReactMarkdown>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
               </TabPanel>
             )}
             {project.owner === userUuid && <TabPanel value="edit"></TabPanel>}

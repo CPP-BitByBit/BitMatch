@@ -18,7 +18,7 @@ class Project(models.Model):
     group = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(default=0) 
     likes_count = models.IntegerField(default=0)  
-    location = models.JSONField(default=list, blank=True)
+    location = models.CharField(max_length=255, blank=False, null=False)
     images = models.JSONField(default=list, blank=True)
     interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
     skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
