@@ -10,4 +10,4 @@ class UserAdmin(admin.ModelAdmin):
     )
     search_fields = ('username', 'email', 'first_name', 'last_name')
     list_filter = ('location',)
-    filter_horizontal = ('projects', 'owned')
+    filter_horizontal = ('projects',)

@@ -18,7 +18,6 @@ class Project(models.Model):
     group = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(default=0) 
     likes_count = models.IntegerField(default=0)  
-    match_percentage = models.FloatField(blank=True, null=True)
     location = models.JSONField(default=list, blank=True)
     images = models.JSONField(default=list, blank=True)
     interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
@@ -35,7 +34,6 @@ class Project(models.Model):
         blank=True
     )
     
-    # todo: see if we can remove this without hurting anything
     owner = models.ForeignKey(
         'userauth.User',
         on_delete=models.CASCADE,
