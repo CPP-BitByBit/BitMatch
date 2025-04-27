@@ -4,7 +4,7 @@ from .models import Project, Like, Follow
 # Register the Project model
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'group', 'institution', 'match_percentage', 'followers_count', 'likes_count')
+    list_display = ('title', 'group', 'institution', 'followers_count', 'likes_count')
     search_fields = ('title', 'group', 'institution')
     list_filter = ('group', 'institution')
 

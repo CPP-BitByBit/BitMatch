@@ -122,3 +122,36 @@ def toggle_follow(request, project_id):
                 return Response({'message': 'Project unfollowed successfully'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already unfollowed this project.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PATCH'])
+@permission_classes([AllowAny])
+def project_member_hander(request, project_id):
+    try:
+        project = Project.objects.get(id=project_id)
+        user = User.objects.get(id=request.data['user_id'])
+        action = request.data.get('action')
+
+        is_member = project.members.filter(id=user.id).exists()
+
+        if action == "join":
+            if is_member:
+                return Response({'error': 'User is already a member of this project'}, status=400)
+            project.members.add(user)
+            user.projects.add(project)
+            return Response({'message': 'Member added successfully'})
+        
+        elif action == "leave":
+            if not is_member:
+                return Response({'error': 'User is not a member of this project'}, status=400)
+            project.members.remove(user)
+            user.projects.remove(project)
+            return Response({'message': 'Member removed successfully'})
+        
+        else:
+            return Response({'error': 'Invalid action'}, status=400)
+    
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=404)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+            

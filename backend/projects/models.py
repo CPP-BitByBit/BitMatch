@@ -10,7 +10,7 @@ class Project(models.Model):
     # REQUIRED
     title = models.CharField(max_length=255, blank=False, null=False)
     institution = models.CharField(max_length=255, blank=False, null=False)
-    description = models.TextField(blank=False, null=False)
+    description = models.TextField(max_length=255,blank=False, null=False)
     positions = models.JSONField(default=list)  
     image_url = models.ImageField(upload_to="projects/", blank=False, null=False)
 
@@ -18,16 +18,15 @@ class Project(models.Model):
     group = models.CharField(max_length=255, blank=True, null=True)
     followers_count = models.IntegerField(default=0) 
     likes_count = models.IntegerField(default=0)  
-    match_percentage = models.FloatField(blank=True, null=True)
-    location = models.JSONField(default=list, blank=True)
+    location = models.CharField(max_length=255, blank=False, null=False)
     images = models.JSONField(default=list, blank=True)
     interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
     skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
-    full_description = models.CharField(max_length=1000, blank=True, null=True)
-    email = models.EmailField(unique=True, blank=True, null=True)  
+    full_description = models.TextField(max_length=2500, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)  
     other_contact = models.CharField(max_length=225, blank=True, null=True)
     updates = ArrayField(models.CharField(max_length=540), blank=True, null=True)
-    wanted_description = models.CharField(max_length=540, blank=True, null=True)
+    wanted_description = models.TextField(max_length=2500, blank=True, null=True)
     
     members = models.ManyToManyField(
         'userauth.User',

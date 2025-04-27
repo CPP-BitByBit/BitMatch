@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
 import { useNavigate } from "react-router-dom";
+import MDEditor from "@uiw/react-md-editor";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 
@@ -24,6 +25,76 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
   const [formData, setFormData] = useState(projectData);
   const [newPosition, setNewPosition] = useState({ title: "" });
   const [editingIndex, setEditingIndex] = useState(-1);
+  const [sliderImages, setSliderImages] = useState(projectData.images || []);
+  const [interests, setInterests] = useState(projectData.interest_tags || []);
+  const [skills, setSkills] = useState(projectData.skill_tags || []);
+  const [newInterest, setNewInterest] = useState("");
+  const [newSkill, setNewSkill] = useState("");
+  const [interestError, setInterestError] = useState("");
+  const [skillError, setSkillError] = useState("");
+
+  const handleImageUrlChange = (index, e) => {
+    const newSliderImages = [...sliderImages];
+    newSliderImages[index] = e.target.value;
+
+    const filteredImages = newSliderImages.filter((url) => url.trim() !== "");
+
+    setSliderImages(newSliderImages);
+    handleChange("images", filteredImages);
+  };
+
+  // For Interests
+  const handleInterestChange = (e) => {
+    setNewInterest(e.target.value);
+    setInterestError(""); // Reset error message
+  };
+
+  const handleAddInterest = () => {
+    if (newInterest.trim()) {
+      setInterests((prev) => {
+        const updatedInterests = [...prev, newInterest.trim()];
+        handleChange("interest_tags", updatedInterests); // Call handleChange with updated interests
+        return updatedInterests;
+      });
+      setNewInterest(""); // Clear input after adding
+    } else {
+      setInterestError("Interest can't be empty.");
+    }
+  };
+
+  const handleSkillChange = (e) => {
+    setNewSkill(e.target.value);
+    setSkillError("");
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      setSkills((prev) => {
+        const updatedSkills = [...prev, newSkill.trim()];
+        handleChange("skill_tags", updatedSkills);
+        return updatedSkills;
+      });
+      setNewSkill("");
+    } else {
+      setSkillError("Skill can't be empty.");
+    }
+  };
+
+  const handleRemoveInterest = (index) => {
+    setInterests((prev) => {
+      const updatedInterests = prev.filter((_, i) => i !== index);
+      handleChange("interest_tags", updatedInterests);
+      return updatedInterests;
+    });
+  };
+
+  const handleRemoveSkill = (index) => {
+    setSkills((prev) => {
+      const updatedSkills = prev.filter((_, i) => i !== index);
+      handleChange("skill_tags", updatedSkills);
+      return updatedSkills;
+    });
+  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -82,6 +153,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
     setNewPosition({ title: formData.positions[index].title });
     setEditingIndex(index);
   };
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <Dialog
@@ -151,6 +233,45 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="location" className="text-sm font-medium">
+              Location
+            </Label>
+            <Input
+              id="location"
+              value={formData.location || ""}
+              onChange={(e) => handleChange("location", e.target.value)}
+              className="w-full"
+              placeholder="Enter project location"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium">
+              Project Email
+            </Label>
+            <Input
+              id="email"
+              value={formData.email || ""}
+              onChange={(e) => handleChange("email", e.target.value)}
+              className="w-full"
+              placeholder="Enter project email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="other_contact" className="text-sm font-medium">
+              Project Social
+            </Label>
+            <Input
+              id="other_contact"
+              value={formData.other_contact || ""}
+              onChange={(e) => handleChange("other_contact", e.target.value)}
+              className="w-full"
+              placeholder="Enter project social"
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="description" className="text-sm font-medium">
               Description
             </Label>
@@ -167,13 +288,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
             <Label htmlFor="full_description" className="text-sm font-medium">
               Project Background/More Details
             </Label>
-            <Textarea
-              id="full_description"
-              value={formData.full_description}
-              onChange={(e) => handleChange("full_description", e.target.value)}
-              className="min-h-[120px] w-full"
-              placeholder="Enter project background/more details"
-            />
+            <div className="min-h-[120px] w-full border rounded-md p-2">
+              <MDEditor
+                id="full_description"
+                value={formData.full_description}
+                onChange={(value) =>
+                  handleChange("full_description", value || "")
+                }
+                preview="edit"
+                height={200}
+              />
+            </div>
           </div>
 
           {/* Image Upload Section */}
@@ -207,6 +332,32 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Slider Image Section */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-medium">Slider Images</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Enter up to 4 image URLs for populating the image carousel on your
+              project page. (Ex: screenshots of app, mockups, etc)
+            </p>
+
+            {[...Array(4)].map((_, index) => (
+              <div key={index}>
+                <input
+                  type="text"
+                  id={`image-url-${index + 1}`}
+                  placeholder={`Enter image URL ${index + 1}`}
+                  value={sliderImages[index] || ""}
+                  onChange={(e) => handleImageUrlChange(index, e)}
+                  className="w-full h-10 border border-gray-300 p-2 rounded-md"
+                />
+              </div>
+            ))}
+
+            <p className="text-sm text-gray-600 mt-2">
+              Example: https://example.com/image1.jpg
+            </p>
           </div>
 
           {/* Open Positions Section */}
@@ -283,6 +434,119 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 )}
               </div>
             </Card>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="wanted_description" className="text-sm font-medium">
+              Wanted Description
+            </Label>
+            <div className="min-h-[120px] w-full border rounded-md p-2">
+              <MDEditor
+                id="full_description"
+                value={formData.wanted_description}
+                onChange={(value) =>
+                  handleChange("wanted_description", value || "")
+                }
+                preview="edit"
+                height={200}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Categories/Interests
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newInterest}
+                onChange={handleInterestChange}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Backend, Frontend, DevOps, AI"
+              />
+              <button
+                type="button"
+                onClick={handleAddInterest}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Interest
+              </button>
+            </div>
+            {interestError && (
+              <p className="text-red-500 text-sm mt-1">{interestError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {interests.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No interests added yet.
+                </p>
+              ) : (
+                interests.map((interest, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{interest}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveInterest(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove interest: ${interest}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">Desired Skills</label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newSkill}
+                onChange={handleSkillChange}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., JavaScript, Figma, Django"
+              />
+              <button
+                type="button"
+                onClick={handleAddSkill}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Skill
+              </button>
+            </div>
+            {skillError && (
+              <p className="text-red-500 text-sm mt-1">{skillError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {skills.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No skills added yet.
+                </p>
+              ) : (
+                skills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkill(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove skill: ${skill}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <DialogFooter className="pt-2">

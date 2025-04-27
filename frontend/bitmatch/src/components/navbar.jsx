@@ -12,14 +12,23 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 export default function Navbar({ links = [] }) {
+  const { user } = useUser();
   const defaultLinks = [
     { href: "/about", label: "About" },
+<<<<<<< HEAD
     { href: "/browse", label: "Browse" },
     { href: "/contact", label: "Contact" },
     { href: "/my-profile", label: "My Profile" },
+=======
+    ...(user?.id
+      ? [
+          { href: "/project-list", label: "Browse" },
+          { href: `/profile/${user.id}`, label: "My Profile" },
+        ]
+      : []),
+>>>>>>> d273cc17c82f58fa65fb0d6a01dc2146af9a0b84
   ];
 
-  const { user } = useUser();
   const [showModal, setShowModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 

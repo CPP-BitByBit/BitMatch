@@ -1,39 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import MDEditor from "@uiw/react-md-editor";
 
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const CREATE_PROJECT_ENDPOINT = `${SERVER_HOST}/projects/create/`;
 
 export default function CreateProjectForm() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [interests, setInterests] = useState([]);
+  const [newInterest, setNewInterest] = useState("");
+  const [interestError, setInterestError] = useState("");
+  const [skills, setSkills] = useState([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [skillError, setSkillError] = useState("");
   const [projectName, setProjectName] = useState("");
   const [university, setUniversity] = useState("");
   const [group, setGroup] = useState("");
+  const [projectMail, setProjectMail] = useState("");
+  const [projectSocial, setProjectSocial] = useState("");
+  const [projectLocation, setProjectLocation] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [fullDescription, setFullDescription] = useState("");
+  const [wantedDescription, setWantedDescription] = useState("");
   const [roles, setRoles] = useState([]);
   const [newRole, setNewRole] = useState("");
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [coverImageFile, setCoverImageFile] = useState(null);
-  const [sliderImages, setSliderImages] = useState([
-    "slideshow_img1.jpg",
-    "slideshow_img2.jpg",
-    "slideshow_img3.jpg",
-    "slideshow_img4.jpg",
-    "slideshow_img5.jpg",
-  ]);
-  const [selectedCategories, setSelectedCategories] = useState([
-    "Technology",
-    "Health & Fitness",
-  ]);
+  const [sliderImages, setSliderImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [roleError, setRoleError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [userUuid, setUserUuid] = useState(null);
+
+  useEffect(() => {
+    const fetchUserUuid = async () => {
+      try {
+        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUserUuid(data.id);
+      } catch (error) {
+        console.error("Error fetching user UUID:", error);
+      }
+    };
+
+    fetchUserUuid();
+  }, [user.id]);
 
   const handleCoverImageUpload = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -63,10 +84,10 @@ export default function CreateProjectForm() {
     }
   };
 
-  const handleFullDescriptionChange = (e) => {
-    if (e.target.value.length <= 540) {
-      setFullDescription(e.target.value);
-    }
+  const handleImageUrlChange = (index, event) => {
+    const newUrls = [...sliderImages];
+    newUrls[index] = event.target.value;
+    setSliderImages(newUrls);
   };
 
   const handleAddRole = () => {
@@ -114,10 +135,23 @@ export default function CreateProjectForm() {
     formData.append("title", projectName);
     formData.append("institution", university);
     formData.append("group", group);
+    formData.append("email", projectMail);
+    formData.append("other_contact", projectSocial);
+    formData.append("location", projectLocation);
     formData.append("description", shortDescription);
+    formData.append("wanted_description", wantedDescription);
     formData.append("full_description", fullDescription);
     formData.append("positions", JSON.stringify(roles));
     formData.append("image_url", coverImageFile);
+    formData.append("images", JSON.stringify(sliderImages));
+    formData.append("owner", userUuid);
+    skills.forEach((skill) => {
+      formData.append("skill_tags", skill);
+    });
+
+    interests.forEach((interest) => {
+      formData.append("interest_tags", interest);
+    });
 
     try {
       const response = await fetch(CREATE_PROJECT_ENDPOINT, {
@@ -135,6 +169,26 @@ export default function CreateProjectForm() {
 
       setSuccessMessage("Project created successfully!");
       if (result.id) {
+        // After creating the project, append the project ID to the user's projects
+        const updateUserProjectsResponse = await fetch(
+          `${SERVER_HOST}/userauth/${user.id}/`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              projects: [result.id],
+            }),
+          }
+        );
+
+        if (!updateUserProjectsResponse.ok) {
+          throw new Error(
+            "Failed to update user projects list. Please try again."
+          );
+        }
+
         navigate(`/projects/${result.id}`);
       }
     } catch (err) {
@@ -153,7 +207,7 @@ export default function CreateProjectForm() {
           <Button
             variant="ghost"
             size="lg"
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/project-list")}
           >
             <ChevronRight className="h-4 w-4 mr-2 transform rotate-180" />
             Back to Projects
@@ -220,6 +274,33 @@ export default function CreateProjectForm() {
               />
             </div>
           </div>
+
+          <div>
+            <h2 className="font-lg mb-1">Slider Images (Optional)</h2>
+            <p className="text-sm text-gray-600 mb-2">
+              Enter up to 4 image URLs for populating the image carousel on your
+              project page. (Ex: screenshots of app, mockups, etc)
+            </p>
+
+            <div className="space-y-4">
+              {[...Array(4)].map((_, index) => (
+                <div key={index}>
+                  <input
+                    type="text"
+                    id={`image-url-${index + 1}`}
+                    placeholder={`Enter image URL ${index + 1}`}
+                    value={sliderImages[index] || ""}
+                    onChange={(e) => handleImageUrlChange(index, e)}
+                    className="w-full h-10 border border-gray-300 p-2 rounded-md"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm text-gray-600 mt-2">
+              Example: https://example.com/image1.jpg
+            </p>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -251,6 +332,57 @@ export default function CreateProjectForm() {
               onChange={(e) => setUniversity(e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <label htmlFor="projectLocation" className="block font-medium mb-1">
+              Project Location <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="projectLocation"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="City, State or Remote"
+              value={projectLocation}
+              onChange={(e) => setProjectLocation(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="projectMail" className="block font-medium mb-1">
+              Project Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="projectMail"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="projectowner@gmail.com or project@gmail.com"
+              value={projectMail}
+              onChange={(e) => setProjectMail(e.target.value)}
+              required
+            />
+            <p className="text-sm text-gray-600 mt-1">
+              At what email can the project owner/management be reached at?
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="projectSocial" className="block font-medium mb-1">
+              Social Media Contact (Optional)
+            </label>
+            <input
+              type="text"
+              id="projectSocial"
+              className="w-full border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Discord - Example#1123 (Please indicate platform)"
+              value={projectSocial}
+              onChange={(e) => setProjectSocial(e.target.value)}
+            />
+            <p className="text-sm text-gray-600 mt-1">
+              What social medias can the project owner/managment be reached at?
+              (Discord, X, Facebook, Etc.)
+            </p>
           </div>
 
           <div>
@@ -295,18 +427,17 @@ export default function CreateProjectForm() {
             <label htmlFor="full-desc" className="block font-medium mb-1">
               Project Background/More Details (Optional)
             </label>
-            <textarea
-              id="full-desc"
-              className="w-full border rounded-md p-2 resize-none focus:ring-blue-500 focus:border-blue-500"
-              rows={4}
-              value={fullDescription}
-              onChange={handleFullDescriptionChange}
-              required
-              placeholder="Enter your project's background information, or any additional details."
-              maxLength={1000}
-            ></textarea>
+            <div className="w-full border rounded-md p-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+              <MDEditor
+                id="full-desc"
+                value={fullDescription}
+                onChange={(value) => setFullDescription(value || "")}
+                preview="edit"
+                height={200}
+              />
+            </div>
             <div className="flex justify-between text-sm text-gray-600 mt-1">
-              <span>Max Characters: 1000</span>
+              <span>Max Characters: 2500</span>
               <span>Character Count: {fullDescription.length}</span>
             </div>
           </div>
@@ -356,6 +487,153 @@ export default function CreateProjectForm() {
                       onClick={() => handleRemoveRole(index)}
                       className="text-red-500 hover:text-red-700 transition-colors font-bold"
                       aria-label={`Remove role: ${role.title}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="wanted-desc" className="block font-medium mb-1">
+              Wanted Description (Optional)
+            </label>
+            <div className="w-full border rounded-md p-2 focus-within:ring-blue-500 focus-within:border-blue-500">
+              <p>
+                Tell us more about the positions you need to fill. (overview,
+                responsiblities, skills required, other requirements, etc.)
+              </p>
+              <MDEditor
+                id="wanted-desc"
+                value={wantedDescription}
+                onChange={(value) => setWantedDescription(value || "")}
+                preview="edit"
+                height={200}
+              />
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <span>Max Characters: 2500</span>
+              <span>Character Count: {wantedDescription.length}</span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Categories/Interests (Optional)
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newInterest}
+                onChange={(e) => {
+                  setNewInterest(e.target.value);
+                  setInterestError("");
+                }}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Backend, Frontend, DevOps, AI"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newInterest.trim()) {
+                    setInterests((prev) => [...prev, newInterest.trim()]);
+                    setNewInterest("");
+                  } else {
+                    setInterestError("Interest can't be empty.");
+                  }
+                }}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Interest
+              </button>
+            </div>
+            {interestError && (
+              <p className="text-red-500 text-sm mt-1">{interestError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {interests.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No interests added yet.
+                </p>
+              ) : (
+                interests.map((interest, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{interest}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInterests((prev) =>
+                          prev.filter((_, i) => i !== index)
+                        )
+                      }
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove interest: ${interest}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Desired Skills (Optional)
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newSkill}
+                onChange={(e) => {
+                  setNewSkill(e.target.value);
+                  setSkillError("");
+                }}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., JavaScript, Figma, Django"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (newSkill.trim()) {
+                    setSkills((prev) => [...prev, newSkill.trim()]);
+                    setNewSkill("");
+                  } else {
+                    setSkillError("Skill can't be empty.");
+                  }
+                }}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Skill
+              </button>
+            </div>
+            {skillError && (
+              <p className="text-red-500 text-sm mt-1">{skillError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {skills.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No skills added yet.
+                </p>
+              ) : (
+                skills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSkills((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove skill: ${skill}`}
                     >
                       &#x2715;
                     </button>

@@ -25,7 +25,7 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
       <Link to={`/projects/${project.id}`}>
         {/* Header */}
         <div className="bg-gray-800 text-white p-2 flex justify-between">
-          <span>{project.group}</span>
+          <span>{project.group || "Unaffiliated Project"}</span>
         </div>
 
         {/* Image Placeholder */}
@@ -78,11 +78,11 @@ export default function ProjectCardLarge({ project, highlighted = false }) {
           {/* Followers & Likes */}
           <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">~</span>
+              <span className="text-gray-400">-</span>
               <span>{formatNumber(project.followers_count)} Followers</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-gray-400">~</span>
+              <span className="text-gray-400">-</span>
               <span>{formatNumber(project.likes_count)} Likes</span>
             </div>
           </div>
