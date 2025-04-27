@@ -122,3 +122,15 @@ def toggle_follow(request, project_id):
                 return Response({'message': 'Project unfollowed successfully'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already unfollowed this project.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_like_status(request, user_id, project_id):
+    try:
+        project = get_object_or_404(Project, id=project_id)
+        user = get_object_or_404(User, id=user_id)
+
+        liked = Like.objects.filter(project=project, user=user).exists()
+        return Response({'liked': liked}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
