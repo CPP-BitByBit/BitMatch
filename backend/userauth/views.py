@@ -14,6 +14,13 @@ def check_if_onboarded(request, clerk_id):
         return Response({"message": "User already onboarded"})
     else:
         return Response({"message": "User not onboarded yet!"})
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def fetch_by_uuid(request, uuid):
+    user = get_object_or_404(User, pk=uuid)
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
 
 # DRF CRUD views for Users model
 class UsersCRUDView(APIView):

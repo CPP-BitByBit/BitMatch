@@ -1,19 +1,18 @@
 import {
   ChevronRight,
   ChevronLeft,
-  Plus,
   ThumbsUp,
   UserRound,
   CirclePlus,
   LogOut,
+  MapPin,
   Star,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MemberCard } from "@/components/project/MemberCard";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { PositionCard } from "@/components/project/PositionCard";
+import { CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { useEffect, useState } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { useParams, useNavigate } from "react-router-dom";
@@ -22,6 +21,7 @@ import { EditProjectDialog } from "@/components/project/EditProjectDialog";
 import { useUser } from "@clerk/clerk-react";
 import { Spinner } from "@/components/ui/Spinner";
 import ReactMarkdown from "react-markdown";
+import placeholderProfileImg from "../assets/profilepic.jpg";
 const SERVER_HOST = import.meta.env.VITE_SERVER_HOST;
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const AI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -67,53 +67,67 @@ const ProjectDetailPage = () => {
   const [cooldown, setCooldown] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
+  const [memberData, setMemberData] = useState([]);
 
   useEffect(() => {
-    const fetchUserUuid = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+
       try {
-        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-        const data = await response.json();
-        setuserData(data);
-        setUserUuid(data.id);
+        const [userResponse, projectData] = await Promise.all([
+          fetch(`${SERVER_HOST}/userauth/${user.id}`),
+          fetchProjectInfo(id),
+        ]);
+
+        if (!userResponse.ok) throw new Error("Failed to fetch user data");
+        const userData = await userResponse.json();
+        setuserData(userData);
+        setUserUuid(userData.id);
+
+        if (!projectData) throw new Error("Project not found.");
+        setProject(projectData);
+
+        setIsMember(projectData.members.includes(userData.id));
+
+        const memberPromises = projectData.members
+          .slice(0, 10)
+          .map((uuid) =>
+            fetch(`${SERVER_HOST}/userauth/fetch/${uuid}/`).then((res) =>
+              res.ok ? res.json() : null
+            )
+          );
+        const memberResults = await Promise.all(memberPromises);
+        setMemberData(memberResults.filter((member) => member !== null));
+
+        const ownerData = await fetchUserByUUID(projectData.owner);
+        setOwnerData(ownerData);
+
+        setIsReady(true);
       } catch (error) {
-        console.error("Error fetching user UUID:", error);
-      }
-    };
-
-    fetchUserUuid();
-  }, [user.id]);
-
-  useEffect(() => {
-    // Fetch project details when the component mounts or the `id` changes
-    const loadProjectInfo = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProjectInfo(id);
-        if (data) {
-          setProject(data);
-        } else {
-          setError("Project not found.");
-        }
-        // eslint-disable-next-line no-unused-vars
-      } catch (err) {
-        setError("Failed to load project details.");
+        setError("Error loading data");
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProjectInfo();
-  }, [id, userUuid]);
+    fetchData();
+  }, [user.id, id]);
 
-  useEffect(() => {
-    if (userData && project) {
-      setIsMember(project.members.includes(userData.id));
-      setIsReady(true);
+  const fetchUserByUUID = async (userId) => {
+    try {
+      const response = await fetch(`${SERVER_HOST}/userauth/fetch/${userId}/`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
     }
-  }, [userData, project]);
+  };
 
   const handleFollow = async () => {
     setFollowing(!following);
@@ -202,6 +216,8 @@ const ProjectDetailPage = () => {
   You are an professional evaluator.
   
   Based ONLY on the information provided, give the following feedback on my project idea:
+
+  NOTE: If the input data looks like a test record just respond "Can't rate, this is a test record!"
   
   1. Display a score out of 10 **in big font** at the very top, based on the following breakdown:
      - **Clarity**: Rate the project’s clarity (out of 10)
@@ -216,7 +232,6 @@ const ProjectDetailPage = () => {
   
   3. Strengths: 
      - List up to 3 strengths ONLY if they are notable.
-     - If there are no notable strengths, say "None or there is a lack of information, if it looks like a test record just say this is a test record for the entire response."
   
   ---
   
@@ -227,6 +242,7 @@ const ProjectDetailPage = () => {
   ---
   
   DO NOT ask for additional information or clarification.
+  DO NOT USE HTML CODE TO FORMAT
   Format it cleanly with section headers, a prominent rating at the top, and spacing between each section.
   
   
@@ -249,6 +265,9 @@ const ProjectDetailPage = () => {
 
   ---PROJECT POSITIONS NEEDED---
   ${project.positions.map((position) => position.title).join(", ")}
+
+    ---PROJECT WANTED DESCRIPTION---
+  ${project.wanted_description}
       `,
     });
     setAI_Response(response.text);
@@ -262,9 +281,10 @@ const ProjectDetailPage = () => {
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `
-  You are a professional evaluator.
+  You are a professional evaluator who doesn't like to sugarcoat things.
 
   Based ONLY on the information provided, give the following feedback on how good of a fit I am for the project.
+  NOTE: If the input data looks like a test record just respond "Can't rate, this is a test record!"
 
   1. **Fit Rating**: Rate how well I fit for this project out of 10 based on the following criteria:
      - **Interest Match**: How closely my interests (userdata.interests) align with the project's interest tags (project.interest_tags).
@@ -279,7 +299,6 @@ const ProjectDetailPage = () => {
   
   3. Strengths:
      - List up to 3 strengths I bring to the project based on the alignment of my interests, skills, and roles.
-     - If there are no notable strengths, say "None or there is a lack of alignment."
 
   ---
   
@@ -290,6 +309,7 @@ const ProjectDetailPage = () => {
   ---
 
   DO NOT ask for additional information or clarification.
+  DO NOT USE HTML CODE TO FORMAT
   Format it cleanly with section headers, a prominent fit rating at the top, and spacing between each section.
 
   ---
@@ -314,6 +334,9 @@ const ProjectDetailPage = () => {
 
   ---PROJECT POSITIONS NEEDED---
   ${project.positions.map((position) => position.title).join(", ")}
+
+---PROJECT WANTED DESCRIPTION---
+  ${project.wanted_description}
 
   ---USER INTERESTS---
   ${userData.interests}
@@ -366,10 +389,31 @@ const ProjectDetailPage = () => {
 
     formData.append("title", data.title);
     formData.append("group", data.group);
+    formData.append("location", data.location);
+    formData.append("email", data.email);
+    formData.append("other_contact", data.other_contact);
     formData.append("institution", data.institution);
     formData.append("description", data.description);
     formData.append("full_description", data.full_description);
     formData.append("positions", JSON.stringify(data.positions));
+    formData.append("images", JSON.stringify(data.images));
+    formData.append("wanted_description", data.wanted_description);
+
+    if (Array.isArray(data.interest_tags)) {
+      data.interest_tags.forEach((interest) => {
+        formData.append("interest_tags", interest);
+      });
+    } else {
+      formData.append("interest_tags", data.interest_tags);
+    }
+
+    if (Array.isArray(data.skill_tags)) {
+      data.skill_tags.forEach((skill) => {
+        formData.append("skill_tags", skill);
+      });
+    } else {
+      formData.append("skill_tags", data.skill_tags);
+    }
 
     if (data.new_image) {
       formData.append("image_url", data.new_image);
@@ -471,7 +515,7 @@ const ProjectDetailPage = () => {
                         project.images[currentImageIndex] || "/placeholder.svg"
                       }
                       alt="Project image"
-                      className="object-cover"
+                      className="object-cover w-full h-full"
                     />
                     <div className="relative inset-0 flex items-center justify-between px-4">
                       <Button
@@ -505,7 +549,7 @@ const ProjectDetailPage = () => {
                   <img
                     src={project.image_url}
                     alt={`${project.title} Cover`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-48 object-cover"
                   />
                 ) : (
                   <span>Cover Image goes here</span>
@@ -696,20 +740,20 @@ const ProjectDetailPage = () => {
             />
 
             <TabPanel value="overview" className="mt-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-3xl font-bold">Overview</h2>
-              </div>
-              <h2 className="text-xl font-bold mb-4">
-                Background & More Details About the Project
-              </h2>
-              <div className="mb-6">
-                <p className="text-sm mb-8">{project.full_description}</p>
+              <h2 className="text-4xl font-bold mb-6">Overview</h2>
 
+              <div className="mb-6">
+                <div className="text-sm mb-8 markdown">
+                  <div className="text-xl font-bold mb-4">
+                    Background & More Details About the Project
+                  </div>
+                  <ReactMarkdown>{project.full_description}</ReactMarkdown>
+                </div>
                 <div className="mb-4">
                   {project.interest_tags?.length > 0 && (
                     <>
                       <h3 className="text-xl font-bold mb-4">
-                        Project Categories
+                        Project Categories/Tags
                       </h3>
                       <div className="flex flex-wrap gap-2 mb-4">
                         {project.interest_tags.map((interest, index) => (
@@ -724,274 +768,234 @@ const ProjectDetailPage = () => {
                       </div>
                     </>
                   )}
+                </div>
+                <br></br>
+                <h3 className="text-xl font-bold mb-4">Based In</h3>
+                <p className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {project.location ||
+                    project.institution ||
+                    "Location not available"}
+                </p>
+              </div>
+            </TabPanel>
 
-                  {project.skill_tags?.length > 0 && (
-                    <>
-                      <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {project.skill_tags.map((skill, index) => (
-                          <Badge
-                            key={index}
-                            variant="outline"
-                            className="bg-gray-400 hover:bg-black"
-                          >
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
-                    </>
+            <TabPanel value="members">
+              <div className="p-5">
+                <h2 className="text-4xl font-bold mb-6">Project Members</h2>
+
+                <div className="space-y-4">
+                  {memberData.length > 0 ? (
+                    memberData.map((member, idx) => (
+                      <MemberCard
+                        key={idx}
+                        name={`${member.first_name} ${member.last_name}`}
+                        position={"Contributor"}
+                        authId={member.auth_id}
+                        profileImage={placeholderProfileImg}
+                      />
+                    ))
+                  ) : (
+                    <p>No members found.</p>
                   )}
                 </div>
               </div>
             </TabPanel>
 
-            <TabPanel value="members">
-              <div className="border rounded-lg overflow-hidden">
-                {/* Members List Section */}
-                <div className="p-5">
-                  <h2 className="text-2xl font-bold mb-6">
-                    Students Working on This Project{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h2>
-
-                  <div className="space-y-4">
-                    {/* Member 1 */}
-                    <MemberCard
-                      name="John Doe"
-                      position="Backend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                    {/* Member 2 */}
-                    <MemberCard
-                      name="Jane Done"
-                      position="Frontend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                    {/* Member 3 */}
-                    <MemberCard
-                      name="Jim Dope"
-                      position="Backend Developer"
-                      joinDate="01-01-2024"
-                      profileImage="/placeholder.svg"
-                    />
-                  </div>
-                </div>
-              </div>
-            </TabPanel>
-
             <TabPanel value="wanted">
-              <div className="rounded-lg overflow-hidden">
-                {/* Wanted Header */}
-                <h2 className="text-4xl font-bold mb-6">
-                  Wanted{" "}
-                  <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                </h2>
-                {/* Positions Section */}
-                <div>
-                  <div className="p-6 flex justify-between items-center border-b">
-                    <h2 className="text-2xl font-bold">
-                      Positions Needed for This Project
-                    </h2>
-                    <Button
-                      variant="secondary"
-                      className="hover:bg-gray-400 text-black"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Position
-                    </Button>
-                  </div>
+              {/* Wanted Header */}
+              <h2 className="text-4xl font-bold mb-6">Wanted</h2>
 
-                  <div>
-                    <PositionCard
-                      id="1"
-                      title="Backend Developer"
-                      datePosted="02-02-2024"
-                      description="Work with Java Spring to implement the backend for a web app"
-                      responsibilities={[
-                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
-                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
-                      ]}
-                      skillSets={{
-                        technical: ["Python", "SQL", "C++", "Java"],
-                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: [
-                          "Communication",
-                          "Analytical",
-                          "Problem Solver",
-                          "Detail Oriented",
-                        ],
-                      }}
-                      qualification="Pursuing a BA in Computer Science"
-                      skillMatch="35"
-                    />
-                    <PositionCard
-                      id="2"
-                      title="Backend Developer"
-                      datePosted="02-02-2024"
-                      description="Work with Java Spring to implement the backend for a web app"
-                      responsibilities={[
-                        "General Description of the role. Lorem Ipsum is simply dummy text of the printing typesetting industry.",
-                        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-                        "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
-                      ]}
-                      skillSets={{
-                        technical: ["Python", "SQL", "C++", "Java"],
-                        tools: ["Pandas", "AI Models", "Matlab", "TensorFlow"],
-                        soft: [
-                          "Communication",
-                          "Analytical",
-                          "Problem Solver",
-                          "Detail Oriented",
-                        ],
-                      }}
-                      qualification="Pursuing a BA in Computer Science"
-                      skillMatch="35"
-                    />
-                  </div>
+              {/* Positions Section */}
+              <div>
+                <div className="markdown">
+                  <ReactMarkdown>{project.wanted_description}</ReactMarkdown>
                 </div>
               </div>
+
+              {project.positions?.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold mb-4">Open Positions</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.positions.map((position, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-gray-400 hover:bg-black"
+                      >
+                        {position.title}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {project.skill_tags?.length > 0 && (
+                <>
+                  <h3 className="text-xl font-bold mb-4">Desired Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {project.skill_tags.map((skill, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-gray-400 hover:bg-black"
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
             </TabPanel>
 
             <TabPanel value="contact">
-              <div className="border rounded-lg overflow-hidden">
-                <div className="p-5 border-b">
-                  <h1 className="text-2xl font-bold mb-10">
-                    Project Owner Contact Information{" "}
-                    <span className="text-yellow-500 font-bold">(W.I.P)</span>
-                  </h1>
-                </div>
+              <div className="p-5 border-b">
+                <h1 className="text-4xl font-bold mb-6">
+                  Project Owner Contact Information
+                </h1>
+
+                {/* Render Owner's name if data is available */}
+                <span className="font-bold">Owner: </span>
+                {ownerData ? (
+                  <a
+                    href={`/profile/${ownerData.auth_id}`}
+                    className="text-blue-500 hover:underline"
+                  >
+                    {ownerData.first_name + " " + ownerData.last_name}
+                  </a>
+                ) : (
+                  "Loading..."
+                )}
+                <br></br>
+
+                <span className="font-bold">Project Email: </span>
+                {project.email ? project.email : "N/A"}
+                <br></br>
+
+                <span className="font-bold">Social Contact: </span>
+                {project.other_contact ? project.other_contact : "N/A"}
+                <br></br>
               </div>
             </TabPanel>
 
             {project.owner === userUuid ? (
               <TabPanel value="ai_rate">
-                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
-                  <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">
-                      🤖 AI Rate My Project 🤖
-                    </CardTitle>
-                    <h2 className="text-lg text-center">
-                      Let AI rate your project and give feedback.
-                    </h2>
-                    <Button
-                      onClick={ai_feedback}
-                      disabled={aiFeedbackLoading || cooldown}
-                      className="flex items-center"
-                    >
-                      {aiFeedbackLoading ? (
-                        <>
-                          <Spinner className="mr-2 h-4 w-4" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Star className="mr-2 h-4 w-4" />
-                          {cooldown
-                            ? "Cooldown between ratings, try again in 5 minutes."
-                            : "Rate Project"}
-                        </>
-                      )}
-                    </Button>
-                  </CardHeader>
+                <CardHeader className="flex items-center justify-between p-6">
+                  <CardTitle className="text-2xl font-bold">
+                    🤖 AI Rate My Project 🤖
+                  </CardTitle>
+                  <h2 className="text-lg text-center">
+                    Let AI rate your project idea and give feedback.
+                  </h2>
+                  <Button
+                    onClick={ai_feedback}
+                    disabled={aiFeedbackLoading || cooldown}
+                    className="flex items-center"
+                  >
+                    {aiFeedbackLoading ? (
+                      <>
+                        <Spinner className="mr-2 h-4 w-4" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="mr-2 h-4 w-4" />
+                        {cooldown
+                          ? "Cooldown between ratings, try again in 5 minutes."
+                          : "Rate Project"}
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
 
-                  <div className="my-4 border-t border-gray-300 w-full" />
+                <CardContent className="p-6">
+                  <AnimatePresence>
+                    {aiFeedbackLoading && (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center text-gray-500 py-8"
+                      >
+                        Rating...
+                      </motion.div>
+                    )}
 
-                  <CardContent className="p-6">
-                    <AnimatePresence>
-                      {aiFeedbackLoading && (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-center text-gray-500 py-8"
-                        >
-                          Rating...
-                        </motion.div>
-                      )}
-
-                      {!aiFeedbackLoading && AI_response && (
-                        <motion.div
-                          key="response"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3 }}
-                          className="prose prose-lg text-center "
-                        >
-                          <ReactMarkdown>{AI_response}</ReactMarkdown>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
+                    {!aiFeedbackLoading && AI_response && (
+                      <motion.div
+                        key="response"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="prose prose-lg text-center markdown"
+                      >
+                        <ReactMarkdown>{AI_response}</ReactMarkdown>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
               </TabPanel>
             ) : (
               <TabPanel value="ai_suggest">
-                <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl">
-                  <CardHeader className="flex items-center justify-between p-6">
-                    <CardTitle className="text-2xl font-bold">
-                      🤖 AI Match Score 🤖
-                    </CardTitle>
-                    <h2 className="text-lg text-center">
-                      Let AI rate how good of a fit you would be for this
-                      project based on your profile.
-                    </h2>
-                    <Button
-                      onClick={ai_suggest}
-                      disabled={aiFeedbackLoading || cooldown}
-                      className="flex items-center"
-                    >
-                      {aiFeedbackLoading ? (
-                        <>
-                          <Spinner className="mr-2 h-4 w-4" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Star className="mr-2 h-4 w-4" />
-                          {cooldown
-                            ? "Cooldown between ratings, try again in 5 minutes."
-                            : "Rate Project"}
-                        </>
-                      )}
-                    </Button>
-                  </CardHeader>
+                <CardHeader className="flex items-center justify-between p-6">
+                  <CardTitle className="text-2xl font-bold">
+                    🤖 AI Match Score 🤖
+                  </CardTitle>
+                  <h2 className="text-lg text-center">
+                    Let AI rate how good of a fit you would be for this project
+                    based on your profile.
+                  </h2>
+                  <Button
+                    onClick={ai_suggest}
+                    disabled={aiFeedbackLoading || cooldown}
+                    className="flex items-center"
+                  >
+                    {aiFeedbackLoading ? (
+                      <>
+                        <Spinner className="mr-2 h-4 w-4" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="mr-2 h-4 w-4" />
+                        {cooldown
+                          ? "Cooldown between ratings, try again in 5 minutes."
+                          : "Rate Project"}
+                      </>
+                    )}
+                  </Button>
+                </CardHeader>
 
-                  <div className="my-4 border-t border-gray-300 w-full" />
+                <CardContent className="p-6">
+                  <AnimatePresence>
+                    {aiFeedbackLoading && (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center text-gray-500 py-8"
+                      >
+                        Rating...
+                      </motion.div>
+                    )}
 
-                  <CardContent className="p-6">
-                    <AnimatePresence>
-                      {aiFeedbackLoading && (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="text-center text-gray-500 py-8"
-                        >
-                          Rating...
-                        </motion.div>
-                      )}
-
-                      {!aiFeedbackLoading && AI_response && (
-                        <motion.div
-                          key="response"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3 }}
-                          className="prose prose-lg text-center "
-                        >
-                          <ReactMarkdown>{AI_response}</ReactMarkdown>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
+                    {!aiFeedbackLoading && AI_response && (
+                      <motion.div
+                        key="response"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                        className="prose prose-lg text-center markdown"
+                      >
+                        <ReactMarkdown>{AI_response}</ReactMarkdown>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </CardContent>
               </TabPanel>
             )}
             {project.owner === userUuid && <TabPanel value="edit"></TabPanel>}
