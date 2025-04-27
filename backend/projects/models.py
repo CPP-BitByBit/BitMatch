@@ -23,7 +23,7 @@ class Project(models.Model):
     interest_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
     skill_tags = ArrayField(models.CharField(max_length=225), blank=True, null=True)  
     full_description = models.TextField(max_length=2500, blank=True, null=True)
-    email = models.EmailField(unique=True, blank=True, null=True)  
+    email = models.EmailField(blank=True, null=True)  
     other_contact = models.CharField(max_length=225, blank=True, null=True)
     updates = ArrayField(models.CharField(max_length=540), blank=True, null=True)
     wanted_description = models.TextField(max_length=2500, blank=True, null=True)

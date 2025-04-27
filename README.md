@@ -22,10 +22,10 @@ BitMatch provides a streamlined platform where:
 - The system suggests the most relevant projects based on a percentage match score.
 - Students can apply to join suitable projects.
 
-### 💬 Direct Messaging
+### 🤖 AI Match Score + Feedback
 
-- Innovators and students can communicate directly within the platform.
-- Enables seamless discussions about project roles, requirements, and feedback.
+- Innovators can request AI feedback on their project ideas/postings.
+- Students looking for projects can ask AI to evaluate how well of a fit they are for a project listing.
 
 ## 🛠 Tech Stack
 
@@ -38,6 +38,7 @@ BitMatch provides a streamlined platform where:
 - Django
 - AWS RDS Postgres Instance
 - AWS S3 (For Images)
+- Gemini API
 
 ### Deployment
 
@@ -48,7 +49,6 @@ BitMatch provides a streamlined platform where:
 ## 🏗 Architecture Diagram
 
 ![BitMatchArchitecture](https://github.com/user-attachments/assets/f359c19f-edbb-413d-a025-b9c5cde63bd0)
-
 
 ## 🛠 Running Locally
 
