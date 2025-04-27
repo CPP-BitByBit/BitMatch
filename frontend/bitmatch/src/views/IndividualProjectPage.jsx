@@ -71,85 +71,49 @@ const ProjectDetailPage = () => {
   const [memberData, setMemberData] = useState([]);
 
   useEffect(() => {
-    const fetchUserUuid = async () => {
+    const fetchData = async () => {
+      setLoading(true);
+
       try {
-        const response = await fetch(`${SERVER_HOST}/userauth/${user.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-        const data = await response.json();
-        setuserData(data);
-        setUserUuid(data.id);
+        const [userResponse, projectData] = await Promise.all([
+          fetch(`${SERVER_HOST}/userauth/${user.id}`),
+          fetchProjectInfo(id),
+        ]);
+
+        if (!userResponse.ok) throw new Error("Failed to fetch user data");
+        const userData = await userResponse.json();
+        setuserData(userData);
+        setUserUuid(userData.id);
+
+        if (!projectData) throw new Error("Project not found.");
+        setProject(projectData);
+
+        setIsMember(projectData.members.includes(userData.id));
+
+        const memberPromises = projectData.members
+          .slice(0, 10)
+          .map((uuid) =>
+            fetch(`${SERVER_HOST}/userauth/fetch/${uuid}/`).then((res) =>
+              res.ok ? res.json() : null
+            )
+          );
+        const memberResults = await Promise.all(memberPromises);
+        setMemberData(memberResults.filter((member) => member !== null));
+
+        const ownerData = await fetchUserByUUID(projectData.owner);
+        setOwnerData(ownerData);
+
+        setIsReady(true);
       } catch (error) {
-        console.error("Error fetching user UUID:", error);
-      }
-    };
-
-    fetchUserUuid();
-  }, [user.id]);
-
-  useEffect(() => {
-    // Fetch project details when the component mounts or the `id` changes
-    const loadProjectInfo = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchProjectInfo(id);
-        if (data) {
-          setProject(data);
-        } else {
-          setError("Project not found.");
-        }
-        // eslint-disable-next-line no-unused-vars
-      } catch (err) {
-        setError("Failed to load project details.");
+        setError("Error loading data");
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProjectInfo();
-  }, [id, userUuid]);
-
-  useEffect(() => {
-    if (userData && project) {
-      setIsMember(project.members.includes(userData.id));
-      setIsReady(true);
-    }
-  }, [userData, project]);
-
-  useEffect(() => {
-    const fetchAllMembers = async () => {
-      if (!project || !project.members || project.members.length === 0) return;
-
-      try {
-        const promises = project.members.map((uuid) =>
-          fetch(`${SERVER_HOST}/userauth/fetch/${uuid}/`).then((res) =>
-            res.ok ? res.json() : null
-          )
-        );
-
-        const results = await Promise.all(promises);
-
-        const validMembers = results.filter((member) => member !== null);
-
-        setMemberData(validMembers);
-      } catch (error) {
-        console.error("Failed to fetch member data:", error);
-      }
-    };
-
-    fetchAllMembers();
-  }, [project]);
-
-  useEffect(() => {
-    const fetchOwnerData = async () => {
-      const data = await fetchUserByUUID(project.owner);
-      if (data) {
-        setOwnerData(data);
-      }
-    };
-    fetchOwnerData();
-  }, [project]);
+    fetchData();
+  }, [user.id, id]);
 
   const fetchUserByUUID = async (userId) => {
     try {
@@ -278,6 +242,7 @@ const ProjectDetailPage = () => {
   ---
   
   DO NOT ask for additional information or clarification.
+  DO NOT USE HTML CODE TO FORMAT
   Format it cleanly with section headers, a prominent rating at the top, and spacing between each section.
   
   
@@ -300,6 +265,9 @@ const ProjectDetailPage = () => {
 
   ---PROJECT POSITIONS NEEDED---
   ${project.positions.map((position) => position.title).join(", ")}
+
+    ---PROJECT WANTED DESCRIPTION---
+  ${project.wanted_description}
       `,
     });
     setAI_Response(response.text);
@@ -313,7 +281,7 @@ const ProjectDetailPage = () => {
     const response = await AI.models.generateContent({
       model: "gemini-2.0-flash",
       contents: `
-  You are a professional evaluator.
+  You are a professional evaluator who doesn't like to sugarcoat things.
 
   Based ONLY on the information provided, give the following feedback on how good of a fit I am for the project.
   NOTE: If the input data looks like a test record just respond "Can't rate, this is a test record!"
@@ -341,6 +309,7 @@ const ProjectDetailPage = () => {
   ---
 
   DO NOT ask for additional information or clarification.
+  DO NOT USE HTML CODE TO FORMAT
   Format it cleanly with section headers, a prominent fit rating at the top, and spacing between each section.
 
   ---
@@ -365,6 +334,9 @@ const ProjectDetailPage = () => {
 
   ---PROJECT POSITIONS NEEDED---
   ${project.positions.map((position) => position.title).join(", ")}
+
+---PROJECT WANTED DESCRIPTION---
+  ${project.wanted_description}
 
   ---USER INTERESTS---
   ${userData.interests}
@@ -415,7 +387,6 @@ const ProjectDetailPage = () => {
   const handleSave = async (data) => {
     const formData = new FormData();
 
-    console.log(data);
     formData.append("title", data.title);
     formData.append("group", data.group);
     formData.append("location", data.location);
@@ -427,6 +398,22 @@ const ProjectDetailPage = () => {
     formData.append("positions", JSON.stringify(data.positions));
     formData.append("images", JSON.stringify(data.images));
     formData.append("wanted_description", data.wanted_description);
+
+    if (Array.isArray(data.interest_tags)) {
+      data.interest_tags.forEach((interest) => {
+        formData.append("interest_tags", interest);
+      });
+    } else {
+      formData.append("interest_tags", data.interest_tags);
+    }
+
+    if (Array.isArray(data.skill_tags)) {
+      data.skill_tags.forEach((skill) => {
+        formData.append("skill_tags", skill);
+      });
+    } else {
+      formData.append("skill_tags", data.skill_tags);
+    }
 
     if (data.new_image) {
       formData.append("image_url", data.new_image);
@@ -756,12 +743,12 @@ const ProjectDetailPage = () => {
               <h2 className="text-4xl font-bold mb-6">Overview</h2>
 
               <div className="mb-6">
-                <p className="text-sm mb-8 markdown">
-                  <h2 className="text-xl font-bold mb-4">
+                <div className="text-sm mb-8 markdown">
+                  <div className="text-xl font-bold mb-4">
                     Background & More Details About the Project
-                  </h2>
+                  </div>
                   <ReactMarkdown>{project.full_description}</ReactMarkdown>
-                </p>
+                </div>
                 <div className="mb-4">
                   {project.interest_tags?.length > 0 && (
                     <>
@@ -898,7 +885,7 @@ const ProjectDetailPage = () => {
                     🤖 AI Rate My Project 🤖
                   </CardTitle>
                   <h2 className="text-lg text-center">
-                    Let AI rate your project and give feedback.
+                    Let AI rate your project idea and give feedback.
                   </h2>
                   <Button
                     onClick={ai_feedback}

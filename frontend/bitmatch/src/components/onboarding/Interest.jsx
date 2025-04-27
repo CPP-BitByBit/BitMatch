@@ -1,52 +1,48 @@
-'use client'
+"use client";
 
-import {
-  forwardRef,
-  useEffect,
-  useState,
-  useImperativeHandle,
-} from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { X } from 'lucide-react'
+import { forwardRef, useEffect, useState, useImperativeHandle } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 
 const Interest = forwardRef(({ onDataChange, formData }, ref) => {
-  const [interests, setInterests] = useState(formData?.interests || [])
-  const [newInterest, setNewInterest] = useState('')
-  const [error, setError] = useState('')
+  const [interests, setInterests] = useState(formData?.interests || []);
+  const [newInterest, setNewInterest] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    onDataChange({ interests })
-  }, [interests])
+    onDataChange({ interests });
+  }, [interests]);
 
   const validate = () => {
     if (interests.length === 0) {
-      setError('Please add at least one interest.')
-      return false
+      setError("Please add at least one interest.");
+      return false;
     }
-    setError('')
-    return true
-  }
+    setError("");
+    return true;
+  };
 
-  useImperativeHandle(ref, () => ({ validate }))
+  useImperativeHandle(ref, () => ({ validate }));
 
   const handleAdd = () => {
-    const trimmed = newInterest.trim()
+    const trimmed = newInterest.trim();
     if (trimmed && !interests.includes(trimmed)) {
-      setInterests([...interests, trimmed].sort())
-      setNewInterest('')
-      setError('')
+      setInterests([...interests, trimmed].sort());
+      setNewInterest("");
+      setError("");
     }
-  }
+  };
 
   const handleRemove = (interest) => {
-    setInterests(interests.filter((i) => i !== interest))
-  }
+    setInterests(interests.filter((i) => i !== interest));
+  };
 
   return (
     <div className="space-y-4">
       <label className="text-sm font-medium">
-        What categories are you most interested in? <span className="text-red-500">*</span>
+        What categories/topics/hobbies are you most interested in?{" "}
+        <span className="text-red-500">*</span>
       </label>
 
       <div className="flex space-x-2">
@@ -55,9 +51,9 @@ const Interest = forwardRef(({ onDataChange, formData }, ref) => {
           onChange={(e) => setNewInterest(e.target.value)}
           placeholder="Type a category"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              handleAdd()
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAdd();
             }
           }}
         />
@@ -82,7 +78,7 @@ const Interest = forwardRef(({ onDataChange, formData }, ref) => {
         ))}
       </div>
     </div>
-  )
-})
+  );
+});
 
-export default Interest
+export default Interest;

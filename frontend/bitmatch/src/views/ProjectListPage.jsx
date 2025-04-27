@@ -71,7 +71,6 @@ export default function ProjectListPage() {
 
         // Update state with sorted projects
         setProjects(sortedProjects);
-        console.log(sortedProjects);
       } catch (error) {
         console.error("Error fetching user and projects:", error);
         setError("Something went wrong. Please try again later.");

@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,12 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
   const [newPosition, setNewPosition] = useState({ title: "" });
   const [editingIndex, setEditingIndex] = useState(-1);
   const [sliderImages, setSliderImages] = useState(projectData.images || []);
+  const [interests, setInterests] = useState(projectData.interest_tags || []);
+  const [skills, setSkills] = useState(projectData.skill_tags || []);
+  const [newInterest, setNewInterest] = useState("");
+  const [newSkill, setNewSkill] = useState("");
+  const [interestError, setInterestError] = useState("");
+  const [skillError, setSkillError] = useState("");
 
   const handleImageUrlChange = (index, e) => {
     const newSliderImages = [...sliderImages];
@@ -35,6 +41,59 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
 
     setSliderImages(newSliderImages);
     handleChange("images", filteredImages);
+  };
+
+  // For Interests
+  const handleInterestChange = (e) => {
+    setNewInterest(e.target.value);
+    setInterestError(""); // Reset error message
+  };
+
+  const handleAddInterest = () => {
+    if (newInterest.trim()) {
+      setInterests((prev) => {
+        const updatedInterests = [...prev, newInterest.trim()];
+        handleChange("interest_tags", updatedInterests); // Call handleChange with updated interests
+        return updatedInterests;
+      });
+      setNewInterest(""); // Clear input after adding
+    } else {
+      setInterestError("Interest can't be empty.");
+    }
+  };
+
+  const handleSkillChange = (e) => {
+    setNewSkill(e.target.value);
+    setSkillError("");
+  };
+
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      setSkills((prev) => {
+        const updatedSkills = [...prev, newSkill.trim()];
+        handleChange("skill_tags", updatedSkills);
+        return updatedSkills;
+      });
+      setNewSkill("");
+    } else {
+      setSkillError("Skill can't be empty.");
+    }
+  };
+
+  const handleRemoveInterest = (index) => {
+    setInterests((prev) => {
+      const updatedInterests = prev.filter((_, i) => i !== index);
+      handleChange("interest_tags", updatedInterests);
+      return updatedInterests;
+    });
+  };
+
+  const handleRemoveSkill = (index) => {
+    setSkills((prev) => {
+      const updatedSkills = prev.filter((_, i) => i !== index);
+      handleChange("skill_tags", updatedSkills);
+      return updatedSkills;
+    });
   };
 
   const handleChange = (field, value) => {
@@ -94,6 +153,17 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
     setNewPosition({ title: formData.positions[index].title });
     setEditingIndex(index);
   };
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <Dialog
@@ -380,6 +450,102 @@ export function EditProjectDialog({ open, onOpenChange, projectData, onSave }) {
                 preview="edit"
                 height={200}
               />
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">
+              Categories/Interests
+            </label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newInterest}
+                onChange={handleInterestChange}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Backend, Frontend, DevOps, AI"
+              />
+              <button
+                type="button"
+                onClick={handleAddInterest}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Interest
+              </button>
+            </div>
+            {interestError && (
+              <p className="text-red-500 text-sm mt-1">{interestError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {interests.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No interests added yet.
+                </p>
+              ) : (
+                interests.map((interest, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{interest}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveInterest(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove interest: ${interest}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label className="block font-medium mb-2">Desired Skills</label>
+            <div className="flex items-center space-x-2 mb-2">
+              <input
+                type="text"
+                value={newSkill}
+                onChange={handleSkillChange}
+                className="flex-grow border rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., JavaScript, Figma, Django"
+              />
+              <button
+                type="button"
+                onClick={handleAddSkill}
+                className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors text-sm"
+              >
+                Add Skill
+              </button>
+            </div>
+            {skillError && (
+              <p className="text-red-500 text-sm mt-1">{skillError}</p>
+            )}
+            <div className="mt-3 border rounded-md overflow-hidden">
+              {skills.length === 0 ? (
+                <p className="text-sm text-gray-500 px-4 py-3">
+                  No skills added yet.
+                </p>
+              ) : (
+                skills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between px-4 py-2 border-b last:border-b-0 bg-gray-50"
+                  >
+                    <span className="text-sm">{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkill(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      aria-label={`Remove skill: ${skill}`}
+                    >
+                      &#x2715;
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
