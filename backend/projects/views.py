@@ -155,3 +155,14 @@ def project_member_hander(request, project_id):
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=404)
             
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_like_status(request, user_id, project_id):
+    try:
+        project = get_object_or_404(Project, id=project_id)
+        user = get_object_or_404(User, id=user_id)
+
+        liked = Like.objects.filter(project=project, user=user).exists()
+        return Response({'liked': liked}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
