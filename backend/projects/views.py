@@ -78,7 +78,7 @@ def toggle_like(request, project_id):
                 Like.objects.create(project=project, user=user)
                 project.likes_count += 1
                 project.save()
-                return Response({'message': 'Project liked successfully'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Project liked successfully','like_count': project.likes_count}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already liked this project.'}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -88,7 +88,7 @@ def toggle_like(request, project_id):
                 like.delete()
                 project.likes_count -= 1
                 project.save()
-                return Response({'message': 'Project unliked successfully'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Project unliked successfully','like_count': project.likes_count}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already unliked this project.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -109,7 +109,7 @@ def toggle_follow(request, project_id):
                 Follow.objects.create(project=project, user=user)
                 project.followers_count += 1
                 project.save()
-                return Response({'message': 'Project followed successfully'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Project followed successfully', 'follow_count': project.followers_count}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already followed this project.'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -119,7 +119,7 @@ def toggle_follow(request, project_id):
                 follow.delete()
                 project.followers_count -= 1
                 project.save()
-                return Response({'message': 'Project unfollowed successfully'}, status=status.HTTP_200_OK)
+                return Response({'message': 'Project unfollowed successfully', 'follow_count': project.followers_count}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'You already unfollowed this project.'}, status=status.HTTP_400_BAD_REQUEST)
 
