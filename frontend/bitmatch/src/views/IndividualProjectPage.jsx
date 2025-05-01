@@ -103,6 +103,28 @@ const ProjectDetailPage = () => {
         const ownerData = await fetchUserByUUID(projectData.owner);
         setOwnerData(ownerData);
 
+        // Check initial like status
+        const likeStatusResponse = await fetch(
+          `${SERVER_HOST}/projects/likes/check/${userData.id}/${id}`
+        );
+        if (likeStatusResponse.ok) {
+          const likeData = await likeStatusResponse.json();
+          setLiked(likeData.liked);
+        } else {
+          console.error("Error checking like status");
+        }
+
+        // Check initial follow status
+        const followStatusResponse = await fetch(
+          `${SERVER_HOST}/projects/follows/check/${userData.id}/${id}/`
+        );
+        if (followStatusResponse.ok) {
+          const followData = await followStatusResponse.json();
+          setFollowing(followData.followed);
+        } else {
+          console.error("Error checking follow status");
+        }
+
         setIsReady(true);
       } catch (error) {
         setError("Error loading data");
@@ -131,22 +153,49 @@ const ProjectDetailPage = () => {
 
   const handleFollow = async () => {
     setFollowing(!following);
-    console.log("current following status:", following);
     const fdata = {
       action: following ? "unfollow" : "follow",
-      user_id: 1,
+      user_id: userUuid,
     };
-    console.log("id is ", id);
 
     try {
       const response = await axios.post(
-        `${SERVER_HOST}/projects/follow/${id}`,
+        `${SERVER_HOST}/projects/follow/${id}/`,
         fdata
       );
-      console.log("response: ", response.data);
-      window.location.reload();
+      if (response.data && response.data.follow_count !== undefined) {
+        setProject((prevProject) => ({
+          ...prevProject,
+          followers_count: response.data.follow_count,
+        }));
+      }
     } catch (error) {
       console.error("Error updating follows: ", error);
+      setFollowing(!following);
+    }
+  };
+
+  const handleLike = async () => {
+    setLiked(!likeStatus);
+    const fdata = {
+      action: likeStatus ? "unlike" : "like",
+      user_id: userUuid,
+    };
+
+    try {
+      const response = await axios.post(
+        `${SERVER_HOST}/projects/like/${id}/`,
+        fdata
+      );
+      if (response.data && response.data.like_count !== undefined) {
+        setProject((prevProject) => ({
+          ...prevProject,
+          likes_count: response.data.like_count,
+        }));
+      }
+    } catch (error) {
+      console.error("Error updating like status: ", error);
+      setLiked(!likeStatus);
     }
   };
 
@@ -365,25 +414,6 @@ const ProjectDetailPage = () => {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const handleLike = async () => {
-    setLiked(!likeStatus);
-    const fdata = {
-      action: likeStatus ? "unlike" : "like",
-      user_id: 1,
-    };
-
-    try {
-      const response = await axios.post(
-        `${SERVER_HOST}/projects/like/${id}`,
-        fdata
-      );
-      console.log("response: ", response.data);
-      window.location.reload();
-    } catch (error) {
-      console.error("Error updating likes: ", error);
-    }
-  };
-
   const handleSave = async (data) => {
     const formData = new FormData();
 
@@ -563,14 +593,25 @@ const ProjectDetailPage = () => {
 
               <div className="flex gap-4 mb-2">
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={handleLike}>
-                    <ThumbsUp className="h-6 w-6"></ThumbsUp>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLike}
+                    className={likeStatus ? "text-blue-500" : ""}
+                  >
+                    <ThumbsUp className="h-6 w-6" />
                   </Button>
                   <span>{project.likes_count} Likes</span>
                 </div>
+
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" onClick={handleFollow}>
-                    <UserRound className="h-6 w-6"></UserRound>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleFollow}
+                    className={following ? "text-blue-500" : ""}
+                  >
+                    <UserRound className="h-6 w-6" />
                   </Button>
                   <span>{project.followers_count} Followers</span>
                 </div>
