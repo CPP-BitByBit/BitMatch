@@ -180,7 +180,7 @@ resource "aws_db_instance" "default" {
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -199,7 +199,7 @@ resource "aws_instance" "django_server" {
     Name = "DjangoBitMatchServer"
   }
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -249,7 +249,7 @@ resource "aws_iam_user" "django_s3_user" {
   name = "django-s3-user"
 
     lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -281,7 +281,7 @@ resource "aws_iam_policy" "s3_access_policy" {
 POLICY
 
     lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -291,7 +291,7 @@ resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
   policy_arn = aws_iam_policy.s3_access_policy.arn
 
     lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -300,7 +300,7 @@ resource "aws_iam_access_key" "django_s3_user_key" {
   user = aws_iam_user.django_s3_user.name
 
     lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
@@ -462,7 +462,7 @@ resource "aws_s3_bucket" "terraform_state" {
   bucket = "bitmatch-terraform-state"
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 
   tags = {
